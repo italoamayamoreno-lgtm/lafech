@@ -1296,6 +1296,9 @@ const PAY_KEY='lafech_pay_data_v2';
 let payData=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
 
 function savePay(){
+  // Preserve QR data that lives separately in payData
+  const yqr=payData.yape_qr||null;
+  const pqr=payData.plin_qr||null;
   payData={
     bcp_cta:document.getElementById('bcp-cta').value,
     bcp_cci:document.getElementById('bcp-cci').value,
@@ -1305,10 +1308,10 @@ function savePay(){
     ibk_nm:document.getElementById('ibk-nm').value,
     yape_num:document.getElementById('yape-num').value,
     yape_nm:document.getElementById('yape-nm').value,
-    yape_qr:payData.yape_qr||null,
+    yape_qr:yqr,
     plin_num:document.getElementById('plin-num').value,
     plin_nm:document.getElementById('plin-nm').value,
-    plin_qr:payData.plin_qr||null,
+    plin_qr:pqr,
   };
   localStorage.setItem(PAY_KEY,JSON.stringify(payData));
 }
@@ -1319,13 +1322,20 @@ function loadQR(input,previewId,key){
   r.onload=e=>{
     const img=document.getElementById(previewId);
     img.src=e.target.result;img.style.display='block';
+    // Reload current payData from localStorage to avoid overwriting other fields
+    const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
+    Object.assign(payData,saved);
     payData[key]=e.target.result;
     localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+    console.log('QR saved for key:',key,'length:',e.target.result.length);
   };
   r.readAsDataURL(f);
 }
 
 function loadPayFields(){
+  // Sync from localStorage on every page open
+  const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
+  Object.assign(payData,saved);
   const d=payData;
   const f=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
   f('bcp-cta',d.bcp_cta);f('bcp-cci',d.bcp_cci);f('bcp-nm',d.bcp_nm);
@@ -1364,7 +1374,11 @@ function renderPayMethods(){
 }
 
 async function exportPayPDF(){
+  // Always reload from localStorage to get latest QR data
+  const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
+  Object.assign(payData,saved);
   const d=payData;
+  console.log('Yape QR present:',!!d.yape_qr,'Plin QR present:',!!d.plin_qr);
   const hasAny=d.bcp_cta||d.bcp_cci||d.ibk_cta||d.ibk_cci||d.yape_num||d.plin_num;
   if(!hasAny){alert('Completa al menos un metodo de pago antes de generar el PDF.');return;}
   const{jsPDF}=window.jspdf;
