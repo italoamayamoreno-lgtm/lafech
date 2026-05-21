@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Joyería">
+<meta name="theme-color" content="#C9A84C">
+<title>💎 Joyería — Inventario</title>
+
+<!-- PWA manifest inline -->
+<script>
+const manifestData = {
+  name: "Joyería Inventario",
+  short_name: "Joyería",
+  description: "Asistente comercial para tu joyería",
+  start_url: ".",
+  display: "standalone",
+  background_color: "#F8F6F1",
+  theme_color: "#C9A84C",
+  orientation: "portrait-primary",
+  icons: [
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23C9A84C'/><text x='96' y='130' font-size='100' text-anchor='middle'>💎</text></svg>", sizes: "192x192", type: "image/svg+xml" },
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23C9A84C'/><text x='256' y='350' font-size='280' text-anchor='middle'>💎</text></svg>", sizes: "512x512", type: "image/svg+xml" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
+const manifestURL = URL.createObjectURL(blob);
+const link = document.createElement('link');
+link.rel = 'manifest'; link.href = manifestURL;
+document.head.appendChild(link);
+</script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --gold:#C9A84C;--gold-light:#F5EDD6;--gold-dark:#8B6914;--gold-mid:#E8C97A;
+  --bg:#F8F6F1;--surface:#FFFFFF;--surface2:#F3F0E8;--surface3:#EDE9DF;
+  --border:#E2DBCC;--border2:#CEC5B0;
+  --text:#1A1918;--text2:#6B6357;--text3:#A09080;
+  --green:#2A6049;--green-bg:#ECF4EF;--green-light:#D4EBE0;
+  --red:#B03030;--red-bg:#FBEEEE;--red-light:#F5CECE;
+  --amber:#8A6010;--amber-bg:#FDF4E3;
+  --blue:#1A4A7A;--blue-bg:#EAF1FA;
+  --font-display:'Cormorant Garamond',serif;
+  --font-body:'DM Sans',sans-serif;
+  --r:10px;--r-sm:7px;--r-lg:14px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--font-body);color:var(--text);font-size:14px}
+
+/* ── SETUP SCREEN ───────────────────────────────────── */
+#setup-screen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
+#setup-screen.hidden{display:none}
+.setup-gem{font-size:64px;margin-bottom:16px}
+.setup-title{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--gold-dark);margin-bottom:8px}
+.setup-sub{font-size:14px;color:var(--text2);margin-bottom:32px;line-height:1.6;max-width:400px}
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;width:100%;max-width:480px;text-align:left;margin-bottom:16px}
+.setup-card h3{font-size:13px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+.setup-field{margin-bottom:12px}
+.setup-field label{display:block;font-size:11px;font-weight:500;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+.setup-field input{width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:var(--r-sm);font-family:var(--font-body);font-size:13px;color:var(--text);background:var(--surface2);outline:none}
+.setup-field input:focus{border-color:var(--gold)}
+.setup-btn{width:100%;max-width:480px;padding:14px;border-radius:var(--r);background:var(--gold);border:none;color:#fff;font-family:var(--font-body);font-size:15px;font-weight:500;cursor:pointer;margin-bottom:12px}
+.setup-btn:hover{background:var(--gold-dark)}
+.setup-btn.secondary{background:var(--surface);border:1px solid var(--border2);color:var(--text2)}
+.setup-btn.secondary:hover{background:var(--surface2)}
+.setup-steps{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;width:100%;max-width:480px;text-align:left}
+.setup-steps h3{font-size:13px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.step-item{display:flex;gap:12px;margin-bottom:10px;font-size:13px;color:var(--text2);line-height:1.5}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--gold-light);color:var(--gold-dark);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-item a{color:var(--gold-dark)}
+
+/* ── OFFLINE BANNER ─────────────────────────────────── */
+#offline-bar{height:0;overflow:hidden;background:#B03030;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;transition:height .3s;font-weight:500}
+#offline-bar.show{height:32px}
+
+/* ── SYNC INDICATOR ─────────────────────────────────── */
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite}
+.sync-dot.offline{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── TOP BAR ────────────────────────────────────────── */
+.topbar{height:56px;padding-top:var(--safe-top);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding-left:16px;padding-right:16px;gap:12px;flex-shrink:0;position:relative;z-index:10}
+.logo{font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--gold-dark);letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+.logo-gem{font-size:18px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.icon-btn{width:36px;height:36px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:18px;transition:all .15s}
+.icon-btn:active{background:var(--surface2);transform:scale(.95)}
+.icon-btn.primary{background:var(--gold);border-color:var(--gold-dark);color:#fff}
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+.workspace{flex:1;display:flex;overflow:hidden}
+
+/* DESKTOP: side-by-side */
+@media(min-width:900px){
+  .workspace{flex-direction:row}
+  .main-area{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:20px}
+  .chat-panel{width:340px;min-width:340px;border-left:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface)}
+  .bottom-nav{display:none}
+  .fab{display:none}
+  .topbar-tabs{display:flex;gap:2px}
+  .topbar-tab{padding:6px 14px;border-radius:var(--r-sm);font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;border:1px solid transparent;display:flex;align-items:center;gap:6px}
+  .topbar-tab:hover{background:var(--surface2);color:var(--text)}
+  .topbar-tab.active{background:var(--gold-light);color:var(--gold-dark);font-weight:500;border-color:var(--gold-mid)}
+}
+/* MOBILE: stacked with bottom nav */
+@media(max-width:899px){
+  .workspace{flex-direction:column}
+  .main-area{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+  .chat-panel{position:fixed;inset:0;background:var(--surface);z-index:50;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+  .chat-panel.open{transform:translateX(0)}
+  .bottom-nav{height:calc(56px + var(--safe-bottom));background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:stretch;padding-bottom:var(--safe-bottom);flex-shrink:0}
+  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:500;transition:color .15s;padding-top:8px}
+  .bnav-item.active{color:var(--gold-dark)}
+  .bnav-item .bnav-icon{font-size:22px;line-height:1}
+  .fab{position:fixed;bottom:calc(70px + var(--safe-bottom));right:20px;width:52px;height:52px;border-radius:50%;background:var(--gold);border:none;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;z-index:30;transition:all .15s}
+  .fab:active{transform:scale(.93)}
+  .topbar-tabs{display:none}
+}
+
+/* ── KPI GRID ───────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:900px){.kpi-grid{grid-template-columns:repeat(4,1fr);gap:14px}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold-mid);border-radius:var(--r-lg) var(--r-lg) 0 0}
+.kpi.red::after{background:var(--red-light)}
+.kpi.green::after{background:var(--green-light)}
+.kpi.blue::after{background:#B8D4F0}
+.kpi-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.kpi-value{font-family:var(--font-display);font-size:26px;font-weight:600;color:var(--text);line-height:1;margin-bottom:3px}
+.kpi.red .kpi-value{color:var(--red)}
+.kpi.green .kpi-value{color:var(--green)}
+.kpi-sub{font-size:10px;color:var(--text3)}
+
+/* ── SECTION ────────────────────────────────────────── */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--text)}
+.btn-sm{padding:8px 14px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--surface);font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text);transition:all .15s;white-space:nowrap}
+.btn-sm:active{transform:scale(.97)}
+.btn-sm.primary{background:var(--gold);border-color:var(--gold-dark);color:#fff}
+
+/* ── SEARCH ─────────────────────────────────────────── */
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px}
+.search-bar input{flex:1;border:none;background:transparent;font-family:var(--font-body);font-size:14px;color:var(--text);outline:none}
+.search-bar input::placeholder{color:var(--text3)}
+.pills-row{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.pills-row::-webkit-scrollbar{display:none}
+.pill{padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:12px;cursor:pointer;color:var(--text2);white-space:nowrap;font-family:var(--font-body);flex-shrink:0}
+.pill.active{background:var(--gold-light);border-color:var(--gold);color:var(--gold-dark);font-weight:500}
+
+/* ── PRODUCT CARDS (mobile) / TABLE (desktop) ───────── */
+@media(max-width:899px){
+  .prod-table-wrap{display:none}
+  .prod-cards{display:flex;flex-direction:column;gap:8px}
+  .prod-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px}
+  .prod-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .prod-card-name{font-weight:500;font-size:14px;color:var(--text);margin-bottom:3px}
+  .prod-card-meta{font-size:11px;color:var(--text3)}
+  .prod-card-bottom{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .prod-card-price{font-size:13px;font-weight:500;color:var(--text)}
+  .prod-card-actions{display:flex;gap:6px;margin-left:auto}
+}
+@media(min-width:900px){
+  .prod-cards{display:none}
+  .prod-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  thead{background:var(--surface2)}
+  thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--surface2)}
+  td{padding:12px 14px;font-size:13px;vertical-align:middle}
+}
+.cat-tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:var(--gold-light);color:var(--gold-dark);font-weight:500}
+.stock-num{font-weight:600}
+.stock-num.ok{color:var(--green)}
+.stock-num.warn{color:var(--amber)}
+.stock-num.out{color:var(--red)}
+.margin-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500}
+.margin-badge.high{background:var(--green-bg);color:var(--green)}
+.margin-badge.mid{background:var(--amber-bg);color:var(--amber)}
+.margin-badge.low{background:var(--red-bg);color:var(--red)}
+
+/* ── MOVEMENTS ──────────────────────────────────────── */
+.mov-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.mov-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.mov-row:last-child{border-bottom:none}
+.mov-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.mov-dot.in{background:var(--green-bg)}
+.mov-dot.out{background:var(--red-bg)}
+.mov-dot.adj{background:var(--amber-bg)}
+.mov-body{flex:1;min-width:0}
+.mov-title{font-weight:500;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mov-detail{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mov-right{text-align:right;flex-shrink:0}
+.mov-qty{font-family:var(--font-display);font-size:16px;font-weight:600}
+.mov-qty.in{color:var(--green)}
+.mov-qty.out{color:var(--red)}
+.mov-total{font-size:11px;color:var(--text3)}
+
+/* ── ALERTS ─────────────────────────────────────────── */
+.alert-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--r);border:1px solid;margin-bottom:8px}
+.alert-item.crit{background:var(--red-bg);border-color:var(--red-light)}
+.alert-item.warn{background:var(--amber-bg);border-color:#F0D89A}
+.alert-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.alert-item.crit .alert-icon{background:var(--red-light)}
+.alert-item.warn .alert-icon{background:#F0E0A0}
+.alert-body{flex:1;min-width:0}
+.alert-title{font-weight:500;font-size:13px}
+.alert-item.crit .alert-title{color:var(--red)}
+.alert-item.warn .alert-title{color:var(--amber)}
+.alert-meta{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── CHAT ───────────────────────────────────────────── */
+.chat-topbar{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.chat-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid var(--gold-mid)}
+.chat-title{font-weight:500;font-size:14px;color:var(--text)}
+.chat-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:auto;flex-shrink:0}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.bw{display:flex;flex-direction:column;max-width:86%}
+.bw.user{align-self:flex-end;align-items:flex-end}
+.bw.bot{align-self:flex-start;align-items:flex-start}
+.bubble{padding:10px 13px;font-size:13px;line-height:1.55;border-radius:14px;word-break:break-word}
+.bw.bot .bubble{background:var(--surface2);border:1px solid var(--border);border-radius:4px 14px 14px 14px;color:var(--text)}
+.bw.user .bubble{background:var(--gold);color:#fff;border-radius:14px 14px 4px 14px}
+.btime{font-size:10px;color:var(--text3);margin-top:3px}
+.typing-b{display:flex;align-items:center;gap:4px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:4px 14px 14px 14px;width:fit-content}
+.dt{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:bounce .9s ease-in-out infinite}
+.dt:nth-child(2){animation-delay:.18s}
+.dt:nth-child(3){animation-delay:.36s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.chips-wrap{padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0}
+.chips-label{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.chips-row{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.chips-row::-webkit-scrollbar{display:none}
+.chip{padding:5px 11px;border:1px solid var(--border2);border-radius:20px;font-size:12px;color:var(--text2);cursor:pointer;background:var(--bg);white-space:nowrap;font-family:var(--font-body);flex-shrink:0}
+.chip:active{background:var(--gold-light);border-color:var(--gold);color:var(--gold-dark)}
+.chat-input-wrap{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0}
+.chat-input-row{display:flex;align-items:flex-end;gap:8px}
+textarea.cinput{flex:1;border:1px solid var(--border2);border-radius:var(--r);padding:10px 13px;font-family:var(--font-body);font-size:13px;color:var(--text);background:var(--surface2);resize:none;outline:none;line-height:1.45;min-height:40px;max-height:90px;transition:border .15s}
+textarea.cinput:focus{border-color:var(--gold)}
+textarea.cinput::placeholder{color:var(--text3)}
+.send-btn{width:40px;height:40px;border-radius:var(--r);background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-size:18px;transition:all .15s}
+.send-btn:active{background:var(--gold-dark);transform:scale(.95)}
+
+/* ── MODAL ──────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(20,16,10,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+@media(min-width:600px){.overlay{align-items:center}}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:24px 20px;width:100%;max-height:90dvh;overflow-y:auto;animation:slideup .25s ease}
+@media(min-width:600px){.modal{border-radius:var(--r-lg);max-width:480px;max-height:80dvh;animation:pop .2s ease}}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 20px;display:block}
+@media(min-width:600px){.modal-handle{display:none}}
+.modal-title{font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--text);margin-bottom:18px}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-bottom:4px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:var(--r-sm);font-family:var(--font-body);font-size:14px;color:var(--text);background:var(--surface2);outline:none;-webkit-appearance:none}
+.form-row input:focus,.form-row select:focus{border-color:var(--gold)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.modal-btn{flex:1;padding:12px;border-radius:var(--r-sm);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text)}
+.modal-btn.primary{background:var(--gold);border-color:var(--gold-dark);color:#fff}
+.modal-btn:active{transform:scale(.97)}
+.stock-info-box{font-size:12px;color:var(--text3);padding:8px 12px;background:var(--surface2);border-radius:var(--r-sm);margin-top:4px;min-height:28px}
+
+/* ── PAGE VISIBILITY ────────────────────────────────── */
+.page{display:none}
+.page.active{display:contents}
+
+/* ── EMPTY STATE ────────────────────────────────────── */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-msg{font-size:14px;line-height:1.6}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- FIREBASE SETUP SCREEN -->
+<div id="setup-screen" class="hidden">
+  <div class="setup-gem">💎</div>
+  <div class="setup-title">Joyería Inventario</div>
+  <div class="setup-sub">Para sincronizar entre dispositivos, necesitas conectar tu base de datos Firebase. Es gratis y toma 5 minutos.</div>
+
+  <div class="setup-steps">
+    <h3>Cómo obtener tu configuración</h3>
+    <div class="step-item"><div class="step-num">1</div><div>Ve a <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> e inicia sesión con Google</div></div>
+    <div class="step-item"><div class="step-num">2</div><div>Crea un proyecto nuevo (cualquier nombre, ej: "mi-joyeria")</div></div>
+    <div class="step-item"><div class="step-num">3</div><div>En el menú izquierdo ve a <strong>Build → Realtime Database</strong>, crea la base en modo prueba</div></div>
+    <div class="step-item"><div class="step-num">4</div><div>Ve a <strong>Configuración del proyecto ⚙ → Tus apps → Web</strong>, registra una app y copia la configuración</div></div>
+    <div class="step-item"><div class="step-num">5</div><div>Pega los valores abajo y listo</div></div>
+  </div>
+
+  <div class="setup-card" style="margin-top:16px">
+    <h3>Tu configuración Firebase</h3>
+    <div class="setup-field"><label>API Key</label><input id="cfg-apiKey" placeholder="AIzaSy..."></div>
+    <div class="setup-field"><label>Auth Domain</label><input id="cfg-authDomain" placeholder="mi-joyeria.firebaseapp.com"></div>
+    <div class="setup-field"><label>Database URL</label><input id="cfg-dbURL" placeholder="https://mi-joyeria-default-rtdb.firebaseio.com"></div>
+    <div class="setup-field"><label>Project ID</label><input id="cfg-projectId" placeholder="mi-joyeria"></div>
+    <div class="setup-field"><label>App ID</label><input id="cfg-appId" placeholder="1:123456:web:abc123"></div>
+  </div>
+
+  <button class="setup-btn" onclick="connectFirebase()">🔗 Conectar y abrir app</button>
+  <button class="setup-btn secondary" onclick="useLocalMode()">📱 Usar sin sincronización (solo este dispositivo)</button>
+  <div id="cfg-error" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="app" style="display:none">
+
+  <!-- OFFLINE BANNER -->
+  <div id="offline-bar">⚡ Sin conexión — los cambios se guardarán cuando vuelva internet</div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo"><span class="logo-gem">💎</span>Joyería</div>
+    <!-- Desktop tabs -->
+    <div class="topbar-tabs" id="desktop-tabs">
+      <div class="topbar-tab active" id="dtab-catalogo" onclick="showPage('catalogo','catalogo')">◇ Catálogo</div>
+      <div class="topbar-tab" id="dtab-movimientos" onclick="showPage('movimientos','movimientos')">⇄ Movimientos <span id="dbadge-mov" style="background:var(--green);color:#fff;font-size:10px;padding:1px 5px;border-radius:10px;font-weight:500">0</span></div>
+      <div class="topbar-tab" id="dtab-alertas" onclick="showPage('alertas','alertas')">⚠ Alertas <span id="dbadge-alert" style="background:var(--red);color:#fff;font-size:10px;padding:1px 5px;border-radius:10px;font-weight:500;display:none">0</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-dot" id="sync-dot" title="Sincronizado"></div>
+      <!-- Desktop buttons -->
+      <button class="btn-sm" onclick="openModal('mov')" style="display:none" id="desk-mov-btn">⇄ Movimiento</button>
+      <button class="btn-sm primary" onclick="openModal('prod')" style="display:none" id="desk-prod-btn">+ Producto</button>
+      <!-- Mobile chat button -->
+      <button class="icon-btn" id="chat-toggle-btn" onclick="toggleChat()" title="Asistente">💬</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+
+    <!-- MAIN AREA -->
+    <div class="main-area" id="main-area">
+
+      <!-- CATÁLOGO -->
+      <div class="page active" id="page-catalogo">
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="section-head">
+          <div class="section-title">Catálogo</div>
+          <button class="btn-sm primary" id="mobile-add-btn" onclick="openModal('prod')" style="display:flex">+ Producto</button>
+        </div>
+        <div class="search-bar">
+          <span style="font-size:16px;color:var(--text3)">🔍</span>
+          <input type="text" placeholder="Buscar producto..." oninput="searchProds(this.value)" id="search-inp">
+        </div>
+        <div class="pills-row" id="cat-pills"></div>
+        <!-- Mobile cards -->
+        <div class="prod-cards" id="prod-cards"></div>
+        <!-- Desktop table -->
+        <div class="prod-table-wrap">
+          <table>
+            <thead><tr>
+              <th>Producto</th><th>Categoría</th><th>Stock</th>
+              <th>Costo</th><th>Precio</th><th>Margen</th><th></th>
+            </tr></thead>
+            <tbody id="prod-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MOVIMIENTOS -->
+      <div class="page" id="page-movimientos">
+        <div class="section-head">
+          <div class="section-title">Movimientos</div>
+          <button class="btn-sm primary" onclick="openModal('mov')">+ Nuevo</button>
+        </div>
+        <div class="mov-card" id="mov-list"></div>
+      </div>
+
+      <!-- ALERTAS -->
+      <div class="page" id="page-alertas">
+        <div class="section-head"><div class="section-title">Alertas de Stock</div></div>
+        <div id="alert-list"></div>
+      </div>
+
+    </div><!-- /main-area -->
+
+    <!-- CHAT PANEL -->
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-topbar">
+        <div class="chat-avatar">✨</div>
+        <div>
+          <div class="chat-title">Asistente Comercial</div>
+          <div class="chat-sub">Lenguaje natural</div>
+        </div>
+        <div class="online-dot" id="chat-online"></div>
+        <button class="icon-btn" onclick="toggleChat()" style="margin-left:auto" id="chat-close-btn">✕</button>
+      </div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chips-wrap">
+        <div class="chips-label">Sugerencias</div>
+        <div class="chips-row" id="chips-row"></div>
+      </div>
+      <div class="chat-input-wrap">
+        <div class="chat-input-row">
+          <textarea class="cinput" id="chat-inp" rows="1"
+            placeholder="Ej: Vendí 2 anillos..."
+            onkeydown="handleEnter(event)"
+            oninput="autoGrow(this)"></textarea>
+          <button class="send-btn" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /workspace -->
+
+  <!-- BOTTOM NAV (mobile) -->
+  <div class="bottom-nav">
+    <div class="bnav-item active" id="bnav-catalogo" onclick="showPage('catalogo','catalogo')">
+      <div class="bnav-icon">◇</div>Catálogo
+    </div>
+    <div class="bnav-item" id="bnav-movimientos" onclick="showPage('movimientos','movimientos')">
+      <div class="bnav-icon">⇄</div>Movimientos
+    </div>
+    <div class="bnav-item" id="bnav-alertas" onclick="showPage('alertas','alertas')">
+      <div class="bnav-icon" id="alert-icon">⚠</div>Alertas
+    </div>
+    <div class="bnav-item" onclick="toggleChat()">
+      <div class="bnav-icon">💬</div>Asistente
+    </div>
+  </div>
+
+  <!-- FAB (mobile) -->
+  <button class="fab" onclick="openFabMenu()">＋</button>
+
+</div><!-- /app -->
+
+<!-- MODAL PRODUCTO -->
+<div class="overlay" id="overlay-prod" onclick="bgClose(event,'prod')">
+  <div class="modal">
+    <span class="modal-handle"></span>
+    <div class="modal-title">Nuevo Producto</div>
+    <div class="form-grid">
+      <div class="form-row"><label>ID Producto</label><input id="np-id" placeholder="JOY-001"></div>
+      <div class="form-row"><label>Categoría</label>
+        <select id="np-cat"><option>Anillos</option><option>Collares</option><option>Aretes</option><option>Pulseras</option><option>Dijes</option><option>Relojes</option><option>Otro</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Nombre / Descripción</label><input id="np-name" placeholder="Anillo Solitario 18K..."></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Material</label><input id="np-mat" placeholder="Oro, Plata..."></div>
+      <div class="form-row"><label>Quilates / Pureza</label><input id="np-qlt" placeholder="18K, 925..."></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Costo (S/)</label><input type="number" id="np-cost" placeholder="0"></div>
+      <div class="form-row"><label>Precio Venta (S/)</label><input type="number" id="np-price" placeholder="0"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Stock Inicial</label><input type="number" id="np-stock" value="0" min="0"></div>
+      <div class="form-row"><label>Stock Mínimo</label><input type="number" id="np-min" value="2" min="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn" onclick="closeModal('prod')">Cancelar</button>
+      <button class="modal-btn primary" onclick="saveProd()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOVIMIENTO -->
+<div class="overlay" id="overlay-mov" onclick="bgClose(event,'mov')">
+  <div class="modal">
+    <span class="modal-handle"></span>
+    <div class="modal-title">Registrar Movimiento</div>
+    <div class="form-row"><label>Producto</label>
+      <select id="mv-prod" onchange="onMvChange()"></select>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Tipo</label>
+        <select id="mv-type" onchange="onMvChange()">
+          <option value="entrada">📥 Entrada / Compra</option>
+          <option value="salida">📤 Salida / Venta</option>
+          <option value="ajuste+">⬆ Ajuste positivo</option>
+          <option value="ajuste-">⬇ Ajuste negativo</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Cantidad</label><input type="number" id="mv-qty" value="1" min="1"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Precio Unit. (S/)</label><input type="number" id="mv-price" placeholder="0"></div>
+      <div class="form-row"><label>Responsable</label><input id="mv-resp" placeholder="Nombre"></div>
+    </div>
+    <div class="form-row"><label>Referencia</label><input id="mv-obs" placeholder="N° Factura, nota..."></div>
+    <div class="stock-info-box" id="mv-info"></div>
+    <div class="modal-footer">
+      <button class="modal-btn" onclick="closeModal('mov')">Cancelar</button>
+      <button class="modal-btn primary" onclick="saveMov()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONFIG & FIREBASE SETUP
+// ══════════════════════════════════════════════════════
+let db = null; // Firebase database ref
+let localMode = false;
+const LOCAL_KEY = 'joyeria_local_v1';
+
+function connectFirebase() {
+  const cfg = {
+    apiKey: document.getElementById('cfg-apiKey').value.trim(),
+    authDomain: document.getElementById('cfg-authDomain').value.trim(),
+    databaseURL: document.getElementById('cfg-dbURL').value.trim(),
+    projectId: document.getElementById('cfg-projectId').value.trim(),
+    appId: document.getElementById('cfg-appId').value.trim(),
+  };
+  if(!cfg.apiKey || !cfg.databaseURL) {
+    showCfgError('Por favor completa al menos el API Key y Database URL.');
+    return;
+  }
+  try {
+    if(firebase.apps.length) firebase.app().delete();
+    firebase.initializeApp(cfg);
+    db = firebase.database();
+    // Test connection
+    db.ref('.info/connected').once('value', snap => {
+      localStorage.setItem('joyeria_firebase_cfg', JSON.stringify(cfg));
+      startApp();
+    }, err => {
+      showCfgError('No se pudo conectar. Verifica tu configuración: ' + err.message);
+    });
+  } catch(e) {
+    showCfgError('Error de configuración: ' + e.message);
+  }
+}
+
+function useLocalMode() {
+  localMode = true;
+  startApp();
+}
+
+function showCfgError(msg) {
+  const el = document.getElementById('cfg-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function tryAutoConnect() {
+  const saved = localStorage.getItem('joyeria_firebase_cfg');
+  if(saved) {
+    try {
+      const cfg = JSON.parse(saved);
+      if(firebase.apps.length === 0) firebase.initializeApp(cfg);
+      db = firebase.database();
+      startApp();
+      return;
+    } catch(e) {}
+  }
+  document.getElementById('setup-screen').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════════
+// DATA LAYER (Firebase + Local fallback)
+// ══════════════════════════════════════════════════════
+let localData = { products: [], movements: [] };
+
+function getLocalData() {
+  try { const r = localStorage.getItem(LOCAL_KEY); if(r) return JSON.parse(r); } catch(e){}
+  return { products: [], movements: [] };
+}
+function saveLocal() { localStorage.setItem(LOCAL_KEY, JSON.stringify(localData)); }
+
+// Firebase listeners
+function setupFirebaseListeners() {
+  if(!db) return;
+  setSyncDot('syncing');
+  db.ref('products').on('value', snap => {
+    const val = snap.val();
+    localData.products = val ? Object.values(val) : [];
+    renderAll();
+    setSyncDot('ok');
+  });
+  db.ref('movements').on('value', snap => {
+    const val = snap.val();
+    localData.movements = val ? Object.values(val) : [];
+    renderAll();
+  });
+  db.ref('.info/connected').on('value', snap => {
+    const connected = snap.val();
+    document.getElementById('offline-bar').classList.toggle('show', !connected);
+    setSyncDot(connected ? 'ok' : 'offline');
+  });
+}
+
+function setSyncDot(state) {
+  const d = document.getElementById('sync-dot');
+  d.className = 'sync-dot' + (state==='syncing'?' syncing':state==='offline'?' offline':'');
+  d.title = state==='ok'?'Sincronizado':state==='syncing'?'Sincronizando...':'Sin conexión';
+}
+
+// CRUD
+function addProduct(p) {
+  if(db) db.ref('products/'+p.id).set(p);
+  else { localData.products.push(p); saveLocal(); renderAll(); }
+}
+function addMovement(m) {
+  if(db) { const ref = db.ref('movements').push(); m.id = ref.key; ref.set(m); }
+  else { m.id = Date.now().toString(); localData.movements.push(m); saveLocal(); renderAll(); }
+}
+
+function getStock(prodId) {
+  return localData.movements.reduce((acc,m) => {
+    if(m.prodId !== prodId) return acc;
+    return (m.type==='entrada'||m.type==='ajuste+') ? acc+m.qty : acc-m.qty;
+  }, 0);
+}
+function getProd(id) { return localData.products.find(p=>p.id===id); }
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function fmt(n) { return Number(n).toLocaleString('es-PE',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fmtM(n) { return 'S/ '+fmt(n); }
+function nowTime() { return new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}); }
+
+// ══════════════════════════════════════════════════════
+// APP INIT
+// ══════════════════════════════════════════════════════
+function startApp() {
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  // Show desktop buttons
+  document.getElementById('desk-mov-btn').style.display='flex';
+  document.getElementById('desk-prod-btn').style.display='flex';
+  if(localMode) {
+    localData = getLocalData();
+    renderAll();
+  } else {
+    setupFirebaseListeners();
+  }
+  initChat();
+  handleResize();
+  window.addEventListener('resize', handleResize);
+}
+
+function handleResize() {
+  const isDesktop = window.innerWidth >= 900;
+  document.getElementById('chat-close-btn').style.display = isDesktop ? 'none' : 'flex';
+  document.getElementById('chat-toggle-btn').style.display = isDesktop ? 'none' : 'flex';
+  if(isDesktop) document.getElementById('chat-panel').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════
+let activeCat = 'Todos';
+let searchQ = '';
+
+function renderAll() {
+  renderKPIs();
+  renderCatPills();
+  renderProds();
+  renderMovements();
+  renderAlerts();
+  renderBadges();
+}
+
+function renderKPIs() {
+  const total = localData.products.length;
+  const totalStock = localData.products.reduce((a,p)=>a+Math.max(0,getStock(p.id)),0);
+  const valInv = localData.products.reduce((a,p)=>a+Math.max(0,getStock(p.id))*p.cost,0);
+  const ventas = localData.movements.filter(m=>m.type==='salida').reduce((a,m)=>a+m.qty*(m.price||0),0);
+  const low = localData.products.filter(p=>getStock(p.id)<p.minStock).length;
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Productos</div><div class="kpi-value">${total}</div><div class="kpi-sub">${totalStock} u. en stock</div></div>
+    <div class="kpi blue"><div class="kpi-label">Valor Inv.</div><div class="kpi-value" style="font-size:20px">${fmtM(valInv)}</div><div class="kpi-sub">A costo</div></div>
+    <div class="kpi green"><div class="kpi-label">Ventas</div><div class="kpi-value" style="font-size:20px">${fmtM(ventas)}</div><div class="kpi-sub">${localData.movements.filter(m=>m.type==='salida').length} transac.</div></div>
+    <div class="kpi ${low>0?'red':''}"><div class="kpi-label">Stock Bajo</div><div class="kpi-value">${low}</div><div class="kpi-sub">${low>0?'Reponer':'Todo OK ✓'}</div></div>`;
+}
+
+function renderCatPills() {
+  const cats = ['Todos', ...new Set(localData.products.map(p=>p.cat))];
+  document.getElementById('cat-pills').innerHTML = cats.map(c=>
+    `<button class="pill${activeCat===c?' active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+}
+function setCat(c) { activeCat=c; renderCatPills(); renderProds(); }
+function searchProds(q) { searchQ=q; renderProds(); }
+
+function filterProds() {
+  return localData.products.filter(p=>{
+    const mC = activeCat==='Todos'||p.cat===activeCat;
+    const mQ = !searchQ||p.name.toLowerCase().includes(searchQ.toLowerCase())||p.id.toLowerCase().includes(searchQ.toLowerCase());
+    return mC && mQ;
+  });
+}
+
+function renderProds() {
+  const prods = filterProds();
+  const stCls = s => s<=0?'out':s<2?'warn':'ok'; // simple heuristic for display
+  const stClsProd = p => { const s=getStock(p.id); return s<=0?'out':s<p.minStock?'warn':'ok'; };
+  const marCls = m => m>=45?'high':m>=25?'mid':'low';
+
+  // MOBILE CARDS
+  if(!prods.length) {
+    document.getElementById('prod-cards').innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Sin productos todavía.<br>Usa + Producto para agregar.</div></div>';
+    document.getElementById('prod-tbody').innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Sin productos</div></div></td></tr>';
+    return;
+  }
+
+  document.getElementById('prod-cards').innerHTML = prods.map(p=>{
+    const st=getStock(p.id); const cls=stClsProd(p);
+    const margin=p.price>0?Math.round((p.price-p.cost)/p.price*100):0;
+    return `<div class="prod-card">
+      <div class="prod-card-top">
+        <div>
+          <div class="prod-card-name">${p.name}</div>
+          <div class="prod-card-meta">${p.id} · ${p.material||'—'} ${p.quilates||''}</div>
+        </div>
+        <span class="cat-tag">${p.cat}</span>
+      </div>
+      <div class="prod-card-bottom">
+        <span class="stock-num ${cls}">Stock: ${st}</span>
+        <span style="font-size:11px;color:var(--text3)">mín.${p.minStock}</span>
+        <span class="margin-badge ${marCls(margin)}">${margin}%</span>
+        <div class="prod-card-actions">
+          <button class="icon-btn" onclick="quickMov('${p.id}','entrada')" title="Entrada">↓</button>
+          <button class="icon-btn" onclick="quickMov('${p.id}','salida')" title="Venta">↑</button>
+        </div>
+        <div style="margin-left:auto;font-size:12px;color:var(--text2)">${fmtM(p.price)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // DESKTOP TABLE
+  document.getElementById('prod-tbody').innerHTML = prods.map(p=>{
+    const st=getStock(p.id); const cls=stClsProd(p);
+    const margin=p.price>0?Math.round((p.price-p.cost)/p.price*100):0;
+    return `<tr>
+      <td><div style="font-weight:500">${p.name}</div><div style="font-size:11px;color:var(--text3)">${p.id} · ${p.material||''} ${p.quilates||''}</div></td>
+      <td><span class="cat-tag">${p.cat}</span></td>
+      <td><span class="stock-num ${cls}">${st}</span><div style="font-size:10px;color:var(--text3)">mín.${p.minStock}</div></td>
+      <td style="font-weight:500">${fmtM(p.cost)}</td>
+      <td style="font-weight:500">${fmtM(p.price)}</td>
+      <td><span class="margin-badge ${marCls(margin)}">${margin}%</span></td>
+      <td><div style="display:flex;gap:6px">
+        <button class="icon-btn" onclick="quickMov('${p.id}','entrada')">↓</button>
+        <button class="icon-btn" onclick="quickMov('${p.id}','salida')">↑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMovements() {
+  const movs = [...localData.movements].reverse().slice(0,40);
+  const el = document.getElementById('mov-list');
+  if(!movs.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-msg">Sin movimientos aún</div></div>';return;}
+  el.innerHTML = movs.map(m=>{
+    const p=getProd(m.prodId)||{name:m.prodId};
+    const isIn=m.type==='entrada'||m.type==='ajuste+';
+    const cls=isIn?'in':m.type.startsWith('ajuste')?'adj':'out';
+    const icon=m.type==='entrada'?'📦':m.type==='salida'?'🛍️':'⚙️';
+    const sign=isIn?'+':'-';
+    const lbl={entrada:'Entrada',salida:'Venta','ajuste+':'Ajuste +','ajuste-':'Ajuste −'}[m.type]||m.type;
+    const tot=m.qty*(m.price||0);
+    return `<div class="mov-row">
+      <div class="mov-dot ${cls}">${icon}</div>
+      <div class="mov-body">
+        <div class="mov-title">${p.name}</div>
+        <div class="mov-detail">${lbl} · ${m.date}${m.resp&&m.resp!=='—'?' · '+m.resp:''}${m.obs?' · '+m.obs:''}</div>
+      </div>
+      <div class="mov-right">
+        <div class="mov-qty ${cls}">${sign}${m.qty} u.</div>
+        ${tot>0?`<div class="mov-total">${fmtM(tot)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAlerts() {
+  const lows = localData.products.filter(p=>getStock(p.id)<p.minStock && getStock(p.id)>0);
+  const outs = localData.products.filter(p=>getStock(p.id)<=0);
+  const el = document.getElementById('alert-list');
+  if(!lows.length&&!outs.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-msg">Sin alertas. ¡Todo en orden!</div></div>';return;}
+  el.innerHTML=[
+    ...outs.map(p=>`<div class="alert-item crit"><div class="alert-icon">⚠️</div><div class="alert-body"><div class="alert-title">AGOTADO — ${p.name}</div><div class="alert-meta">${p.id} · Stock: 0 · Mín: ${p.minStock}</div></div><button class="btn-sm primary" onclick="quickMov('${p.id}','entrada')">Reponer</button></div>`),
+    ...lows.map(p=>`<div class="alert-item warn"><div class="alert-icon">⬇️</div><div class="alert-body"><div class="alert-title">Stock bajo — ${p.name}</div><div class="alert-meta">${p.id} · Stock: ${getStock(p.id)} · Mín: ${p.minStock}</div></div><button class="btn-sm" onclick="quickMov('${p.id}','entrada')">Reponer</button></div>`)
+  ].join('');
+}
+
+function renderBadges() {
+  const low=localData.products.filter(p=>getStock(p.id)<p.minStock).length;
+  const ba1=document.getElementById('dbadge-alert');
+  const alertIcon=document.getElementById('alert-icon');
+  if(ba1){ba1.textContent=low;ba1.style.display=low?'':'none';}
+  if(alertIcon) alertIcon.textContent=low>0?'🚨':'⚠';
+  const dm=document.getElementById('dbadge-mov');
+  if(dm) dm.textContent=localData.movements.length;
+}
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+let currentPage = 'catalogo';
+function showPage(name) {
+  ['catalogo','movimientos','alertas'].forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('active',p===name);
+    const dt=document.getElementById('dtab-'+p); if(dt) dt.classList.toggle('active',p===name);
+    const bn=document.getElementById('bnav-'+p); if(bn) bn.classList.toggle('active',p===name);
+  });
+  currentPage=name;
+  if(name==='movimientos') renderMovements();
+  if(name==='alertas') renderAlerts();
+}
+
+function toggleChat() {
+  document.getElementById('chat-panel').classList.toggle('open');
+}
+
+function openFabMenu() {
+  const choice = confirm('¿Qué deseas registrar?\n\nAceptar = Nuevo Producto\nCancelar = Nuevo Movimiento');
+  if(choice) openModal('prod'); else openModal('mov');
+}
+
+// ══════════════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════════════
+function openModal(type, data={}) {
+  if(type==='prod') {
+    ['id','name','mat','qlt'].forEach(f=>document.getElementById('np-'+f).value='');
+    ['cost','price'].forEach(f=>document.getElementById('np-'+f).value='');
+    document.getElementById('np-stock').value=0;
+    document.getElementById('np-min').value=2;
+    document.getElementById('overlay-prod').classList.add('open');
+  }
+  if(type==='mov') {
+    const sel=document.getElementById('mv-prod');
+    sel.innerHTML=localData.products.map(p=>`<option value="${p.id}">${p.id} — ${p.name}</option>`).join('');
+    if(!sel.options.length){alert('Primero agrega productos al catálogo.');return;}
+    if(data.id) for(let i=0;i<sel.options.length;i++) if(sel.options[i].value===data.id){sel.selectedIndex=i;break;}
+    if(data.type) document.getElementById('mv-type').value=data.type;
+    document.getElementById('mv-qty').value=1;
+    document.getElementById('mv-resp').value='';
+    document.getElementById('mv-obs').value='';
+    onMvChange();
+    document.getElementById('overlay-mov').classList.add('open');
+  }
+}
+function closeModal(type){document.getElementById('overlay-'+type).classList.remove('open');}
+function bgClose(e,type){if(e.target===e.currentTarget)closeModal(type);}
+
+function onMvChange() {
+  const p=getProd(document.getElementById('mv-prod').value);
+  if(!p)return;
+  const t=document.getElementById('mv-type').value;
+  document.getElementById('mv-price').value=t==='salida'?p.price:p.cost;
+  const st=getStock(p.id);
+  document.getElementById('mv-info').textContent=`"${p.name}" — Stock actual: ${st} u. (mín. ${p.minStock})`;
+}
+
+function saveProd() {
+  const id=document.getElementById('np-id').value.trim();
+  const name=document.getElementById('np-name').value.trim();
+  if(!id||!name){alert('ID y nombre son obligatorios.');return;}
+  if(getProd(id)){alert('Ya existe un producto con ese ID.');return;}
+  const stock=parseInt(document.getElementById('np-stock').value)||0;
+  const cost=parseFloat(document.getElementById('np-cost').value)||0;
+  const p={id,name,cat:document.getElementById('np-cat').value,material:document.getElementById('np-mat').value||'—',quilates:document.getElementById('np-qlt').value||'—',cost,price:parseFloat(document.getElementById('np-price').value)||0,minStock:parseInt(document.getElementById('np-min').value)||2};
+  addProduct(p);
+  if(stock>0) addMovement({prodId:id,type:'entrada',qty:stock,price:cost,resp:'Sistema',obs:'Stock inicial',date:todayStr()});
+  closeModal('prod');
+  addBotMsg(`Producto <strong>${name}</strong> agregado. Stock inicial: <strong>${stock}</strong> u.`);
+}
+
+function saveMov() {
+  const prodId=document.getElementById('mv-prod').value;
+  const type=document.getElementById('mv-type').value;
+  const qty=parseInt(document.getElementById('mv-qty').value)||0;
+  const price=parseFloat(document.getElementById('mv-price').value)||0;
+  if(!prodId||qty<=0){alert('Completa todos los campos.');return;}
+  const p=getProd(prodId);
+  const st=getStock(prodId);
+  if((type==='salida'||type==='ajuste-')&&st<qty) if(!confirm(`Stock insuficiente (${st} u.). ¿Registrar igual?`))return;
+  addMovement({prodId,type,qty,price,resp:document.getElementById('mv-resp').value||'—',obs:document.getElementById('mv-obs').value||'',date:todayStr()});
+  closeModal('mov');
+  const lbl={entrada:'entrada de',salida:'venta de','ajuste+':'ajuste en','ajuste-':'ajuste en'}[type]||type;
+  addBotMsg(`Registrada ${lbl} <strong>${qty} u.</strong> de "<strong>${p.name}</strong>". Stock: <strong>${getStock(prodId)} u.</strong>`);
+}
+
+function quickMov(id,type){openModal('mov',{id,type});}
+
+// ══════════════════════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════════════════════
+const CHIPS_LIST = ['¿Qué hay bajo stock?','Valor del inventario','Ver ventas','Agregar producto','¿Qué está agotado?','Productos más vendidos'];
+let chatHistory=[];
+
+function initChat() {
+  document.getElementById('chips-row').innerHTML=CHIPS_LIST.map(c=>
+    `<button class="chip" onclick="useChip(\`${c}\`)">${c}</button>`).join('');
+  addBotMsg('¡Hola! Soy tu asistente. El inventario está listo y en blanco. Empieza agregando tus productos 💎');
+}
+function useChip(t){document.getElementById('chat-inp').value=t;sendChat();}
+
+function addBotMsg(html) {
+  const el=document.getElementById('chat-msgs');
+  const typing=document.createElement('div');
+  typing.className='bw bot';
+  typing.innerHTML='<div class="typing-b"><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>';
+  el.appendChild(typing);el.scrollTop=el.scrollHeight;
+  setTimeout(()=>{
+    typing.remove();
+    const d=document.createElement('div');
+    d.className='bw bot';
+    d.innerHTML=`<div class="bubble">${html}</div><div class="btime">${nowTime()}</div>`;
+    el.appendChild(d);el.scrollTop=el.scrollHeight;
+  },500);
+}
+function addUserMsg(text){
+  const el=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.className='bw user';
+  d.innerHTML=`<div class="bubble">${text.replace(/</g,'&lt;')}</div><div class="btime">${nowTime()}</div>`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+function mdB(s){return s.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');}
+
+async function sendChat(){
+  const inp=document.getElementById('chat-inp');
+  const text=inp.value.trim();if(!text)return;
+  inp.value='';inp.style.height='auto';
+  addUserMsg(text);
+  chatHistory.push({role:'user',content:text});
+  const snap=buildSnap();
+  const sys=`Eres un asistente comercial de joyería. Inventario actual:\n${snap}\n\nReglas:\n- Responde en español, conciso y amigable.\n- Usa datos reales.\n- Si el usuario menciona venta/entrada de un producto identificable, incluye al final: [EXEC:tipo|prodId|cantidad]\n- Si piden abrir formulario: [OPEN:producto] o [OPEN:movimiento|prodId]\n- Usa **negrita** para datos importantes.\n- No uses listas markdown con guiones.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:chatHistory.slice(-8)})});
+    const data=await res.json();
+    let reply=data.content?.[0]?.text||'No pude procesar eso.';
+    const execM=reply.match(/\[EXEC:([^\]]+)\]/);
+    const openM=reply.match(/\[OPEN:([^\]]+)\]/);
+    let clean=reply.replace(/\[EXEC:[^\]]+\]/g,'').replace(/\[OPEN:[^\]]+\]/g,'').trim();
+    chatHistory.push({role:'assistant',content:reply});
+    addBotMsg(mdB(clean));
+    if(execM){
+      const [tipo,prodId,cantStr]=execM[1].split('|');
+      const cant=parseInt(cantStr)||1;
+      const p=localData.products.find(pr=>pr.id===prodId||pr.name.toLowerCase().includes((prodId||'').toLowerCase()));
+      if(p)setTimeout(()=>{addMovement({prodId:p.id,type:tipo,qty:cant,price:tipo==='salida'?p.price:p.cost,resp:'Asistente',obs:'Vía chat',date:todayStr()});},700);
+    }
+    if(openM){const pts=openM[1].split('|');setTimeout(()=>openModal(pts[0]==='producto'?'prod':'mov',{id:pts[1]||''}),700);}
+  }catch(e){addBotMsg('Error de conexión. Verifica tu internet.');}
+}
+
+function buildSnap(){
+  const lines=localData.products.map(p=>{const st=getStock(p.id);return `${p.id}|${p.name}|${p.cat}|Stock:${st}|Mín:${p.minStock}|Costo:${p.cost}|Venta:${p.price}|${st<=0?'AGOTADO':st<p.minStock?'BAJO':'OK'}`;}).join('\n');
+  const val=localData.products.reduce((a,p)=>a+Math.max(0,getStock(p.id))*p.cost,0);
+  const vtas=localData.movements.filter(m=>m.type==='salida').reduce((a,m)=>a+m.qty*(m.price||0),0);
+  return `${lines||'(sin productos)'}\nValor inv: S/${fmt(val)} | Ventas: S/${fmt(vtas)} | Movs: ${localData.movements.length}`;
+}
+
+function handleEnter(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px';}
+
+// ══════════════════════════════════════════════════════
+// START
+// ══════════════════════════════════════════════════════
+window.addEventListener('load', tryAutoConnect);
+</script>
+</body>
+</html>
