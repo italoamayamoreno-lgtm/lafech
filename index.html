@@ -7,23 +7,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Joyería">
-<meta name="theme-color" content="#C9A84C">
-<title>💎 Joyería — Inventario</title>
+<meta name="theme-color" content="#8B1A3A">
+<title>💎 LaFech — Inventario</title>
 
 <!-- PWA manifest inline -->
 <script>
 const manifestData = {
-  name: "Joyería Inventario",
-  short_name: "Joyería",
-  description: "Asistente comercial para tu joyería",
+  name: "LaFech Inventario",
+  short_name: "LaFech",
+  description: "Sistema de inventario LaFech",
   start_url: ".",
   display: "standalone",
   background_color: "#F8F6F1",
   theme_color: "#C9A84C",
   orientation: "portrait-primary",
   icons: [
-    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23C9A84C'/><text x='96' y='130' font-size='100' text-anchor='middle'>💎</text></svg>", sizes: "192x192", type: "image/svg+xml" },
-    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23C9A84C'/><text x='256' y='350' font-size='280' text-anchor='middle'>💎</text></svg>", sizes: "512x512", type: "image/svg+xml" }
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%238B1A3A'/><text x='96' y='130' font-size='100' text-anchor='middle'>💎</text></svg>", sizes: "192x192", type: "image/svg+xml" },
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%238B1A3A'/><text x='256' y='350' font-size='280' text-anchor='middle'>💎</text></svg>", sizes: "512x512", type: "image/svg+xml" }
   ]
 };
 const blob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
@@ -43,10 +43,12 @@ document.head.appendChild(link);
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --gold:#C9A84C;--gold-light:#F5EDD6;--gold-dark:#8B6914;--gold-mid:#E8C97A;
-  --bg:#F8F6F1;--surface:#FFFFFF;--surface2:#F3F0E8;--surface3:#EDE9DF;
-  --border:#E2DBCC;--border2:#CEC5B0;
-  --text:#1A1918;--text2:#6B6357;--text3:#A09080;
+  --gold:#C9A84C;--gold-light:#FDF0F5;--gold-dark:#8B1A3A;--gold-mid:#E8A0B8;
+  --primary:#8B1A3A;--primary-light:#F5D0DC;--primary-mid:#C4506E;
+  --rose:#D4547A;--rose-light:#FCE8EF;--rose-mid:#E88AA8;
+  --bg:#FDF5F8;--surface:#FFFFFF;--surface2:#FAF0F4;--surface3:#F5E0EA;
+  --border:#EDD0DC;--border2:#DEB0C4;
+  --text:#2A0A14;--text2:#7A4055;--text3:#B08090;
   --green:#2A6049;--green-bg:#ECF4EF;--green-light:#D4EBE0;
   --red:#B03030;--red-bg:#FBEEEE;--red-light:#F5CECE;
   --amber:#8A6010;--amber-bg:#FDF4E3;
@@ -333,7 +335,7 @@ textarea.cinput::placeholder{color:var(--text3)}
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo"><span class="logo-gem">💎</span>Joyería</div>
+    <div class="logo"><span class="logo-gem">💎</span>LaFech</div>
     <!-- Desktop tabs -->
     <div class="topbar-tabs" id="desktop-tabs">
       <div class="topbar-tab active" id="dtab-catalogo" onclick="showPage('catalogo','catalogo')">◇ Catálogo</div>
@@ -343,6 +345,8 @@ textarea.cinput::placeholder{color:var(--text3)}
     <div class="topbar-right">
       <div class="sync-dot" id="sync-dot" title="Sincronizado"></div>
       <!-- Desktop buttons -->
+      <button class="btn-sm" onclick="exportClients()" style="display:none;border-color:var(--green);color:var(--green)" id="desk-export-btn">↓ Exportar clientes</button>
+      <button class="btn-sm" onclick="confirmClearAll()" style="display:none;border-color:var(--red);color:var(--red)" id="desk-clear-btn">🗑 Limpiar todo</button>
       <button class="btn-sm" onclick="openModal('mov')" style="display:none" id="desk-mov-btn">⇄ Movimiento</button>
       <button class="btn-sm primary" onclick="openModal('prod')" style="display:none" id="desk-prod-btn">+ Producto</button>
       <!-- Mobile chat button -->
@@ -503,6 +507,14 @@ textarea.cinput::placeholder{color:var(--text3)}
       <div class="form-row"><label>Responsable</label><input id="mv-resp" placeholder="Nombre"></div>
     </div>
     <div class="form-row"><label>Referencia</label><input id="mv-obs" placeholder="N° Factura, nota..."></div>
+    <div id="mv-client-section" style="display:none;margin-top:4px;padding:12px;background:var(--surface2);border-radius:var(--r-sm);border:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-bottom:10px">Datos del Cliente (opcional)</div>
+      <div class="form-row"><label>Nombre del Cliente</label><input id="mv-client-name" placeholder="Ej: María García"></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Teléfono</label><input id="mv-client-phone" placeholder="Ej: 999888777" type="tel"></div>
+        <div class="form-row"><label>Correo</label><input id="mv-client-email" placeholder="correo@email.com" type="email"></div>
+      </div>
+    </div>
     <div class="stock-info-box" id="mv-info"></div>
     <div class="modal-footer">
       <button class="modal-btn" onclick="closeModal('mov')">Cancelar</button>
@@ -644,6 +656,8 @@ function startApp() {
   // Show desktop buttons
   document.getElementById('desk-mov-btn').style.display='flex';
   document.getElementById('desk-prod-btn').style.display='flex';
+  document.getElementById('desk-export-btn').style.display='flex';
+  document.getElementById('desk-clear-btn').style.display='flex';
   if(localMode) {
     localData = getLocalData();
     renderAll();
@@ -735,8 +749,9 @@ function renderProds() {
         <span style="font-size:11px;color:var(--text3)">mín.${p.minStock}</span>
         <span class="margin-badge ${marCls(margin)}">${margin}%</span>
         <div class="prod-card-actions">
-          <button class="icon-btn" onclick="quickMov('${p.id}','entrada')" title="Entrada">↓</button>
-          <button class="icon-btn" onclick="quickMov('${p.id}','salida')" title="Venta">↑</button>
+          <button class="icon-btn" onclick="quickMov('${p.id}','entrada')" title="Entrada" style="color:var(--green)">↓</button>
+          <button class="icon-btn" onclick="quickMov('${p.id}','salida')" title="Venta" style="color:var(--primary)">↑</button>
+          <button class="icon-btn" onclick="confirmDeleteProd('${p.id}')" title="Eliminar" style="color:var(--red)">✕</button>
         </div>
         <div style="margin-left:auto;font-size:12px;color:var(--text2)">${fmtM(p.price)}</div>
       </div>
@@ -778,7 +793,7 @@ function renderMovements() {
       <div class="mov-dot ${cls}">${icon}</div>
       <div class="mov-body">
         <div class="mov-title">${p.name}</div>
-        <div class="mov-detail">${lbl} · ${m.date}${m.resp&&m.resp!=='—'?' · '+m.resp:''}${m.obs?' · '+m.obs:''}</div>
+        <div class="mov-detail">${lbl} · ${m.date}${m.resp&&m.resp!=='—'?' · '+m.resp:''}${m.obs?' · '+m.obs:''}${m.clientName?' · 👤 '+m.clientName:''}</div>
       </div>
       <div class="mov-right">
         <div class="mov-qty ${cls}">${sign}${m.qty} u.</div>
@@ -853,6 +868,9 @@ function openModal(type, data={}) {
     document.getElementById('mv-qty').value=1;
     document.getElementById('mv-resp').value='';
     document.getElementById('mv-obs').value='';
+    document.getElementById('mv-client-name').value='';
+    document.getElementById('mv-client-phone').value='';
+    document.getElementById('mv-client-email').value='';
     onMvChange();
     document.getElementById('overlay-mov').classList.add('open');
   }
@@ -867,6 +885,9 @@ function onMvChange() {
   document.getElementById('mv-price').value=t==='salida'?p.price:p.cost;
   const st=getStock(p.id);
   document.getElementById('mv-info').textContent=`"${p.name}" — Stock actual: ${st} u. (mín. ${p.minStock})`;
+  // Show client section only for sales
+  const clientSec = document.getElementById('mv-client-section');
+  if(clientSec) clientSec.style.display = t==='salida' ? 'block' : 'none';
 }
 
 function saveProd() {
@@ -892,13 +913,76 @@ function saveMov() {
   const p=getProd(prodId);
   const st=getStock(prodId);
   if((type==='salida'||type==='ajuste-')&&st<qty) if(!confirm(`Stock insuficiente (${st} u.). ¿Registrar igual?`))return;
-  addMovement({prodId,type,qty,price,resp:document.getElementById('mv-resp').value||'—',obs:document.getElementById('mv-obs').value||'',date:todayStr()});
+  const mov = {prodId,type,qty,price,resp:document.getElementById('mv-resp').value||'—',obs:document.getElementById('mv-obs').value||'',date:todayStr()};
+  if(type==='salida') {
+    const cn = document.getElementById('mv-client-name').value.trim();
+    if(cn) mov.clientName = cn;
+    const cp = document.getElementById('mv-client-phone').value.trim();
+    if(cp) mov.clientPhone = cp;
+    const ce = document.getElementById('mv-client-email').value.trim();
+    if(ce) mov.clientEmail = ce;
+  }
+  addMovement(mov);
   closeModal('mov');
   const lbl={entrada:'entrada de',salida:'venta de','ajuste+':'ajuste en','ajuste-':'ajuste en'}[type]||type;
   addBotMsg(`Registrada ${lbl} <strong>${qty} u.</strong> de "<strong>${p.name}</strong>". Stock: <strong>${getStock(prodId)} u.</strong>`);
 }
 
 function quickMov(id,type){openModal('mov',{id,type});}
+
+function confirmDeleteProd(id) {
+  const p = getProd(id);
+  if(!p) return;
+  if(!confirm('¿Eliminar "' + p.name + '" del catálogo?\n\nEsta acción no se puede deshacer.')) return;
+  if(db) {
+    db.ref('products/' + id).remove();
+    // Remove associated movements
+    localData.movements.filter(m=>m.prodId===id).forEach(m => {
+      if(m.id) db.ref('movements/' + m.id).remove();
+    });
+  } else {
+    localData.products = localData.products.filter(p=>p.id!==id);
+    localData.movements = localData.movements.filter(m=>m.prodId!==id);
+    saveLocal(); renderAll();
+  }
+}
+
+function confirmClearAll() {
+  if(!confirm('⚠️ ¿Limpiar TODO el inventario?\n\nSe eliminarán todos los productos y movimientos.\nEsta acción NO se puede deshacer.')) return;
+  if(!confirm('¿Estás seguro? Esta es tu segunda confirmación.')) return;
+  if(db) {
+    db.ref('products').remove();
+    db.ref('movements').remove();
+  } else {
+    localData.products = [];
+    localData.movements = [];
+    saveLocal(); renderAll();
+  }
+}
+
+function exportClients() {
+  // Build client list from sales movements
+  const sales = localData.movements.filter(m => m.type === 'salida' && m.clientName);
+  if(!sales.length) {
+    alert('No hay datos de clientes aún. Agrega el nombre del cliente al registrar ventas.');
+    return;
+  }
+  const rows = [['Fecha','Producto','Cantidad','Precio Unit (S/)','Total (S/)','Cliente','Teléfono','Correo','Referencia']];
+  sales.forEach(m => {
+    const p = getProd(m.prodId)||{name:m.prodId};
+    rows.push([
+      m.date, p.name, m.qty, m.price||0,
+      (m.qty*(m.price||0)).toFixed(2),
+      m.clientName||'', m.clientPhone||'', m.clientEmail||'', m.obs||''
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='LaFech_Clientes_'+todayStr()+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
 
 // ══════════════════════════════════════════════════════
 // CHAT
