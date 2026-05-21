@@ -749,8 +749,7 @@ function renderProds() {
         <span style="font-size:11px;color:var(--text3)">mín.${p.minStock}</span>
         <span class="margin-badge ${marCls(margin)}">${margin}%</span>
         <div class="prod-card-actions">
-          <button class="icon-btn" onclick="quickMov('${p.id}','entrada')" title="Entrada" style="color:var(--green)">↓</button>
-          <button class="icon-btn" onclick="quickMov('${p.id}','salida')" title="Venta" style="color:var(--primary)">↑</button>
+          <button class="icon-btn" onclick="openEditModal('${p.id}')" title="Editar" style="color:var(--primary)">✏️</button>
           <button class="icon-btn" onclick="confirmDeleteProd('${p.id}')" title="Eliminar" style="color:var(--red)">✕</button>
         </div>
         <div style="margin-left:auto;font-size:12px;color:var(--text2)">${fmtM(p.price)}</div>
@@ -758,7 +757,6 @@ function renderProds() {
     </div>`;
   }).join('');
 
-  // DESKTOP TABLE
   document.getElementById('prod-tbody').innerHTML = prods.map(p=>{
     const st=getStock(p.id); const cls=stClsProd(p);
     const margin=p.price>0?Math.round((p.price-p.cost)/p.price*100):0;
@@ -770,8 +768,8 @@ function renderProds() {
       <td style="font-weight:500">${fmtM(p.price)}</td>
       <td><span class="margin-badge ${marCls(margin)}">${margin}%</span></td>
       <td><div style="display:flex;gap:6px">
-        <button class="icon-btn" onclick="quickMov('${p.id}','entrada')">↓</button>
-        <button class="icon-btn" onclick="quickMov('${p.id}','salida')">↑</button>
+        <button class="icon-btn" onclick="openEditModal('${p.id}')" title="Editar" style="color:var(--primary)">✏️</button>
+        <button class="icon-btn" onclick="confirmDeleteProd('${p.id}')" title="Eliminar" style="color:var(--red)">✕</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1061,6 +1059,74 @@ function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollH
 // START
 // ══════════════════════════════════════════════════════
 window.addEventListener('load', tryAutoConnect);
+
+function openEditModal(id) {
+  const p = getProd(id);
+  if(!p) return;
+  document.getElementById('ep-id-orig').value = p.id;
+  document.getElementById('ep-id').value = p.id;
+  document.getElementById('ep-name').value = p.name||'';
+  document.getElementById('ep-mat').value = p.material||'';
+  document.getElementById('ep-qlt').value = p.quilates||'';
+  document.getElementById('ep-cost').value = p.cost||0;
+  document.getElementById('ep-price').value = p.price||0;
+  document.getElementById('ep-min').value = p.minStock||2;
+  const sel = document.getElementById('ep-cat');
+  for(let i=0;i<sel.options.length;i++) if(sel.options[i].value===p.cat){sel.selectedIndex=i;break;}
+  document.getElementById('overlay-edit').classList.add('open');
+}
+
+function saveEdit() {
+  const origId = document.getElementById('ep-id-orig').value;
+  const p = getProd(origId);
+  if(!p) return;
+  p.name = document.getElementById('ep-name').value.trim()||p.name;
+  p.cat = document.getElementById('ep-cat').value;
+  p.material = document.getElementById('ep-mat').value||'—';
+  p.quilates = document.getElementById('ep-qlt').value||'—';
+  p.cost = parseFloat(document.getElementById('ep-cost').value)||0;
+  p.price = parseFloat(document.getElementById('ep-price').value)||0;
+  p.minStock = parseInt(document.getElementById('ep-min').value)||2;
+  if(db) {
+    db.ref('products/'+origId).set(p);
+  } else {
+    const idx = localData.products.findIndex(x=>x.id===origId);
+    if(idx>=0) localData.products[idx]=p;
+    saveLocal(); renderAll();
+  }
+  closeModal('edit');
+  addBotMsg('Producto <strong>'+p.name+'</strong> actualizado correctamente.');
+}
+
+
+<!-- MODAL EDITAR PRODUCTO -->
+<div class="overlay" id="overlay-edit" onclick="bgClose(event,'edit')">
+  <div class="modal">
+    <span class="modal-handle"></span>
+    <div class="modal-title">Editar Producto</div>
+    <input type="hidden" id="ep-id-orig">
+    <div class="form-grid">
+      <div class="form-row"><label>ID Producto</label><input id="ep-id" placeholder="JOY-001" readonly style="background:var(--surface3);color:var(--text3)"></div>
+      <div class="form-row"><label>Categoría</label>
+        <select id="ep-cat"><option>Anillos</option><option>Collares</option><option>Aretes</option><option>Pulseras</option><option>Dijes</option><option>Relojes</option><option>Otro</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Nombre / Descripción</label><input id="ep-name" placeholder="Nombre del producto"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Material</label><input id="ep-mat" placeholder="Oro, Plata..."></div>
+      <div class="form-row"><label>Quilates / Pureza</label><input id="ep-qlt" placeholder="18K, 925..."></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Costo (S/)</label><input type="number" id="ep-cost" placeholder="0"></div>
+      <div class="form-row"><label>Precio Venta (S/)</label><input type="number" id="ep-price" placeholder="0"></div>
+    </div>
+    <div class="form-row"><label>Stock Mínimo</label><input type="number" id="ep-min" placeholder="2" min="0"></div>
+    <div class="modal-footer">
+      <button class="modal-btn" onclick="closeModal('edit')">Cancelar</button>
+      <button class="modal-btn primary" onclick="saveEdit()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
 </script>
 </body>
 </html>
