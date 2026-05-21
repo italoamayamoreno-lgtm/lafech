@@ -1374,17 +1374,48 @@ function renderPayMethods(){
 }
 
 async function exportPayPDF(){
-  // Always reload from localStorage to get latest QR data
-  const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
-  Object.assign(payData,saved);
+  // Always get freshest data from localStorage
+  payData=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
   const d=payData;
-  console.log('Yape QR present:',!!d.yape_qr,'Plin QR present:',!!d.plin_qr);
+
   const hasAny=d.bcp_cta||d.bcp_cci||d.ibk_cta||d.ibk_cci||d.yape_num||d.plin_num;
   if(!hasAny){alert('Completa al menos un metodo de pago antes de generar el PDF.');return;}
+
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const W=210,H=297;
   const GR=[139,26,58],RO=[196,80,110],BG=[252,248,250],TX=[30,10,18],TX2=[100,60,75],LN=[220,190,205],WH=[255,255,255];
+
+  // Helper: safely add image to PDF - handles all formats
+  function safeAddImg(imgData, x, y, w, h){
+    if(!imgData) return false;
+    try {
+      // Detect format from data URL header
+      let fmt = 'JPEG';
+      if(imgData.includes('data:image/png')) fmt = 'PNG';
+      else if(imgData.includes('data:image/gif')) fmt = 'GIF';
+      else if(imgData.includes('data:image/webp')) fmt = 'WEBP';
+      // Strip the data URL prefix if present
+      const base64 = imgData.split(',')[1] || imgData;
+      doc.addImage(imgData, fmt, x, y, w, h);
+      return true;
+    } catch(e1) {
+      // Try as PNG if first attempt failed
+      try {
+        doc.addImage(imgData, 'PNG', x, y, w, h);
+        return true;
+      } catch(e2) {
+        // Try as JPEG
+        try {
+          doc.addImage(imgData, 'JPEG', x, y, w, h);
+          return true;
+        } catch(e3) {
+          console.error('Failed to add image:', e3.message);
+          return false;
+        }
+      }
+    }
+  }
 
   // Background
   doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
@@ -1407,26 +1438,76 @@ async function exportPayPDF(){
   doc.setDrawColor(...LN);doc.setLineWidth(0.3);doc.line(14,63,W-14,63);
 
   let y=72;
-  const colL=14;const colR=W/2+4;const halfW=(W-28)/2-2;
+  const colL=14;
+  const colR=W/2+5;
+  const halfW=(W/2)-19;
 
   // Helper: draw a bank section card
   function bankCard(title,colorArr,rows,x0,y0,cardW){
-    const cH=rows.filter(r=>r[1]).length*11+20;
+    const validRows=rows.filter(r=>r[1]);
+    const cH=validRows.length*11+22;
     doc.setFillColor(240,225,232);doc.roundedRect(x0+0.5,y0+0.5,cardW,cH,2,2,'F');
     doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');
     doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
     doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);
-    doc.text(title,x0+6,y0+11);
-    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(x0+6,y0+14,x0+cardW-4,y0+14);
-    let ry=y0+22;
-    rows.filter(r=>r[1]).forEach(([lbl,val])=>{
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);
-      doc.text(lbl,x0+6,ry);
+    doc.text(title,x0+7,y0+12);
+    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(x0+7,y0+15,x0+cardW-4,y0+15);
+    let ry=y0+23;
+    validRows.forEach(([lbl,val])=>{
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text(lbl,x0+7,ry);
       doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);
-      const lines=doc.splitTextToSize(val,cardW-50);
-      doc.text(lines[0],x0+48,ry);
+      const lines=doc.splitTextToSize(String(val),cardW-46);
+      doc.text(lines[0],x0+44,ry);
       ry+=11;
     });
+    return y0+cH;
+  }
+
+  // Helper: draw digital payment card with QR
+  function digitalCard(title,colorArr,nameVal,numVal,qrData,x0,y0,cardW){
+    const qrSize=cardW-14; // QR width = card width - margins
+    const qrH=qrSize;      // Square QR
+    const hasQR=!!qrData;
+    const textH=(nameVal?11:0)+(numVal?11:0)+22;
+    const cH=textH+(hasQR?qrH+10:0);
+
+    doc.setFillColor(240,225,232);doc.roundedRect(x0+0.5,y0+0.5,cardW,cH,2,2,'F');
+    doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');
+    doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
+
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);
+    doc.text(title,x0+7,y0+12);
+    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(x0+7,y0+15,x0+cardW-4,y0+15);
+
+    let ry=y0+23;
+    if(nameVal){
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Nombre',x0+7,ry);
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);doc.text(String(nameVal),x0+7,ry+5);
+      ry+=13;
+    }
+    if(numVal){
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Numero',x0+7,ry);
+      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);doc.text(String(numVal),x0+7,ry+5);
+      ry+=13;
+    }
+
+    // QR image - centered in card
+    if(hasQR){
+      const qrX=x0+7;
+      const qrY=ry+2;
+      const added=safeAddImg(qrData, qrX, qrY, qrSize, qrH);
+      if(added){
+        doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(qrX,qrY,qrSize,qrH,'S');
+        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);
+        doc.text('Escanear para pagar',x0+cardW/2,qrY+qrH+5,{align:'center'});
+      } else {
+        // Fallback: show placeholder if image failed
+        doc.setFillColor(245,240,245);doc.rect(qrX,qrY,qrSize,qrH,'F');
+        doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(qrX,qrY,qrSize,qrH,'S');
+        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...TX2);
+        doc.text('QR no disponible',x0+cardW/2,qrY+qrH/2,{align:'center'});
+      }
+    }
     return y0+cH;
   }
 
@@ -1434,62 +1515,31 @@ async function exportPayPDF(){
   let leftH=y, rightH=y;
   if(d.bcp_cta||d.bcp_cci||d.bcp_nm){
     const rows=[['Titular',d.bcp_nm],['N. Cuenta',d.bcp_cta],['CCI',d.bcp_cci]];
-    leftH=bankCard('BCP — Banco de Credito',GR,rows,colL,y,halfW)+6;
+    leftH=bankCard('BCP — Banco de Credito del Peru',GR,rows,colL,y,halfW)+6;
   }
   if(d.ibk_cta||d.ibk_cci||d.ibk_nm){
     const rows=[['Titular',d.ibk_nm],['N. Cuenta',d.ibk_cta],['CCI',d.ibk_cci]];
     rightH=bankCard('Interbank',RO,rows,colR,y,halfW)+6;
   }
-  y=Math.max(leftH,rightH)+4;
+  y=Math.max(leftH,rightH)+6;
 
   // ── YAPE + PLIN side by side ──
-  function digitalCard(title,colorArr,numLabel,numVal,nameVal,qrKey,x0,y0,cardW){
-    const hasQR=!!(qrKey&&d[qrKey]);
-    const cH=hasQR?72:38;
-    doc.setFillColor(240,225,232);doc.roundedRect(x0+0.5,y0+0.5,cardW,cH,2,2,'F');
-    doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');
-    doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);
-    doc.text(title,x0+6,y0+11);
-    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(x0+6,y0+14,x0+cardW-4,y0+14);
-    let ry=y0+22;
-    if(nameVal){
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Nombre',x0+6,ry);
-      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);doc.text(nameVal,x0+40,ry);ry+=11;
-    }
-    if(numVal){
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text(numLabel,x0+6,ry);
-      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...colorArr);doc.text(numVal,x0+40,ry);ry+=4;
-    }
-    if(hasQR){
-      try{
-        const fmt=d[qrKey].includes('png')?'PNG':'JPEG';
-        const qW=cardW-12;const qH=34;
-        doc.addImage(d[qrKey],fmt,x0+6,ry+2,qW,qH);
-        doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(x0+6,ry+2,qW,qH,'S');
-        doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(...TX2);
-        doc.text('Escanear para pagar',x0+cardW/2,ry+qH+6,{align:'center'});
-      }catch(e){}
-    }
-    return y0+cH;
-  }
-
-  let yL=y,yR=y;
+  let yL=y, yR=y;
   if(d.yape_num||d.yape_nm){
-    yL=digitalCard('Yape',[108,45,155],'Numero',d.yape_num,d.yape_nm,'yape_qr',colL,y,halfW)+6;
+    yL=digitalCard('Yape',[108,45,155],d.yape_nm,d.yape_num,d.yape_qr,colL,y,halfW)+6;
   }
   if(d.plin_num||d.plin_nm){
-    yR=digitalCard('Plin',[0,169,224],'Numero',d.plin_num,d.plin_nm,'plin_qr',colR,y,halfW)+6;
+    yR=digitalCard('Plin',[0,169,224],d.plin_nm,d.plin_num,d.plin_qr,colR,y,halfW)+6;
   }
   y=Math.max(yL,yR)+4;
 
-  // ── FOOTER NOTE ──
+  // Note
   if(y<H-30){
     doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...TX2);
-    doc.text('Envia tu comprobante de pago al WhatsApp o correo de contacto para confirmar tu pedido.',14,y+10);
+    doc.text('Envia tu comprobante al WhatsApp o correo de contacto para confirmar tu pedido.',14,y+8);
   }
 
-  // Footer band
+  // Footer
   doc.setFillColor(...GR);doc.rect(0,H-14,W,14,'F');
   doc.setTextColor(...WH);doc.setFont('helvetica','normal');doc.setFontSize(7);
   doc.text('LaFech Joyeria',14,H-6);
