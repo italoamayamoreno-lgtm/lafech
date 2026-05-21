@@ -279,6 +279,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 .empty-msg{font-size:13px;line-height:1.6}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+.pay-bank-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px}
+.pay-bank-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}
+.pay-bank-icon{width:32px;height:32px;border-radius:8px;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700}
+.pay-bank-name{font-family:var(--fd);font-size:18px;font-weight:600;color:var(--tx)}
 </style>
 </head>
 <body>
@@ -292,6 +296,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
     <div class="tnav" id="tn-alertas" onclick="showPage('alertas')">Alertas <span class="nbadge" id="nb-alrt" style="display:none">0</span></div>
     <div class="tnav" id="tn-dashboard" onclick="showPage('dashboard')">Dashboard</div>
     <div class="tnav" id="tn-finanzas" onclick="showPage('finanzas')">Finanzas</div>
+    <div class="tnav" id="tn-pagos" onclick="showPage('pagos')">Métodos de Pago</div>
   </nav>
   <div class="tr">
     <div class="sync" id="sync-dot"></div>
@@ -396,6 +401,70 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
   <div class="det-body" id="det-body"></div>
 </div>
 
+  <!-- MÉTODOS DE PAGO -->
+  <div class="page" id="page-pagos">
+    <div class="sh">
+      <div class="st">Métodos de Pago</div>
+      <button class="bsm pri" onclick="exportPayPDF()">📄 PDF para cliente</button>
+    </div>
+    <p style="font-size:12px;color:var(--tx3);margin-bottom:14px">Configura tus datos de cobro. Este PDF se enviará al cliente para que sepa cómo pagarte.</p>
+
+    <!-- BCP -->
+    <div class="pay-bank-card">
+      <div class="pay-bank-head"><span class="pay-bank-icon">🏦</span><span class="pay-bank-name">BCP</span></div>
+      <div class="fg">
+        <div class="fr"><label>N° Cuenta</label><input id="bcp-cta" placeholder="191-12345678-0-12" oninput="savePay()"></div>
+        <div class="fr"><label>N° Cuenta Interbancaria (CCI)</label><input id="bcp-cci" placeholder="00219100123456780112" oninput="savePay()"></div>
+      </div>
+      <div class="fr"><label>Titular</label><input id="bcp-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
+    </div>
+
+    <!-- Interbank -->
+    <div class="pay-bank-card">
+      <div class="pay-bank-head"><span class="pay-bank-icon">🏦</span><span class="pay-bank-name">Interbank</span></div>
+      <div class="fg">
+        <div class="fr"><label>N° Cuenta</label><input id="ibk-cta" placeholder="200-3012345678" oninput="savePay()"></div>
+        <div class="fr"><label>N° Cuenta Interbancaria (CCI)</label><input id="ibk-cci" placeholder="00320000301234567890" oninput="savePay()"></div>
+      </div>
+      <div class="fr"><label>Titular</label><input id="ibk-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
+    </div>
+
+    <!-- Yape -->
+    <div class="pay-bank-card">
+      <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#6C2D9B;color:#fff">Y</span><span class="pay-bank-name">Yape</span></div>
+      <div class="fg">
+        <div class="fr"><label>Número de teléfono</label><input id="yape-num" placeholder="999 888 777" type="tel" oninput="savePay()"></div>
+        <div class="fr"><label>Nombre asociado</label><input id="yape-nm" placeholder="Nombre en Yape" oninput="savePay()"></div>
+      </div>
+      <div class="fr">
+        <label>QR de Yape</label>
+        <button type="button" class="img-up" onclick="document.getElementById('yape-qr-f').click()">📷 Cargar QR</button>
+        <input type="file" id="yape-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'yape-qr-pv','yape-qr')">
+        <img id="yape-qr-pv" class="img-pv" style="max-height:140px;object-fit:contain">
+      </div>
+    </div>
+
+    <!-- Plin -->
+    <div class="pay-bank-card">
+      <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#00A9E0;color:#fff">P</span><span class="pay-bank-name">Plin</span></div>
+      <div class="fg">
+        <div class="fr"><label>Número de teléfono</label><input id="plin-num" placeholder="999 888 777" type="tel" oninput="savePay()"></div>
+        <div class="fr"><label>Nombre asociado</label><input id="plin-nm" placeholder="Nombre en Plin" oninput="savePay()"></div>
+      </div>
+      <div class="fr">
+        <label>QR de Plin</label>
+        <button type="button" class="img-up" onclick="document.getElementById('plin-qr-f').click()">📷 Cargar QR</button>
+        <input type="file" id="plin-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'plin-qr-pv','plin-qr')">
+        <img id="plin-qr-pv" class="img-pv" style="max-height:140px;object-fit:contain">
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px;margin-top:4px">
+      <div style="font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:12px">Ventas por método de pago</div>
+      <div id="pay-summary"></div>
+    </div>
+  </div>
 </div><!-- /workspace -->
 
 <!-- BOTTOM NAV -->
@@ -405,6 +474,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
   <div class="bi" id="bn-alertas" onclick="showPage('alertas')"><div class="bi-ic" id="alrt-ic">⚠</div>Alertas</div>
   <div class="bi" id="bn-dashboard" onclick="showPage('dashboard')"><div class="bi-ic">📊</div>Dash</div>
   <div class="bi" id="bn-finanzas" onclick="showPage('finanzas')"><div class="bi-ic">💰</div>Finanzas</div>
+  <div class="bi" id="bn-pagos" onclick="showPage('pagos')"><div class="bi-ic">💳</div>Pagos</div>
 </div>
 <button class="fab" onclick="openProd()">＋</button>
 </div><!-- /app -->
@@ -532,6 +602,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
     <div class="fg">
       <div class="fr"><label>Teléfono</label><input id="mv-cph" type="tel" placeholder="999888777"></div>
       <div class="fr"><label>Correo</label><input id="mv-cem" type="email" placeholder="correo@email.com"></div>
+    </div>
+    <div class="fr"><label>Método de Pago</label>
+      <select id="mv-pay">
+        <option value="">— Seleccionar —</option>
+        <option>Efectivo</option><option>Tarjeta de crédito</option><option>Tarjeta de débito</option>
+        <option>Transferencia bancaria</option><option>Yape</option><option>Plin</option>
+      </select>
     </div>
   </div>
   <div class="sib" id="mv-inf"></div>
@@ -678,15 +755,16 @@ function renderMovs(){
     const cls=isIn?'in':m.type.startsWith('ajuste')?'aj':'ot';
     const ic=m.type==='entrada'?'📦':m.type==='salida'?'🛍️':'⚙️';
     const tot=m.qty*(m.price||0);
-    return `<div class="mov-row">
+    return `<div class="mov-row" onclick="openMovDet('${m.id}')" style="cursor:pointer">
       <div class="mov-dot ${cls}">${ic}</div>
       <div class="mov-info">
         <div class="mov-nm">${p.name}</div>
-        <div class="mov-dt">${lb[m.type]||m.type} · ${m.date}${m.resp&&m.resp!=='—'?' · '+m.resp:''}${m.obs?' · '+m.obs:''}${m.clientName?' · 👤 '+m.clientName:''}</div>
+        <div class="mov-dt">${lb[m.type]||m.type} · ${m.date}${m.resp&&m.resp!=='—'?' · '+m.resp:''}${m.clientName?' · 👤 '+m.clientName:''}${m.payMethod?' · 💳 '+m.payMethod:''}</div>
       </div>
       <div class="mov-r">
         <div class="mov-q ${cls}">${isIn?'+':'-'}${m.qty}u.</div>
         ${tot>0?`<div class="mov-t">${fmtM(tot)}</div>`:''}
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px">Ver detalle →</div>
       </div>
     </div>`;
   }).join('');
@@ -848,7 +926,7 @@ function updDetImg(id,inp){const f=inp.files[0];if(!f)return;const r=new FileRea
 // ════════════════════════════════════════════════
 let curPage='catalogo';
 function showPage(name){
-  ['catalogo','movimientos','alertas','dashboard','finanzas'].forEach(p=>{
+  ['catalogo','movimientos','alertas','dashboard','finanzas','pagos'].forEach(p=>{
     document.getElementById('page-'+p).classList.toggle('on',p===name);
     const t=document.getElementById('tn-'+p);if(t)t.classList.toggle('active',p===name);
     const b=document.getElementById('bn-'+p);if(b)b.classList.toggle('on',p===name);
@@ -858,6 +936,7 @@ function showPage(name){
   if(name==='alertas')renderAlerts();
   if(name==='dashboard')renderDash();
   if(name==='finanzas'){initFinMonth();renderFinanzas();}
+  if(name==='pagos'){loadPayFields();renderPayMethods();}
   closeDet();
 }
 
@@ -896,7 +975,7 @@ function openMov(id,tp){
   if(id)for(let i=0;i<sel.options.length;i++)if(sel.options[i].value===id){sel.selectedIndex=i;break;}
   if(tp)document.getElementById('mv-tp').value=tp;
   ['mv-qty'].forEach(f=>document.getElementById(f).value=1);
-  ['mv-rsp','mv-obs','mv-cnm','mv-cph','mv-cem'].forEach(f=>document.getElementById(f).value='');
+  ['mv-rsp','mv-obs','mv-cnm','mv-cph','mv-cem'].forEach(f=>document.getElementById(f).value='');document.getElementById('mv-pay').value='';
   onMvCh();
   document.getElementById('ov-mov').classList.add('open');
 }
@@ -956,7 +1035,7 @@ function saveMov(){
   const p=gP(pid);
   if((tp==='salida'||tp==='ajuste-')&&stk(pid)<qty)if(!confirm(`Stock insuficiente (${stk(pid)} u.). ¿Registrar igual?`))return;
   const m={prodId:pid,type:tp,qty,price:prc,resp:document.getElementById('mv-rsp').value||'—',obs:document.getElementById('mv-obs').value||'',date:today()};
-  if(tp==='salida'){const cn=document.getElementById('mv-cnm').value.trim();if(cn)m.clientName=cn;const cp=document.getElementById('mv-cph').value.trim();if(cp)m.clientPhone=cp;const ce=document.getElementById('mv-cem').value.trim();if(ce)m.clientEmail=ce;}
+  if(tp==='salida'){const cn=document.getElementById('mv-cnm').value.trim();if(cn)m.clientName=cn;const cp=document.getElementById('mv-cph').value.trim();if(cp)m.clientPhone=cp;const ce=document.getElementById('mv-cem').value.trim();if(ce)m.clientEmail=ce;const pay=document.getElementById('mv-pay').value;if(pay)m.payMethod=pay;}
   addM(m);closeOv('mov');
 }
 function confirmDel(id){
@@ -977,10 +1056,16 @@ function confirmClear(){
 function exportClients(){
   const sales=D.movements.filter(m=>m.type==='salida'&&m.clientName);
   if(!sales.length){alert('No hay datos de clientes. Agrega el nombre del cliente al registrar ventas.');return;}
-  const rows=[['Fecha','ID Producto','Producto','Categoría','Cantidad','Precio Unit (S/)','Total (S/)','Cliente','Teléfono','Correo','Referencia']];
-  sales.forEach(m=>{const p=gP(m.prodId)||{name:m.prodId,cat:'—'};rows.push([m.date,m.prodId,p.name,p.cat,m.qty,m.price||0,((m.qty*(m.price||0))).toFixed(2),m.clientName||'',m.clientPhone||'',m.clientEmail||'',m.obs||'']);});
-  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='LaFech_Clientes_'+today()+'.csv';a.click();
+  const rows=[['Fecha','ID Producto','Producto','Categoría','Cantidad','Precio Unit. (S/)','Total (S/)','Cliente','Teléfono','Correo','Método de Pago','Referencia']];
+  sales.forEach(m=>{
+    const p=gP(m.prodId)||{name:m.prodId,cat:'—'};
+    rows.push([m.date,m.prodId,p.name,p.cat||'—',m.qty,m.price||0,parseFloat((m.qty*(m.price||0)).toFixed(2)),m.clientName||'',m.clientPhone||'',m.clientEmail||'',m.payMethod||'',m.obs||'']);
+  });
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:10},{wch:30},{wch:14},{wch:10},{wch:14},{wch:12},{wch:22},{wch:14},{wch:26},{wch:16},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,ws,'Clientes');
+  XLSX.writeFile(wb,'LaFech_Clientes_'+today()+'.xlsx');
 }
 
 function exportXLS(){
@@ -1002,173 +1087,330 @@ function exportXLS(){
 }
 
 async function exportPDF(){
-  if(!D.products.length){alert('No hay productos en el catálogo.');return;}
+  if(!D.products.length){alert('No hay productos en el catalogo.');return;}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210;const H=297;
-  const GR=[139,26,58];const GO=[201,168,76];const RO=[212,84,122];
-  const BG=[253,245,248];const TX=[42,10,20];const TX2=[122,64,85];const LG=[245,208,220];
+  const W=210,H=297;
+  const GR=[139,26,58],RO=[196,80,110],BG=[252,248,250],TX=[30,10,18],TX2=[100,60,75],LN=[220,190,205],WH=[255,255,255];
 
-  // ── COVER ──
-  // Background
+  // ── COVER ──────────────────────────────────────────
   doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
-  // Left accent bar
-  doc.setFillColor(...GR);doc.rect(0,0,18,H,'F');
-  // Gold stripe
-  doc.setFillColor(...GO);doc.rect(0,H-28,W,28,'F');
-  // Decorative lines on gold stripe
-  doc.setDrawColor(255,255,255);doc.setLineWidth(0.3);
-  for(let i=0;i<5;i++){doc.line(18,H-28+i*6,W,H-28+i*6);}
-  // Title block
-  doc.setTextColor(...GR);
-  doc.setFont('helvetica','bold');doc.setFontSize(52);
-  doc.text('LaFech',32,90);
-  doc.setFont('helvetica','normal');doc.setFontSize(16);
-  doc.setTextColor(...TX2);
-  doc.text('Catálogo de Productos',32,106);
-  // Decorative diamond
-  doc.setFont('helvetica','normal');doc.setFontSize(72);
-  doc.setTextColor(...LG);
-  doc.text('◇',130,130);
-  // Date and count
+  doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
+  doc.setFillColor(...GR);doc.rect(0,0,W,52,'F');
+  doc.setFillColor(...RO);doc.rect(0,H-16,W,16,'F');
+  doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(38);
+  doc.text('LAFECH',18,34);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setCharSpace(3);
+  doc.text('JOYERIA',19,44);doc.setCharSpace(0);
   doc.setFontSize(11);doc.setTextColor(...TX2);
-  doc.text(new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'}),32,125);
-  doc.setFontSize(11);
-  doc.text(`${D.products.length} productos · ${Object.keys([...new Set(D.products.map(p=>p.cat))]).length} categorías`,32,135);
-  // Bottom bar text
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(13);
-  doc.text('Sistema de Gestión de Inventario',32,H-15);
-  doc.setFont('helvetica','normal');doc.setFontSize(9);
-  doc.text(today(),W-20,H-15,{align:'right'});
+  doc.text('Catalogo de Productos',18,72);
+  doc.setDrawColor(...LN);doc.setLineWidth(0.3);doc.line(18,78,W-18,78);
+  doc.setFontSize(9);
+  doc.text(new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'}),18,86);
+  const cats=Object.keys(D.products.reduce((a,p)=>{a[p.cat]=1;return a;},{}));
+  doc.text(D.products.length+' productos en '+cats.length+' categorias',18,94);
+  doc.setTextColor(...WH);doc.setFont('helvetica','normal');doc.setFontSize(8);
+  doc.text('Documento confidencial - uso exclusivo del cliente',18,H-5);
+  doc.text(today(),W-18,H-5,{align:'right'});
 
-  // ── CATEGORY PAGES ──
-  const cats={};
-  D.products.forEach(p=>{if(!cats[p.cat])cats[p.cat]=[];cats[p.cat].push(p);});
+  // ── PRODUCTS: 3 per page, photo prominent ──────────
+  const catMap={};
+  D.products.forEach(p=>{if(!catMap[p.cat])catMap[p.cat]=[];catMap[p.cat].push(p);});
 
-  for(const[cat,prods] of Object.entries(cats)){
+  for(const[cat,prods] of Object.entries(catMap)){
     doc.addPage();
-    let y=0;
+    doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
+    doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
+    // Cat header
+    doc.setFillColor(...GR);doc.rect(0,0,W,26,'F');
+    doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setCharSpace(2);
+    doc.text(cat.toUpperCase(),14,17);doc.setCharSpace(0);
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    doc.text(prods.length+' producto'+(prods.length!==1?'s':''),W-14,17,{align:'right'});
+    doc.setDrawColor(...RO);doc.setLineWidth(0.4);doc.line(14,28,W-14,28);
 
-    // Category header
-    doc.setFillColor(...GR);doc.rect(0,0,W,20,'F');
-    doc.setFillColor(...GO);doc.rect(0,20,W,2,'F');
-    // Left bar
-    doc.setFillColor(...RO);doc.rect(0,0,6,H,'F');
-    // Cat title
-    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);
-    doc.text(cat.toUpperCase(),14,13);
-    doc.setFont('helvetica','normal');doc.setFontSize(9);
-    doc.text(`${prods.length} producto${prods.length!==1?'s':''}`,W-14,13,{align:'right'});
-    y=30;
+    // 3 products per page, stacked vertically
+    // Available height: 297 - 34 (header) - 14 (footer) = 249
+    const availH=249;
+    const cardH=Math.floor(availH/3)-4; // ~79mm each
+    const cardW=W-28; // 182mm
 
-    // Products — 2 per row
-    for(let i=0;i<prods.length;i+=2){
-      if(y>H-74){
+    for(let i=0;i<prods.length;i++){
+      const p=prods[i];
+      const pagePos=i%3;
+      if(i>0&&pagePos===0){
         doc.addPage();
-        doc.setFillColor(...RO);doc.rect(0,0,6,H,'F');
-        y=12;
+        doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
+        doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
       }
-      const row=prods.slice(i,i+2);
-      const cW=(W-22)/2; // card width (subtract margins and gap)
-      const cH=68;
+      const cX=14;
+      const cY=32+(pagePos*(cardH+4));
 
-      for(let j=0;j<row.length;j++){
-        const p=row[j];
-        const x=10+j*(cW+2);
-        const s=stk(p.id);
-        const mg=margin(p);
+      // Card shadow + bg
+      doc.setFillColor(235,218,226);doc.roundedRect(cX+0.6,cY+0.6,cardW,cardH,2,2,'F');
+      doc.setFillColor(...WH);doc.roundedRect(cX,cY,cardW,cardH,2,2,'F');
+      // Left accent
+      doc.setFillColor(...GR);doc.rect(cX,cY,2.5,cardH,'F');
 
-        // Card shadow (subtle)
-        doc.setFillColor(220,200,210);
-        doc.roundedRect(x+0.5,y+0.5,cW,cH,2,2,'F');
-        // Card
-        doc.setFillColor(255,255,255);
-        doc.roundedRect(x,y,cW,cH,2,2,'F');
-        // Top accent line
-        doc.setFillColor(...GR);
-        doc.rect(x,y,cW,2.5,'F');
-
-        // Image area
-        const iW=26;const iH=26;const iX=x+4;const iY=y+5;
-        if(p.img&&p.img.startsWith('data:image')){
-          try{
-            const fm=p.img.includes('png')?'PNG':'JPEG';
-            doc.roundedRect(iX,iY,iW,iH,1.5,1.5,'S');
-            doc.addImage(p.img,fm,iX,iY,iW,iH);
-          }catch(e){
-            doc.setFillColor(...BG);doc.roundedRect(iX,iY,iW,iH,1.5,1.5,'FD');
-            doc.setFontSize(16);doc.setTextColor(...LG);doc.text('◇',iX+iW/2,iY+iH/2+2,{align:'center'});
-          }
-        }else{
-          doc.setFillColor(...BG);doc.roundedRect(iX,iY,iW,iH,1.5,1.5,'FD');
-          doc.setDrawColor(...GR);doc.setLineWidth(0.3);
-          doc.setFontSize(14);doc.setTextColor(...LG);doc.text('◇',iX+iW/2,iY+iH/2+2,{align:'center'});
+      // PHOTO — large, left side, occupies ~40% of card width
+      const imgW=68;const imgH=cardH-8;const imgX=cX+8;const imgY=cY+4;
+      if(p.img&&p.img.startsWith('data:image')){
+        try{
+          const fm=p.img.includes('png')?'PNG':'JPEG';
+          doc.addImage(p.img,fm,imgX,imgY,imgW,imgH);
+          doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
+        }catch(e2){
+          doc.setFillColor(248,242,245);doc.rect(imgX,imgY,imgW,imgH,'F');
+          doc.setFontSize(20);doc.setTextColor(...LN);
+          doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+3,{align:'center'});
         }
-
-        // Stock chip on image
-        const sColor=s<=0?[176,48,48]:s<p.minStock?[138,96,16]:[42,96,73];
-        doc.setFillColor(...sColor);
-        doc.roundedRect(iX,iY+iH+2,iW,5,1.5,1.5,'F');
-        doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(5.5);
-        doc.text(`${s} u.`,iX+iW/2,iY+iH+5.5,{align:'center'});
-
-        // Content area
-        const cX=iX+iW+4;const cWc=cW-iW-12;
-
-        // Product name
-        doc.setTextColor(...TX);doc.setFont('helvetica','bold');doc.setFontSize(8.5);
-        const nLines=doc.splitTextToSize(p.name,cWc);
-        doc.text(nLines.slice(0,2),cX,y+9);
-
-        // ID + cat
-        doc.setTextColor(...TX2);doc.setFont('helvetica','normal');doc.setFontSize(7);
-        doc.text(`${p.id}`,cX,y+17);
-
-        // Material
-        if(p.material&&p.material!=='—'){
-          doc.setFontSize(7);doc.setTextColor(...TX2);
-          doc.text(`${p.material} ${p.quilates||''}`.trim(),cX,y+22);
-        }
-
-        // Description
-        if(p.desc){
-          doc.setFontSize(6.5);doc.setTextColor(150,100,120);
-          const dLines=doc.splitTextToSize(p.desc,cWc);
-          doc.text(dLines.slice(0,2),cX,y+27);
-        }
-
-        // Margin badge
-        const mgColor=mg>=45?[42,96,73]:mg>=25?[138,96,16]:[176,48,48];
-        doc.setFillColor(...mgColor);
-        doc.roundedRect(cX,y+cH-14,18,7,1.5,1.5,'F');
-        doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(6);
-        doc.text(`${mg}%`,cX+9,y+cH-9,{align:'center'});
-
-        // Price — elegant box
-        doc.setFillColor(...GR);
-        doc.roundedRect(cX+20,y+cH-15,cWc-20,8,1.5,1.5,'F');
-        doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
-        doc.text(fmtM(p.price),(cX+20)+(cWc-20)/2,y+cH-9,{align:'center'});
+      }else{
+        doc.setFillColor(248,242,245);doc.rect(imgX,imgY,imgW,imgH,'F');
+        doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
+        doc.setFontSize(9);doc.setTextColor(...LN);
+        doc.setFont('helvetica','normal');
+        doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+2,{align:'center'});
       }
-      y+=cH+6;
+
+      // CONTENT — right side
+      const txX=imgX+imgW+8;
+      const txW=cardW-imgW-20;
+      let txY=cY+10;
+
+      // Product name — large
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...TX);
+      const nLines=doc.splitTextToSize(p.name,txW);
+      doc.text(nLines.slice(0,2),txX,txY);
+      txY+=nLines.slice(0,2).length*6+3;
+
+      // Separator
+      doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(txX,txY,txX+txW,txY);txY+=4;
+
+      // Fields
+      const fields=[
+        ['CODIGO',p.id],
+        ['CATEGORIA',p.cat],
+        ['MATERIAL',p.material&&p.material!=='—'?p.material:'—'],
+        [p.material==='Oro'?'QUILATES':'PUREZA',p.quilates&&p.quilates!=='—'?p.quilates:'—'],
+      ];
+      fields.forEach(([lbl,val])=>{
+        if(txY>cY+cardH-22)return;
+        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);
+        doc.text(lbl,txX,txY);
+        doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...TX);
+        doc.text(val||'',txX,txY+4.5);
+        txY+=11;
+      });
+
+      // Description if space allows
+      if(p.desc&&txY<cY+cardH-22){
+        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);
+        doc.text('DESCRIPCION',txX,txY);txY+=4.5;
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TX);
+        const dL=doc.splitTextToSize(p.desc,txW);
+        const maxDL=Math.min(dL.length,Math.floor((cY+cardH-txY-18)/3.8));
+        if(maxDL>0)doc.text(dL.slice(0,maxDL),txX,txY);
+      }
+
+      // Price box — bottom right of content area
+      const priceBoxY=cY+cardH-13;
+      const priceBoxX=txX;
+      const priceBoxW=txW;
+      doc.setFillColor(...GR);doc.roundedRect(priceBoxX,priceBoxY-1,priceBoxW,11,1.5,1.5,'F');
+      doc.setTextColor(210,170,190);doc.setFont('helvetica','normal');doc.setFontSize(6);
+      doc.text('PRECIO DE VENTA',priceBoxX+priceBoxW/2,priceBoxY+2.5,{align:'center'});
+      doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(11);
+      doc.text(fmtM(p.price),priceBoxX+priceBoxW/2,priceBoxY+8.5,{align:'center'});
     }
   }
 
   // ── FOOTER ALL PAGES ──
   const total=doc.getNumberOfPages();
-  for(let i=1;i<=total;i++){
-    doc.setPage(i);
-    if(i===1)continue; // no footer on cover
-    doc.setFillColor(...BG);doc.rect(6,H-9,W-6,9,'F');
-    doc.setDrawColor(...GO);doc.setLineWidth(0.4);doc.line(10,H-9,W-10,H-9);
+  for(let pg=1;pg<=total;pg++){
+    doc.setPage(pg);if(pg===1)continue;
+    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(14,H-10,W-14,H-10);
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);
-    doc.text('LaFech — Catálogo de Productos',14,H-3);
-    doc.text(`Pág. ${i-1} de ${total-1}`,W-14,H-3,{align:'right'});
+    doc.text('LaFech Joyeria',14,H-5);
+    doc.text((pg-1)+' / '+(total-1),W-14,H-5,{align:'right'});
   }
-
   doc.save('LaFech_Catalogo_'+today()+'.pdf');
 }
+// ════════════════════════════════════════════════
+// MÉTODOS DE PAGO
+// ════════════════════════════════════════════════
+const PAY_KEY='lafech_pay_data_v2';
+let payData=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
 
+function savePay(){
+  payData={
+    bcp_cta:document.getElementById('bcp-cta').value,
+    bcp_cci:document.getElementById('bcp-cci').value,
+    bcp_nm:document.getElementById('bcp-nm').value,
+    ibk_cta:document.getElementById('ibk-cta').value,
+    ibk_cci:document.getElementById('ibk-cci').value,
+    ibk_nm:document.getElementById('ibk-nm').value,
+    yape_num:document.getElementById('yape-num').value,
+    yape_nm:document.getElementById('yape-nm').value,
+    yape_qr:payData.yape_qr||null,
+    plin_num:document.getElementById('plin-num').value,
+    plin_nm:document.getElementById('plin-nm').value,
+    plin_qr:payData.plin_qr||null,
+  };
+  localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+}
+
+function loadQR(input,previewId,key){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=document.getElementById(previewId);
+    img.src=e.target.result;img.style.display='block';
+    payData[key]=e.target.result;
+    localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+  };
+  r.readAsDataURL(f);
+}
+
+function loadPayFields(){
+  const d=payData;
+  const f=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+  f('bcp-cta',d.bcp_cta);f('bcp-cci',d.bcp_cci);f('bcp-nm',d.bcp_nm);
+  f('ibk-cta',d.ibk_cta);f('ibk-cci',d.ibk_cci);f('ibk-nm',d.ibk_nm);
+  f('yape-num',d.yape_num);f('yape-nm',d.yape_nm);
+  f('plin-num',d.plin_num);f('plin-nm',d.plin_nm);
+  const showQR=(pvId,key)=>{const pv=document.getElementById(pvId);if(pv&&d[key]){pv.src=d[key];pv.style.display='block';}};
+  showQR('yape-qr-pv','yape_qr');showQR('plin-qr-pv','plin_qr');
+}
+
+function renderPayMethods(){
+  // Summary of sales by method
+  const sumEl=document.getElementById('pay-summary');
+  if(!sumEl)return;
+  const byMethod={};
+  D.movements.filter(m=>m.type==='salida').forEach(m=>{
+    const key=m.payMethod||'Sin especificar';
+    if(!byMethod[key])byMethod[key]={count:0,total:0};
+    byMethod[key].count++;
+    byMethod[key].total+=m.qty*(m.price||0);
+  });
+  const maxT=Math.max(...Object.values(byMethod).map(v=>v.total),1);
+  sumEl.innerHTML=Object.entries(byMethod).sort((a,b)=>b[1].total-a[1].total).map(([k,v])=>`
+    <div class="bar-row">
+      <div class="bar-label">${k}</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(v.total/maxT*100)}%"></div></div>
+      <div class="bar-val">${fmtM(v.total)}</div>
+    </div>`).join('')||'<div class="empty" style="padding:16px"><div class="empty-ic">📊</div><div class="empty-msg">Sin ventas con metodo de pago registrado</div></div>';
+  // Update movement modal dropdown
+  const sel=document.getElementById('mv-pay');
+  if(sel){
+    const cur=sel.value;
+    const methods=['Efectivo','Tarjeta de credito','Tarjeta de debito','Transferencia bancaria','Yape','Plin'];
+    sel.innerHTML='<option value="">— Seleccionar —</option>'+methods.map(m=>`<option${cur===m?' selected':''}>${m}</option>`).join('');
+  }
+}
+
+async function exportPayPDF(){
+  const d=payData;
+  const hasAny=d.bcp_cta||d.bcp_cci||d.ibk_cta||d.ibk_cci||d.yape_num||d.plin_num;
+  if(!hasAny){alert('Completa al menos un metodo de pago antes de generar el PDF.');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,H=297;
+  const GR=[139,26,58],RO=[196,80,110],BG=[252,248,250],TX=[30,10,18],TX2=[100,60,75],LN=[220,190,205],WH=[255,255,255];
+
+  // Background
+  doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
+
+  // Header
+  doc.setFillColor(...GR);doc.rect(0,0,W,44,'F');
+  doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(28);
+  doc.text('LAFECH',18,26);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setCharSpace(3);
+  doc.text('JOYERIA',19,36);doc.setCharSpace(0);
+  doc.setFontSize(8);doc.setTextColor(210,170,190);
+  doc.text('Informacion de Pago',W-18,24,{align:'right'});
+  doc.setFontSize(7);
+  doc.text(new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'}),W-18,32,{align:'right'});
+
+  // Subtitle
+  doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(...TX2);
+  doc.text('Medios de pago disponibles',18,58);
+  doc.setDrawColor(...LN);doc.setLineWidth(0.3);doc.line(18,63,W-18,63);
+
+  let y=72;
+
+  // Helper to draw a section card
+  function drawCard(title,color,rows,qrKey,y0){
+    const cH=rows.length*12+20+(qrKey&&d[qrKey]?46:0);
+    doc.setFillColor(245,238,242);doc.roundedRect(18.5,y0+0.5,W-36,cH,2,2,'F');
+    doc.setFillColor(...WH);doc.roundedRect(18,y0,W-36,cH,2,2,'F');
+    doc.setFillColor(...color);doc.rect(18,y0,3,cH,'F');
+    // Title
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...color);
+    doc.text(title,26,y0+12);
+    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(26,y0+15,W-20,y0+15);
+    let ry=y0+23;
+    rows.forEach(([lbl,val])=>{
+      if(!val)return;
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...TX2);
+      doc.text(lbl,28,ry);
+      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...TX);
+      doc.text(val,105,ry);
+      ry+=12;
+    });
+    // QR
+    if(qrKey&&d[qrKey]){
+      try{
+        const fmt=d[qrKey].includes('png')?'PNG':'JPEG';
+        doc.addImage(d[qrKey],fmt,28,ry,36,36);
+        doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(28,ry,36,36,'S');
+        doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);
+        doc.text('Escanear QR para pagar',68,ry+18);
+      }catch(e){}
+    }
+    return y0+cH;
+  }
+
+  // BCP
+  if(d.bcp_cta||d.bcp_cci||d.bcp_nm){
+    const rows=[['Titular',d.bcp_nm],['N de Cuenta',d.bcp_cta],['CCI (Interbancario)',d.bcp_cci]].filter(r=>r[1]);
+    const end=drawCard('BCP — Banco de Credito del Peru',GR,rows,null,y);
+    y=end+10;
+  }
+  // Interbank
+  if(d.ibk_cta||d.ibk_cci||d.ibk_nm){
+    const rows=[['Titular',d.ibk_nm],['N de Cuenta',d.ibk_cta],['CCI (Interbancario)',d.ibk_cci]].filter(r=>r[1]);
+    const end=drawCard('Interbank',RO,rows,null,y);
+    y=end+10;
+  }
+  // Yape
+  if(d.yape_num||d.yape_nm){
+    const rows=[['Nombre Yape',d.yape_nm],['Numero',d.yape_num]].filter(r=>r[1]);
+    const end=drawCard('Yape',[108,45,155],rows,'yape_qr',y);
+    y=end+10;
+  }
+  // Plin
+  if(d.plin_num||d.plin_nm){
+    const rows=[['Nombre Plin',d.plin_nm],['Numero',d.plin_num]].filter(r=>r[1]);
+    const end=drawCard('Plin',[0,169,224],rows,'plin_qr',y);
+    y=end+10;
+  }
+
+  // Note
+  if(y<H-30){
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...TX2);
+    doc.text('Para confirmar tu pago, envia el comprobante al WhatsApp o correo de contacto.',18,y+10);
+  }
+
+  // Footer
+  doc.setFillColor(...GR);doc.rect(0,H-14,W,14,'F');
+  doc.setTextColor(...WH);doc.setFont('helvetica','normal');doc.setFontSize(7);
+  doc.text('LaFech Joyeria — Gracias por tu compra',18,H-6);
+  doc.text(today(),W-18,H-6,{align:'right'});
+
+  doc.save('LaFech_Informacion_Pago.pdf');
+}
 // ════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════
@@ -1178,7 +1420,18 @@ window.addEventListener('load',()=>{
   ['btn-xls','btn-pdf','btn-exp','btn-clr','btn-mov','btn-prd'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
   // Responsive resize
   window.addEventListener('resize',renderList);
+  renderPayMethods();
 });
 </script>
+<!-- MODAL DETALLE MOVIMIENTO -->
+<div class="ov" id="ov-movdet" onclick="bgc(event,'movdet')">
+<div class="modal">
+  <span class="mh"></span>
+  <div class="mt" id="movdet-title">Detalle del Movimiento</div>
+  <div id="movdet-body"></div>
+  <div class="mf" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bdr)">
+    <button class="mb p" onclick="closeOv('movdet')">Cerrar</button>
+  </div>
+</div></div>
 </body>
 </html>
