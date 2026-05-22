@@ -107,7 +107,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 .pill.on{background:var(--PL);border-color:var(--PM);color:var(--P);font-weight:500}
 
 /* ── PRODUCT LIST (lean) ────────────────────────── */
-.prod-list{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
+.prod-list{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:visible}
 .prod-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .1s}
 .prod-row:last-child{border-bottom:none}
 .prod-row:hover{background:var(--surf2)}
@@ -285,6 +285,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 @media(max-width:899px){
   /* Hide big action buttons from topbar on mobile */
   #btn-xls,#btn-pdf,#btn-exp,#btn-clr,#btn-mov,#btn-prd{display:none !important}
+  /* Stack form grids on mobile */
+  .pay-bank-card .fg{grid-template-columns:1fr !important}
+  /* Prevent any horizontal overflow */
+  .main,#page-pagos{overflow-x:hidden;max-width:100vw}
   /* Compact topbar */
   .topbar{padding:0 12px;gap:6px}
   .logo{font-size:18px}
@@ -516,10 +520,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
       <div style="font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:12px">Ventas por método de pago</div>
       <div id="pay-summary"></div>
     </div>
-    <div style="margin-top:16px;padding:14px;background:var(--surf2);border-radius:var(--r);border:1px dashed var(--bdr2)">
-      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">🧪 Datos de demostración — solo visible para administrador</div>
-      <button class="bsm" onclick="seedMovements()" style="color:var(--P);border-color:var(--PM)">📊 Cargar movimientos de demo</button>
-    </div>
+
   </div>
 </div><!-- /workspace -->
 
@@ -1197,15 +1198,15 @@ async function exportPDF(){
     doc.text(prods.length+' producto'+(prods.length!==1?'s':''),W-14,17,{align:'right'});
     doc.setDrawColor(...RO);doc.setLineWidth(0.4);doc.line(14,28,W-14,28);
 
-    // 3 products per page, stacked vertically
+    // 2 products per page — full description + large photo
     // Available height: 297 - 34 (header) - 14 (footer) = 249
     const availH=249;
-    const cardH=Math.floor(availH/3)-4; // ~79mm each
+    const cardH=Math.floor(availH/2)-4; // ~120mm each — room for description
     const cardW=W-28; // 182mm
 
     for(let i=0;i<prods.length;i++){
       const p=prods[i];
-      const pagePos=i%3;
+      const pagePos=i%2;
       if(i>0&&pagePos===0){
         doc.addPage();
         doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
@@ -1221,7 +1222,7 @@ async function exportPDF(){
       doc.setFillColor(...GR);doc.rect(cX,cY,2.5,cardH,'F');
 
       // PHOTO — large, left side, occupies ~40% of card width
-      const imgW=68;const imgH=cardH-8;const imgX=cX+8;const imgY=cY+4;
+      const imgW=72;const imgH=cardH-8;const imgX=cX+8;const imgY=cY+4;
       if(p.img&&p.img.startsWith('data:image')){
         try{
           const fm=p.img.includes('png')?'PNG':'JPEG';
@@ -1271,12 +1272,12 @@ async function exportPDF(){
       });
 
       // Description if space allows
-      if(p.desc&&txY<cY+cardH-22){
+      if(p.desc&&txY<cY+cardH-16){
         doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);
         doc.text('DESCRIPCION',txX,txY);txY+=4.5;
         doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TX);
         const dL=doc.splitTextToSize(p.desc,txW);
-        const maxDL=Math.min(dL.length,Math.floor((cY+cardH-txY-18)/3.8));
+        const maxDL=Math.min(dL.length,Math.floor((cY+cardH-txY-14)/3.5));
         if(maxDL>0)doc.text(dL.slice(0,maxDL),txX,txY);
       }
 
@@ -1628,55 +1629,6 @@ async function exportPayPDF(){
   doc.text(today(),W-14,H-6,{align:'right'});
 
   doc.save('LaFech_Informacion_Pago.pdf');
-}
-// ════════════════════════════════════════════════
-// SEED MOVEMENTS (demo data)
-// ════════════════════════════════════════════════
-async function seedMovements(){
-  if(!D.products.length){alert('Primero carga los productos.');return;}
-  const today2=today();
-  const days=(n)=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10);};
-  const clients=[
-    {clientName:'María García',clientPhone:'987654321',clientEmail:'maria@gmail.com',payMethod:'Yape'},
-    {clientName:'Carlos Ruiz',clientPhone:'976543210',clientEmail:'carlos@gmail.com',payMethod:'Efectivo'},
-    {clientName:'Lucía Mendoza',clientPhone:'965432109',clientEmail:'lucia@gmail.com',payMethod:'Tarjeta de crédito'},
-    {clientName:'Roberto Silva',clientPhone:'954321098',clientEmail:'roberto@gmail.com',payMethod:'Plin'},
-    {clientName:'Ana Torres',clientPhone:'943210987',clientEmail:'ana@gmail.com',payMethod:'Transferencia bancaria'},
-  ];
-  const movs=[
-    // Ventas (salidas)
-    {prodId:'ANI-001',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #001',date:days(28),...clients[0]},
-    {prodId:'COL-002',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #002',date:days(25),...clients[1]},
-    {prodId:'ARE-001',type:'salida',qty:2,priceKey:'price',resp:'Kristel',obs:'Factura #003',date:days(22),...clients[2]},
-    {prodId:'PUL-002',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #004',date:days(20),...clients[3]},
-    {prodId:'DIJ-001',type:'salida',qty:3,priceKey:'price',resp:'Kristel',obs:'Factura #005',date:days(18),...clients[4]},
-    {prodId:'CON-001',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #006',date:days(15),...clients[0]},
-    {prodId:'ANI-003',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #007',date:days(12),...clients[1]},
-    {prodId:'COL-001',type:'salida',qty:2,priceKey:'price',resp:'Kristel',obs:'Factura #008',date:days(10),...clients[2]},
-    {prodId:'ARE-003',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #009',date:days(8),...clients[3]},
-    {prodId:'PUL-003',type:'salida',qty:2,priceKey:'price',resp:'Kristel',obs:'Factura #010',date:days(6),...clients[4]},
-    {prodId:'ANI-002',type:'salida',qty:3,priceKey:'price',resp:'Kristel',obs:'Factura #011',date:days(4),...clients[0]},
-    {prodId:'DIJ-002',type:'salida',qty:5,priceKey:'price',resp:'Kristel',obs:'Factura #012',date:days(3),...clients[1]},
-    {prodId:'CON-003',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #013',date:days(2),...clients[2]},
-    {prodId:'ARE-004',type:'salida',qty:4,priceKey:'price',resp:'Kristel',obs:'Factura #014',date:days(1),...clients[3]},
-    {prodId:'COL-004',type:'salida',qty:2,priceKey:'price',resp:'Kristel',obs:'Factura #015',date:today2,...clients[4]},
-    // Ajustes
-    {prodId:'ANI-004',type:'ajuste-',qty:1,priceKey:'cost',resp:'Sistema',obs:'Pieza dañada',date:days(14)},
-    {prodId:'PUL-001',type:'ajuste+',qty:2,priceKey:'cost',resp:'Sistema',obs:'Conteo físico',date:days(7)},
-    {prodId:'DIJ-003',type:'ajuste-',qty:1,priceKey:'cost',resp:'Sistema',obs:'Muestra de exhibición',date:days(3)},
-  ];
-  let ok=0;
-  for(const m of movs){
-    const p=gP(m.prodId);if(!p)continue;
-    const price=m.priceKey==='price'?p.price:p.cost;
-    const mov={prodId:m.prodId,type:m.type,qty:m.qty,price,resp:m.resp,obs:m.obs,date:m.date};
-    if(m.clientName)mov.clientName=m.clientName;
-    if(m.clientPhone)mov.clientPhone=m.clientPhone;
-    if(m.clientEmail)mov.clientEmail=m.clientEmail;
-    if(m.payMethod)mov.payMethod=m.payMethod;
-    addM(mov);ok++;
-  }
-  alert('✅ Se cargaron '+ok+' movimientos de demostración (ventas, ajustes y devoluciones).');
 }
 // ════════════════════════════════════════════════
 // MOVEMENT DETAIL
