@@ -70,7 +70,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 #offline-bar{height:0;overflow:hidden;background:var(--red);color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;transition:height .3s;flex-shrink:0}
 #offline-bar.show{height:28px}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
-.workspace{display:flex;flex:1;overflow:hidden}
+.workspace{display:flex;flex:1;overflow:hidden;position:relative;max-width:100vw}
 .main{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:14px}
 @media(min-width:900px){.main{padding:24px 32px;gap:20px;overflow-y:auto}}
 
@@ -429,7 +429,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
     <div class="sh">
       <div class="st">Finanzas</div>
       <div class="month-sel" style="margin-bottom:0">
-        <select id="fin-month" onchange="renderFinanzas()" style="width:160px"></select>
+        <select id="fin-month" onchange="renderFinanzas();renderPayMethods()" style="width:160px"></select>
       </div>
     </div>
     <div class="stat-grid" id="fin-stats"></div>
@@ -530,7 +530,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
       </div>
 
     </div>
-  </div>-- /workspace -->
+  </div>
+</div>
 
 <!-- BOTTOM NAV -->
 <div class="bnav">
@@ -913,7 +914,8 @@ function initFinMonth(){
 }
 
 function renderFinanzas(){
-  initFinMonth();
+  // Don't call initFinMonth here - it resets the selector
+  // initFinMonth is called once when page is opened
   const mo=document.getElementById('fin-month').value;
   const moMovs=D.movements.filter(m=>m.date.startsWith(mo));
   const sales=moMovs.filter(m=>m.type==='salida');
