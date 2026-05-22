@@ -144,7 +144,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 }
 
 /* ── MOVEMENTS ──────────────────────────────────── */
-.mov-list{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
+.mov-list{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:visible}
 .mov-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--bdr)}
 .mov-row:last-child{border-bottom:none}
 .mov-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
@@ -327,7 +327,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
   .mov-row{padding:7px 10px}
   .det-panel{top:40px}
   /* Show action buttons in landscape */
-  #btn-xls,#btn-pdf,#btn-exp,#btn-clr,#btn-mov,#btn-prd{display:flex !important}
+  #dl-wrap,#btn-clr,#btn-mov,#btn-prd{display:flex !important}
   #chat-toggle{display:none !important}
   /* Pagos page: 2 cols */
   #page-pagos .pay-bank-card{margin-bottom:8px}
@@ -354,9 +354,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
   </nav>
   <div class="tr">
     <div class="sync" id="sync-dot"></div>
-    <button class="tbtn grn" id="btn-xls" onclick="exportXLS()" style="display:none">📊 Descargar inventario</button>
-    <button class="tbtn gld" id="btn-pdf" onclick="exportPDF()" style="display:none">📄 Descargar catálogo</button>
-    <button class="tbtn" id="btn-exp" onclick="exportClients()" style="display:none">👤 Clientes</button>
+    <!-- Descargables dropdown -->
+    <div class="dl-wrap" id="dl-wrap" style="display:none;position:relative">
+      <button class="tbtn" onclick="toggleDL(event)">⬇ Descargables ▾</button>
+      <div id="dl-menu" style="display:none;position:absolute;top:38px;right:0;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:210px;z-index:100;overflow:hidden">
+        <button onclick="exportXLS();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;border-bottom:1px solid var(--bdr);font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">📊 Descargar inventario</button>
+        <button onclick="exportPDF();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;border-bottom:1px solid var(--bdr);font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">📄 Descargar catálogo</button>
+        <button onclick="exportPayPDF();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;border-bottom:1px solid var(--bdr);font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">📄 Descargar medios de pago</button>
+        <button onclick="exportClients();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">👤 Clientes</button>
+      </div>
+    </div>
     <button class="tbtn dng" id="btn-clr" onclick="confirmClear()" style="display:none">🗑</button>
     <button class="tbtn" id="btn-mov" onclick="openMov()" style="display:none">+ Movimiento</button>
     <button class="tbtn pri" id="btn-prd" onclick="openProd()" style="display:none">+ Producto</button>
@@ -457,66 +464,55 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 
   <!-- MÉTODOS DE PAGO -->
   <div class="page" id="page-pagos">
-    <div style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <div>
         <div class="st">Métodos de Pago</div>
-        <button class="bsm pri" style="flex-shrink:0" onclick="exportPayPDF()">📄 PDF para cliente</button>
+        <p style="font-size:12px;color:var(--tx3);margin-top:4px">Se sincroniza entre todos tus dispositivos.</p>
       </div>
-      <p style="font-size:12px;color:var(--tx3);margin-top:6px">Configura tus datos de cobro. Se sincroniza entre todos tus dispositivos.</p>
+      <button class="bsm pri" style="flex-shrink:0" onclick="exportPayPDF()">📄 PDF para cliente</button>
     </div>
 
-    <!-- BCP -->
-    <div class="pay-bank-card">
-      <div class="pay-bank-head"><span class="pay-bank-icon">🏦</span><span class="pay-bank-name">BCP</span></div>
-      <div class="fg">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;width:100%;max-width:100%">
+
+      <div class="pay-bank-card" style="margin-bottom:0">
+        <div class="pay-bank-head"><span class="pay-bank-icon">🏦</span><span class="pay-bank-name">BCP</span></div>
         <div class="fr"><label>N° Cuenta</label><input id="bcp-cta" placeholder="191-12345678-0-12" oninput="savePay()"></div>
         <div class="fr"><label>N° Cuenta Interbancaria (CCI)</label><input id="bcp-cci" placeholder="00219100123456780112" oninput="savePay()"></div>
+        <div class="fr"><label>Titular</label><input id="bcp-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
       </div>
-      <div class="fr"><label>Titular</label><input id="bcp-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
-    </div>
 
-    <!-- Interbank -->
-    <div class="pay-bank-card">
-      <div class="pay-bank-head"><span class="pay-bank-icon">🏦</span><span class="pay-bank-name">Interbank</span></div>
-      <div class="fg">
+      <div class="pay-bank-card" style="margin-bottom:0">
+        <div class="pay-bank-head"><span class="pay-bank-icon">🏦</span><span class="pay-bank-name">Interbank</span></div>
         <div class="fr"><label>N° Cuenta</label><input id="ibk-cta" placeholder="200-3012345678" oninput="savePay()"></div>
         <div class="fr"><label>N° Cuenta Interbancaria (CCI)</label><input id="ibk-cci" placeholder="00320000301234567890" oninput="savePay()"></div>
+        <div class="fr"><label>Titular</label><input id="ibk-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
       </div>
-      <div class="fr"><label>Titular</label><input id="ibk-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
-    </div>
 
-    <!-- Yape -->
-    <div class="pay-bank-card">
-      <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#6C2D9B;color:#fff">Y</span><span class="pay-bank-name">Yape</span></div>
-      <div class="fg">
+      <div class="pay-bank-card" style="margin-bottom:0">
+        <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#6C2D9B;color:#fff;font-size:14px;font-weight:700">Y</span><span class="pay-bank-name">Yape</span></div>
         <div class="fr"><label>Número de teléfono</label><input id="yape-num" placeholder="999 888 777" type="tel" oninput="savePay()"></div>
         <div class="fr"><label>Nombre asociado</label><input id="yape-nm" placeholder="Nombre en Yape" oninput="savePay()"></div>
+        <div class="fr"><label>QR de Yape</label>
+          <button type="button" class="img-up" onclick="document.getElementById('yape-qr-f').click()">📷 Cargar QR</button>
+          <input type="file" id="yape-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'yape-qr-pv','yape_qr')">
+          <img id="yape-qr-pv" class="img-pv" style="max-height:160px;object-fit:contain;display:none;margin-top:8px">
+        </div>
       </div>
-      <div class="fr">
-        <label>QR de Yape</label>
-        <button type="button" class="img-up" onclick="document.getElementById('yape-qr-f').click()">📷 Cargar QR de Yape</button>
-        <input type="file" id="yape-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'yape-qr-pv','yape_qr')">
-        <img id="yape-qr-pv" class="img-pv" style="max-height:180px;object-fit:contain;display:none">
-      </div>
-    </div>
 
-    <!-- Plin -->
-    <div class="pay-bank-card">
-      <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#00A9E0;color:#fff">P</span><span class="pay-bank-name">Plin</span></div>
-      <div class="fg">
+      <div class="pay-bank-card" style="margin-bottom:0">
+        <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#00A9E0;color:#fff;font-size:14px;font-weight:700">P</span><span class="pay-bank-name">Plin</span></div>
         <div class="fr"><label>Número de teléfono</label><input id="plin-num" placeholder="999 888 777" type="tel" oninput="savePay()"></div>
         <div class="fr"><label>Nombre asociado</label><input id="plin-nm" placeholder="Nombre en Plin" oninput="savePay()"></div>
+        <div class="fr"><label>QR de Plin</label>
+          <button type="button" class="img-up" onclick="document.getElementById('plin-qr-f').click()">📷 Cargar QR</button>
+          <input type="file" id="plin-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'plin-qr-pv','plin_qr')">
+          <img id="plin-qr-pv" class="img-pv" style="max-height:160px;object-fit:contain;display:none;margin-top:8px">
+        </div>
       </div>
-      <div class="fr">
-        <label>QR de Plin</label>
-        <button type="button" class="img-up" onclick="document.getElementById('plin-qr-f').click()">📷 Cargar QR de Plin</button>
-        <input type="file" id="plin-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'plin-qr-pv','plin_qr')">
-        <img id="plin-qr-pv" class="img-pv" style="max-height:180px;object-fit:contain;display:none">
-      </div>
+
     </div>
 
-    <!-- Summary -->
-    <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px;margin-top:4px">
+    <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px;margin-top:12px">
       <div style="font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:12px">Ventas por método de pago</div>
       <div id="pay-summary"></div>
     </div>
@@ -814,7 +810,7 @@ function renderList(){
 }
 
 function renderMovs(){
-  const movs=[...D.movements].reverse().slice(0,50);
+  const movs=[...D.movements].reverse();
   const el=document.getElementById('mov-list');
   if(!movs.length){el.innerHTML='<div class="empty"><div class="empty-ic">📋</div><div class="empty-msg">Sin movimientos aún</div></div>';return;}
   const lb={entrada:'Entrada',salida:'Venta','ajuste+':'Ajuste +','ajuste-':'Ajuste −'};
@@ -1222,7 +1218,9 @@ async function exportPDF(){
       doc.setFillColor(...GR);doc.rect(cX,cY,2.5,cardH,'F');
 
       // PHOTO — large, left side, occupies ~40% of card width
-      const imgW=72;const imgH=cardH-8;const imgX=cX+8;const imgY=cY+4;
+      // Square photo - fixed size regardless of card height
+      const imgW=78;const imgH=78; // Square 78x78mm
+      const imgX=cX+8;const imgY=cY+8;
       if(p.img&&p.img.startsWith('data:image')){
         try{
           const fm=p.img.includes('png')?'PNG':'JPEG';
@@ -1247,10 +1245,10 @@ async function exportPDF(){
       let txY=cY+10;
 
       // Product name — large
-      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...TX);
+      doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...TX);
       const nLines=doc.splitTextToSize(p.name,txW);
       doc.text(nLines.slice(0,2),txX,txY);
-      txY+=nLines.slice(0,2).length*6+3;
+      txY+=nLines.slice(0,2).length*7+4;
 
       // Separator
       doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(txX,txY,txX+txW,txY);txY+=4;
@@ -1263,19 +1261,19 @@ async function exportPDF(){
         [p.material==='Oro'?'QUILATES':'PUREZA',p.quilates&&p.quilates!=='—'?p.quilates:'—'],
       ];
       fields.forEach(([lbl,val])=>{
-        if(txY>cY+cardH-22)return;
-        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);
+        if(txY>cY+cardH-20)return;
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TX2);
         doc.text(lbl,txX,txY);
-        doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...TX);
-        doc.text(val||'',txX,txY+4.5);
-        txY+=11;
+        doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...TX);
+        doc.text(val||'—',txX,txY+5.5);
+        txY+=13;
       });
 
       // Description if space allows
       if(p.desc&&txY<cY+cardH-16){
-        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);
-        doc.text('DESCRIPCION',txX,txY);txY+=4.5;
-        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TX);
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TX2);
+        doc.text('DESCRIPCIÓN',txX,txY);txY+=5.5;
+        doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...TX);
         const dL=doc.splitTextToSize(p.desc,txW);
         const maxDL=Math.min(dL.length,Math.floor((cY+cardH-txY-14)/3.5));
         if(maxDL>0)doc.text(dL.slice(0,maxDL),txX,txY);
@@ -1689,12 +1687,20 @@ function handleOrientation(){
 // ════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════
+function toggleDL(e){
+  if(e)e.stopPropagation();
+  const m=document.getElementById('dl-menu');
+  if(m)m.style.display=m.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',function(){const m=document.getElementById('dl-menu');if(m)m.style.display='none';});
+
 window.addEventListener('load',()=>{
   initFB();
   // Load pay data from Firebase immediately on startup
   setTimeout(loadPayFromFirebase, 1500); // wait for Firebase to connect
   // Show desktop buttons
-  ['btn-xls','btn-pdf','btn-exp','btn-clr','btn-mov','btn-prd'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
+  const dlw=document.getElementById('dl-wrap');if(dlw)dlw.style.display='flex';
+  ['btn-clr','btn-mov','btn-prd'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
   // Responsive resize
   window.addEventListener('resize',()=>{renderList();handleOrientation();});
   window.addEventListener('orientationchange',()=>{setTimeout(()=>{renderList();handleOrientation();},150);});
