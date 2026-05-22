@@ -279,50 +279,50 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 .empty-msg{font-size:13px;line-height:1.6}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
-/* ── LANDSCAPE MOBILE ───────────────────────────── */
-@media(max-width:899px) and (orientation:landscape){
-  /* Show desktop nav tabs in landscape */
-  .topbar-nav{display:flex !important;gap:2px;margin-left:10px}
-  .tnav{padding:4px 10px;font-size:12px}
-  /* Hide bottom nav to save space */
+/* ── LANDSCAPE MOBILE ─────────────────────────────
+   Triggered when phone is rotated horizontally
+   (width > height AND width < 900px)
+────────────────────────────────────────────────── */
+@media screen and (orientation:landscape) and (max-width:900px){
+  /* Topbar: compact & show nav tabs */
+  .topbar{height:44px}
+  .topbar-nav{display:flex !important;gap:1px;margin-left:8px}
+  .tnav{padding:4px 9px;font-size:11px}
+  /* Hide bottom nav — nav is now on top */
   .bnav{display:none !important}
-  .fab{bottom:12px}
-  /* Main padding tighter */
-  .main{padding:12px 16px;gap:12px}
-  /* KPIs: 4 columns in landscape */
-  .kpi-grid{grid-template-columns:repeat(4,1fr) !important;gap:8px}
-  .kpi{padding:10px 12px}
-  .kpi-val{font-size:20px !important}
-  /* Product list: show more columns */
-  .prod-list .prod-row{padding:9px 12px}
-  /* Detail panel: full screen landscape */
-  .det-panel{top:52px;width:60% !important}
-  /* Chat panel: narrower */
-  .chat-panel{width:300px !important;min-width:300px !important}
-  /* Topbar: compact */
-  .topbar{height:46px}
-  /* Workspace takes remaining */
-  .app{height:100dvh}
-  /* Movements: show more info */
-  .mov-row{padding:9px 12px}
-  /* Dashboard: 2 columns */
-  .dash-grid{grid-template-columns:1fr 1fr !important}
-  /* Reduce font sizes slightly */
-  .st{font-size:17px}
-  /* Tables: show on landscape mobile too */
+  /* FAB position */
+  .fab{bottom:10px;right:14px;width:40px;height:40px;font-size:18px}
+  /* Main: tighter padding */
+  .main{padding:10px 14px;gap:10px}
+  /* KPIs: all 4 in one row */
+  .kpi-grid{grid-template-columns:repeat(4,1fr) !important;gap:6px}
+  .kpi{padding:8px 10px}
+  .kpi-val{font-size:18px !important}
+  .kpi-lbl{font-size:9px}
+  .kpi-sub{font-size:9px}
+  /* Section title smaller */
+  .st{font-size:16px}
+  /* Product rows: desktop-style table layout */
   .tbl-head{display:grid !important}
   .prod-thumb{display:none !important}
-  .prod-info{min-width:0}
   .prod-right{display:contents !important}
-  .prod-price{font-size:12px !important;display:flex;align-items:center}
+  .prod-price{font-size:12px !important;display:flex !important;align-items:center}
   .prod-actions{opacity:1 !important;display:flex !important;align-items:center !important}
   .prod-cat,.prod-mat,.prod-cost,.prod-margin{display:flex !important;align-items:center;font-size:11px;color:var(--tx2)}
-}
-
-/* ── LANDSCAPE: topbar btn show ─────────────────── */
-@media(max-width:899px) and (orientation:landscape){
+  .prod-row{padding:8px 12px}
+  /* Dashboard: 2 columns */
+  .dash-grid{grid-template-columns:1fr 1fr !important}
+  /* Movements compact */
+  .mov-row{padding:8px 12px}
+  /* Detail panel */
+  .det-panel{top:44px}
+  /* Topbar buttons visible */
   #btn-xls,#btn-pdf,#btn-exp,#btn-clr,#btn-mov,#btn-prd{display:flex !important}
-  .ibtop#chat-toggle{display:none !important}
+  /* Hide chat toggle (use nav instead) */
+  #chat-toggle{display:none !important}
+  /* Pay cards: side by side in landscape */
+  .pay-bank-card{margin-bottom:8px}
+  #page-pagos .main > *{max-width:100%}
 }
 .pay-bank-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px}
 .pay-bank-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}
@@ -476,35 +476,34 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
       <div class="fr"><label>Titular</label><input id="ibk-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
     </div>
 
-    <!-- Yape + Plin side by side -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-
-      <!-- Yape -->
-      <div class="pay-bank-card" style="margin-bottom:0">
-        <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#6C2D9B;color:#fff">Y</span><span class="pay-bank-name">Yape</span></div>
+    <!-- Yape -->
+    <div class="pay-bank-card">
+      <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#6C2D9B;color:#fff">Y</span><span class="pay-bank-name">Yape</span></div>
+      <div class="fg">
         <div class="fr"><label>Número de teléfono</label><input id="yape-num" placeholder="999 888 777" type="tel" oninput="savePay()"></div>
         <div class="fr"><label>Nombre asociado</label><input id="yape-nm" placeholder="Nombre en Yape" oninput="savePay()"></div>
-        <div class="fr">
-          <label>QR de Yape</label>
-          <button type="button" class="img-up" onclick="document.getElementById('yape-qr-f').click()">📷 Cargar QR</button>
-          <input type="file" id="yape-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'yape-qr-pv','yape-qr')">
-          <img id="yape-qr-pv" class="img-pv" style="max-height:140px;object-fit:contain">
-        </div>
       </div>
+      <div class="fr">
+        <label>QR de Yape</label>
+        <button type="button" class="img-up" onclick="document.getElementById('yape-qr-f').click()">📷 Cargar QR de Yape</button>
+        <input type="file" id="yape-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'yape-qr-pv','yape_qr')">
+        <img id="yape-qr-pv" class="img-pv" style="max-height:180px;object-fit:contain;display:none">
+      </div>
+    </div>
 
-      <!-- Plin -->
-      <div class="pay-bank-card" style="margin-bottom:0">
-        <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#00A9E0;color:#fff">P</span><span class="pay-bank-name">Plin</span></div>
+    <!-- Plin -->
+    <div class="pay-bank-card">
+      <div class="pay-bank-head"><span class="pay-bank-icon" style="background:#00A9E0;color:#fff">P</span><span class="pay-bank-name">Plin</span></div>
+      <div class="fg">
         <div class="fr"><label>Número de teléfono</label><input id="plin-num" placeholder="999 888 777" type="tel" oninput="savePay()"></div>
         <div class="fr"><label>Nombre asociado</label><input id="plin-nm" placeholder="Nombre en Plin" oninput="savePay()"></div>
-        <div class="fr">
-          <label>QR de Plin</label>
-          <button type="button" class="img-up" onclick="document.getElementById('plin-qr-f').click()">📷 Cargar QR</button>
-          <input type="file" id="plin-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'plin-qr-pv','plin-qr')">
-          <img id="plin-qr-pv" class="img-pv" style="max-height:140px;object-fit:contain">
-        </div>
       </div>
-
+      <div class="fr">
+        <label>QR de Plin</label>
+        <button type="button" class="img-up" onclick="document.getElementById('plin-qr-f').click()">📷 Cargar QR de Plin</button>
+        <input type="file" id="plin-qr-f" accept="image/*" style="display:none" onchange="loadQR(this,'plin-qr-pv','plin_qr')">
+        <img id="plin-qr-pv" class="img-pv" style="max-height:180px;object-fit:contain;display:none">
+      </div>
     </div>
 
     <!-- Summary -->
@@ -687,7 +686,13 @@ function initFB(){
     db=firebase.database();
     db.ref('products').on('value',s=>{const v=s.val();D.products=v?Object.values(v):[];renderAll();setSy('ok');});
     db.ref('movements').on('value',s=>{const v=s.val();D.movements=v?Object.values(v):[];renderAll();});
-    db.ref('.info/connected').on('value',s=>{const c=s.val();document.getElementById('offline-bar').classList.toggle('show',!c);setSy(c?'ok':'of');});
+    db.ref('.info/connected').on('value',s=>{
+      const connected=s.val();
+      document.getElementById('offline-bar').classList.toggle('show',!connected);
+      setSy(connected?'ok':'of');
+      // Load pay data once connected
+      if(connected) loadPayFromFirebase();
+    });
   }catch(e){try{D=JSON.parse(localStorage.getItem(LK)||'{"products":[],"movements":[]}');}catch(e2){}renderAll();}
 }
 function setSy(s){const d=document.getElementById('sync-dot');d.className='sync'+(s==='sy'?' sy':s==='of'?' of':'');}
@@ -1295,6 +1300,48 @@ async function exportPDF(){
 const PAY_KEY='lafech_pay_data_v2';
 let payData=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
 
+// Sync payData to/from Firebase when available
+function syncPayToFirebase(){
+  if(!db)return;
+  // QR images are large - save separately
+  const slim={
+    bcp_cta:payData.bcp_cta||'',bcp_cci:payData.bcp_cci||'',bcp_nm:payData.bcp_nm||'',
+    ibk_cta:payData.ibk_cta||'',ibk_cci:payData.ibk_cci||'',ibk_nm:payData.ibk_nm||'',
+    yape_num:payData.yape_num||'',yape_nm:payData.yape_nm||'',
+    plin_num:payData.plin_num||'',plin_nm:payData.plin_nm||'',
+  };
+  db.ref('payData').set(slim);
+  // Save QRs separately as they are large base64 strings
+  if(payData.yape_qr) db.ref('payQR/yape').set({data:payData.yape_qr});
+  if(payData.plin_qr) db.ref('payQR/plin').set({data:payData.plin_qr});
+}
+
+function loadPayFromFirebase(){
+  if(!db)return;
+  db.ref('payData').once('value',snap=>{
+    const v=snap.val();
+    if(v){Object.assign(payData,v);localStorage.setItem(PAY_KEY,JSON.stringify(payData));}
+  });
+  db.ref('payQR/yape').once('value',snap=>{
+    const v=snap.val();
+    if(v&&v.data){
+      payData.yape_qr=v.data;
+      localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+      const pv=document.getElementById('yape-qr-pv');
+      if(pv){pv.src=v.data;pv.style.display='block';}
+    }
+  });
+  db.ref('payQR/plin').once('value',snap=>{
+    const v=snap.val();
+    if(v&&v.data){
+      payData.plin_qr=v.data;
+      localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+      const pv=document.getElementById('plin-qr-pv');
+      if(pv){pv.src=v.data;pv.style.display='block';}
+    }
+  });
+}
+
 function savePay(){
   // Preserve QR data that lives separately in payData
   const yqr=payData.yape_qr||null;
@@ -1314,6 +1361,7 @@ function savePay(){
     plin_qr:pqr,
   };
   localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+  syncPayToFirebase();
 }
 
 function loadQR(input,previewId,key){
@@ -1322,20 +1370,28 @@ function loadQR(input,previewId,key){
   r.onload=e=>{
     const img=document.getElementById(previewId);
     img.src=e.target.result;img.style.display='block';
-    // Reload current payData from localStorage to avoid overwriting other fields
+    // Merge with existing payData
     const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
     Object.assign(payData,saved);
     payData[key]=e.target.result;
     localStorage.setItem(PAY_KEY,JSON.stringify(payData));
-    console.log('QR saved for key:',key,'length:',e.target.result.length);
+    // Save QR to Firebase directly
+    if(db){
+      const fbKey=key==='yape_qr'?'yape':'plin';
+      db.ref('payQR/'+fbKey).set({data:e.target.result})
+        .then(()=>console.log('QR saved to Firebase:',fbKey))
+        .catch(err=>console.error('QR Firebase save failed:',err));
+    }
   };
   r.readAsDataURL(f);
 }
 
 function loadPayFields(){
-  // Sync from localStorage on every page open
+  // Sync from localStorage
   const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
   Object.assign(payData,saved);
+  // Also load fresh from Firebase (will update UI when data arrives)
+  loadPayFromFirebase();
   const d=payData;
   const f=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
   f('bcp-cta',d.bcp_cta);f('bcp-cci',d.bcp_cci);f('bcp-nm',d.bcp_nm);
@@ -1374,9 +1430,12 @@ function renderPayMethods(){
 }
 
 async function exportPayPDF(){
-  // Always get freshest data from localStorage
-  payData=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
+  // Get freshest data - merge localStorage and current payData
+  const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
+  Object.assign(payData,saved);
   const d=payData;
+  console.log('PDF gen - yape_qr:',d.yape_qr?'present ('+d.yape_qr.length+' chars)':'MISSING');
+  console.log('PDF gen - plin_qr:',d.plin_qr?'present ('+d.plin_qr.length+' chars)':'MISSING');
 
   const hasAny=d.bcp_cta||d.bcp_cci||d.ibk_cta||d.ibk_cci||d.yape_num||d.plin_num;
   if(!hasAny){alert('Completa al menos un metodo de pago antes de generar el PDF.');return;}
@@ -1608,6 +1667,8 @@ function handleOrientation(){
 // ════════════════════════════════════════════════
 window.addEventListener('load',()=>{
   initFB();
+  // Load pay data from Firebase immediately on startup
+  setTimeout(loadPayFromFirebase, 1500); // wait for Firebase to connect
   // Show desktop buttons
   ['btn-xls','btn-pdf','btn-exp','btn-clr','btn-mov','btn-prd'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
   // Responsive resize
