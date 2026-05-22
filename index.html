@@ -53,7 +53,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 .sync.sy{background:var(--amb);animation:pu 1s infinite}
 .sync.of{background:var(--red)}
 @keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
-.tbtn{padding:6px 11px;border:1px solid var(--bdr2);border-radius:var(--rs);background:var(--surf);font-family:var(--fb);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--tx2);white-space:nowrap;transition:all .12s}
+.tbtn{padding:6px 11px;border:1px solid var(--bdr2);border-radius:var(--rs);background:var(--surf);font-family:var(--fb);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--tx2);white-space:nowrap;transition:all .12s;flex-shrink:0}
 .tbtn:hover{background:var(--surf2);color:var(--tx)}
 .tbtn.pri{background:var(--P);border-color:var(--PD);color:#fff}
 .tbtn.pri:hover{background:var(--PD)}
@@ -71,8 +71,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 #offline-bar.show{height:28px}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 .workspace{display:flex;flex:1;overflow:hidden}
-.main{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
-@media(min-width:900px){.main{padding:24px 32px;gap:20px}}
+.main{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:14px}
+@media(min-width:900px){.main{padding:24px 32px;gap:20px;overflow-y:auto}}
 
 /* ── KPIs ───────────────────────────────────────── */
 .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -101,7 +101,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 .srch{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:9px 13px}
 .srch input{flex:1;border:none;background:transparent;font-family:var(--fb);font-size:13px;color:var(--tx);outline:none}
 .srch input::placeholder{color:var(--tx3)}
-.pills{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.pills{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px 0 6px;min-height:36px}
 .pills::-webkit-scrollbar{display:none}
 .pill{padding:4px 12px;border-radius:20px;border:1px solid var(--bdr);background:transparent;font-size:11px;cursor:pointer;color:var(--tx2);white-space:nowrap;font-family:var(--fb);flex-shrink:0;transition:all .12s}
 .pill.on{background:var(--PL);border-color:var(--PM);color:var(--P);font-weight:500}
@@ -279,52 +279,57 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 .empty-msg{font-size:13px;line-height:1.6}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
-/* ── LANDSCAPE MOBILE ─────────────────────────────
-   Triggered when phone is rotated horizontally
-   (width > height AND width < 900px)
+/* ── MOBILE PORTRAIT (default) ─────────────────────
+   Hides topbar action buttons, shows bottom nav
 ────────────────────────────────────────────────── */
-@media screen and (orientation:landscape) and (max-width:900px){
-  /* Topbar: compact & show nav tabs */
-  .topbar{height:44px}
+@media(max-width:899px){
+  /* Hide big action buttons from topbar on mobile */
+  #btn-xls,#btn-pdf,#btn-exp,#btn-clr,#btn-mov,#btn-prd{display:none !important}
+  /* Compact topbar */
+  .topbar{padding:0 12px;gap:6px}
+  .logo{font-size:18px}
+}
+
+/* ── MOBILE LANDSCAPE ──────────────────────────────
+   When phone rotated horizontal (height < width)
+────────────────────────────────────────────────── */
+@media(max-width:899px) and (orientation:landscape){
+  /* Show desktop nav, hide bottom nav */
   .topbar-nav{display:flex !important;gap:1px;margin-left:8px}
-  .tnav{padding:4px 9px;font-size:11px}
-  /* Hide bottom nav — nav is now on top */
   .bnav{display:none !important}
-  /* FAB position */
   .fab{bottom:10px;right:14px;width:40px;height:40px;font-size:18px}
-  /* Main: tighter padding */
-  .main{padding:10px 14px;gap:10px}
-  /* KPIs: all 4 in one row */
+  /* Compact everything */
+  .topbar{height:40px;padding:0 10px}
+  .logo{font-size:16px}
+  .tnav{padding:3px 8px;font-size:11px}
+  .main{padding:8px 12px;gap:8px}
+  /* 4 KPIs in one row */
   .kpi-grid{grid-template-columns:repeat(4,1fr) !important;gap:6px}
-  .kpi{padding:8px 10px}
-  .kpi-val{font-size:18px !important}
-  .kpi-lbl{font-size:9px}
-  .kpi-sub{font-size:9px}
-  /* Section title smaller */
-  .st{font-size:16px}
-  /* Product rows: desktop-style table layout */
+  .kpi{padding:7px 10px}
+  .kpi-val{font-size:16px !important}
+  .kpi-lbl{font-size:8px;margin-bottom:2px}
+  .kpi-sub{font-size:8px}
+  .st{font-size:15px}
+  /* Table layout instead of cards */
   .tbl-head{display:grid !important}
   .prod-thumb{display:none !important}
   .prod-right{display:contents !important}
-  .prod-price{font-size:12px !important;display:flex !important;align-items:center}
+  .prod-price{font-size:11px !important;display:flex !important;align-items:center}
   .prod-actions{opacity:1 !important;display:flex !important;align-items:center !important}
-  .prod-cat,.prod-mat,.prod-cost,.prod-margin{display:flex !important;align-items:center;font-size:11px;color:var(--tx2)}
-  .prod-row{padding:8px 12px}
-  /* Dashboard: 2 columns */
-  .dash-grid{grid-template-columns:1fr 1fr !important}
-  /* Movements compact */
-  .mov-row{padding:8px 12px}
-  /* Detail panel */
-  .det-panel{top:44px}
-  /* Topbar buttons visible */
+  .prod-cat,.prod-mat,.prod-cost,.prod-margin{display:flex !important;align-items:center;font-size:10px;color:var(--tx2)}
+  .prod-row{padding:7px 10px}
+  /* Dashboard 2 cols */
+  .dash-grid{grid-template-columns:1fr 1fr !important;gap:10px}
+  .mov-row{padding:7px 10px}
+  .det-panel{top:40px}
+  /* Show action buttons in landscape */
   #btn-xls,#btn-pdf,#btn-exp,#btn-clr,#btn-mov,#btn-prd{display:flex !important}
-  /* Hide chat toggle (use nav instead) */
   #chat-toggle{display:none !important}
-  /* Pay cards: side by side in landscape */
-  .pay-bank-card{margin-bottom:8px}
-  #page-pagos .main > *{max-width:100%}
+  /* Pagos page: 2 cols */
+  #page-pagos .pay-bank-card{margin-bottom:8px}
 }
-.pay-bank-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px}
+
+.pay-bank-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px;width:100%;box-sizing:border-box}
 .pay-bank-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}
 .pay-bank-icon{width:32px;height:32px;border-radius:8px;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700}
 .pay-bank-name{font-family:var(--fd);font-size:18px;font-weight:600;color:var(--tx)}
@@ -345,8 +350,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
   </nav>
   <div class="tr">
     <div class="sync" id="sync-dot"></div>
-    <button class="tbtn grn" id="btn-xls" onclick="exportXLS()" style="display:none">📊 Excel</button>
-    <button class="tbtn gld" id="btn-pdf" onclick="exportPDF()" style="display:none">📄 PDF</button>
+    <button class="tbtn grn" id="btn-xls" onclick="exportXLS()" style="display:none">📊 Descargar inventario</button>
+    <button class="tbtn gld" id="btn-pdf" onclick="exportPDF()" style="display:none">📄 Descargar catálogo</button>
     <button class="tbtn" id="btn-exp" onclick="exportClients()" style="display:none">👤 Clientes</button>
     <button class="tbtn dng" id="btn-clr" onclick="confirmClear()" style="display:none">🗑</button>
     <button class="tbtn" id="btn-mov" onclick="openMov()" style="display:none">+ Movimiento</button>
@@ -362,8 +367,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
     <div class="sh">
       <div class="st">Catálogo</div>
       <div style="display:flex;gap:6px">
-        <button class="bsm" onclick="exportXLS()">📊 Excel</button>
-        <button class="bsm" onclick="exportPDF()">📄 PDF</button>
+        <button class="bsm" onclick="exportXLS()">📊 Descargar inventario</button>
+        <button class="bsm" onclick="exportPDF()">📄 Descargar catálogo</button>
         <button class="bsm pri" onclick="openProd()">+ Producto</button>
       </div>
     </div>
@@ -448,12 +453,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 
   <!-- MÉTODOS DE PAGO -->
   <div class="page" id="page-pagos">
-    <div class="sh" style="flex-wrap:wrap;gap:8px;align-items:flex-start">
-      <div>
+    <div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div class="st">Métodos de Pago</div>
-        <p style="font-size:12px;color:var(--tx3);margin-top:4px">Configura tus datos de cobro. Genera el PDF para enviarlo al cliente.</p>
+        <button class="bsm pri" style="flex-shrink:0" onclick="exportPayPDF()">📄 PDF para cliente</button>
       </div>
-      <button class="bsm pri" style="flex-shrink:0" onclick="exportPayPDF()">📄 PDF para cliente</button>
+      <p style="font-size:12px;color:var(--tx3);margin-top:6px">Configura tus datos de cobro. Se sincroniza entre todos tus dispositivos.</p>
     </div>
 
     <!-- BCP -->
@@ -510,6 +515,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
     <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px;margin-top:4px">
       <div style="font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:12px">Ventas por método de pago</div>
       <div id="pay-summary"></div>
+    </div>
+    <div style="margin-top:16px;padding:14px;background:var(--surf2);border-radius:var(--r);border:1px dashed var(--bdr2)">
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">🧪 Datos de demostración — solo visible para administrador</div>
+      <button class="bsm" onclick="seedMovements()" style="color:var(--P);border-color:var(--PM)">📊 Cargar movimientos de demo</button>
     </div>
   </div>
 </div><!-- /workspace -->
@@ -1430,9 +1439,23 @@ function renderPayMethods(){
 }
 
 async function exportPayPDF(){
-  // Get freshest data - merge localStorage and current payData
-  const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
-  Object.assign(payData,saved);
+  // Step 1: reload from localStorage
+  const localSaved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
+  Object.assign(payData,localSaved);
+  // Step 2: fetch QRs from Firebase if missing
+  if(db){
+    await Promise.all([
+      new Promise(res=>{
+        if(payData.yape_qr){res();return;}
+        db.ref('payQR/yape').once('value',s=>{const v=s.val();if(v&&v.data){payData.yape_qr=v.data;}res();},()=>res());
+      }),
+      new Promise(res=>{
+        if(payData.plin_qr){res();return;}
+        db.ref('payQR/plin').once('value',s=>{const v=s.val();if(v&&v.data){payData.plin_qr=v.data;}res();},()=>res());
+      })
+    ]);
+    localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+  }
   const d=payData;
   console.log('PDF gen - yape_qr:',d.yape_qr?'present ('+d.yape_qr.length+' chars)':'MISSING');
   console.log('PDF gen - plin_qr:',d.plin_qr?'present ('+d.plin_qr.length+' chars)':'MISSING');
@@ -1605,6 +1628,55 @@ async function exportPayPDF(){
   doc.text(today(),W-14,H-6,{align:'right'});
 
   doc.save('LaFech_Informacion_Pago.pdf');
+}
+// ════════════════════════════════════════════════
+// SEED MOVEMENTS (demo data)
+// ════════════════════════════════════════════════
+async function seedMovements(){
+  if(!D.products.length){alert('Primero carga los productos.');return;}
+  const today2=today();
+  const days=(n)=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10);};
+  const clients=[
+    {clientName:'María García',clientPhone:'987654321',clientEmail:'maria@gmail.com',payMethod:'Yape'},
+    {clientName:'Carlos Ruiz',clientPhone:'976543210',clientEmail:'carlos@gmail.com',payMethod:'Efectivo'},
+    {clientName:'Lucía Mendoza',clientPhone:'965432109',clientEmail:'lucia@gmail.com',payMethod:'Tarjeta de crédito'},
+    {clientName:'Roberto Silva',clientPhone:'954321098',clientEmail:'roberto@gmail.com',payMethod:'Plin'},
+    {clientName:'Ana Torres',clientPhone:'943210987',clientEmail:'ana@gmail.com',payMethod:'Transferencia bancaria'},
+  ];
+  const movs=[
+    // Ventas (salidas)
+    {prodId:'ANI-001',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #001',date:days(28),...clients[0]},
+    {prodId:'COL-002',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #002',date:days(25),...clients[1]},
+    {prodId:'ARE-001',type:'salida',qty:2,priceKey:'price',resp:'Kristel',obs:'Factura #003',date:days(22),...clients[2]},
+    {prodId:'PUL-002',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #004',date:days(20),...clients[3]},
+    {prodId:'DIJ-001',type:'salida',qty:3,priceKey:'price',resp:'Kristel',obs:'Factura #005',date:days(18),...clients[4]},
+    {prodId:'CON-001',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #006',date:days(15),...clients[0]},
+    {prodId:'ANI-003',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #007',date:days(12),...clients[1]},
+    {prodId:'COL-001',type:'salida',qty:2,priceKey:'price',resp:'Kristel',obs:'Factura #008',date:days(10),...clients[2]},
+    {prodId:'ARE-003',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #009',date:days(8),...clients[3]},
+    {prodId:'PUL-003',type:'salida',qty:2,priceKey:'price',resp:'Kristel',obs:'Factura #010',date:days(6),...clients[4]},
+    {prodId:'ANI-002',type:'salida',qty:3,priceKey:'price',resp:'Kristel',obs:'Factura #011',date:days(4),...clients[0]},
+    {prodId:'DIJ-002',type:'salida',qty:5,priceKey:'price',resp:'Kristel',obs:'Factura #012',date:days(3),...clients[1]},
+    {prodId:'CON-003',type:'salida',qty:1,priceKey:'price',resp:'Kristel',obs:'Factura #013',date:days(2),...clients[2]},
+    {prodId:'ARE-004',type:'salida',qty:4,priceKey:'price',resp:'Kristel',obs:'Factura #014',date:days(1),...clients[3]},
+    {prodId:'COL-004',type:'salida',qty:2,priceKey:'price',resp:'Kristel',obs:'Factura #015',date:today2,...clients[4]},
+    // Ajustes
+    {prodId:'ANI-004',type:'ajuste-',qty:1,priceKey:'cost',resp:'Sistema',obs:'Pieza dañada',date:days(14)},
+    {prodId:'PUL-001',type:'ajuste+',qty:2,priceKey:'cost',resp:'Sistema',obs:'Conteo físico',date:days(7)},
+    {prodId:'DIJ-003',type:'ajuste-',qty:1,priceKey:'cost',resp:'Sistema',obs:'Muestra de exhibición',date:days(3)},
+  ];
+  let ok=0;
+  for(const m of movs){
+    const p=gP(m.prodId);if(!p)continue;
+    const price=m.priceKey==='price'?p.price:p.cost;
+    const mov={prodId:m.prodId,type:m.type,qty:m.qty,price,resp:m.resp,obs:m.obs,date:m.date};
+    if(m.clientName)mov.clientName=m.clientName;
+    if(m.clientPhone)mov.clientPhone=m.clientPhone;
+    if(m.clientEmail)mov.clientEmail=m.clientEmail;
+    if(m.payMethod)mov.payMethod=m.payMethod;
+    addM(mov);ok++;
+  }
+  alert('✅ Se cargaron '+ok+' movimientos de demostración (ventas, ajustes y devoluciones).');
 }
 // ════════════════════════════════════════════════
 // MOVEMENT DETAIL
