@@ -588,22 +588,22 @@ body.role-admin .admin-only-block{display:flex !important}
 
   <!-- CRM CLIENTES -->
   <div class="page" id="page-crm">
+    <!-- Header -->
     <div class="sh" style="margin-bottom:16px">
       <div>
         <div class="st">Clientes</div>
-        <div style="font-size:12px;color:var(--tx3);margin-top:2px" id="crm-count">Cargando...</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px" id="crm-count">—</div>
       </div>
       <button class="bsm pri" onclick="openModal('client')">+ Cliente</button>
     </div>
-    <!-- KPIs clientes -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px" id="crm-kpis"></div>
-    <!-- Search + filters -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
-      <div class="srch" style="flex:1;min-width:200px;margin-bottom:0">
-        <span style="color:var(--tx3);font-size:15px">🔍</span>
-        <input type="text" placeholder="Buscar por nombre, teléfono o correo..." oninput="searchClients(this.value)" id="crm-search">
-      </div>
+    <!-- KPIs row -->
+    <div class="kpi-grid" id="crm-kpis" style="margin-bottom:16px"></div>
+    <!-- Search -->
+    <div class="srch" style="margin-bottom:10px">
+      <span style="color:var(--tx3);font-size:15px">🔍</span>
+      <input type="text" placeholder="Buscar por nombre, teléfono o correo..." oninput="searchClients(this.value)" id="crm-search">
     </div>
+    <!-- Filter pills -->
     <div class="pills" id="crm-tag-pills" style="margin-bottom:14px">
       <button class="pill on" onclick="setCrmFilter('todos')">Todos</button>
       <button class="pill" onclick="setCrmFilter('vip')">⭐ VIP</button>
@@ -611,7 +611,8 @@ body.role-admin .admin-only-block{display:flex !important}
       <button class="pill" onclick="setCrmFilter('nuevo')">🆕 Nuevo</button>
       <button class="pill" onclick="setCrmFilter('inactivo')">💤 Inactivo</button>
     </div>
-    <div class="crm-grid" id="crm-grid"></div>
+    <!-- Client list -->
+    <div class="prod-list" id="crm-list"></div>
   </div>
 
   <!-- PROMOCIONES -->
@@ -619,7 +620,7 @@ body.role-admin .admin-only-block{display:flex !important}
     <div class="sh" style="margin-bottom:16px">
       <div>
         <div class="st">Promociones</div>
-        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Descuentos automáticos y manuales por venta</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Descuentos automáticos aplicados al registrar ventas</div>
       </div>
       <button class="bsm pri" onclick="openModal('promo')">+ Promoción</button>
     </div>
@@ -629,7 +630,7 @@ body.role-admin .admin-only-block{display:flex !important}
       <button class="promo-tab" id="ptab-upcoming" onclick="setPromoTab('upcoming')">Próximas</button>
       <button class="promo-tab" id="ptab-expired" onclick="setPromoTab('expired')">Vencidas</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px" id="promos-list"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%" id="promos-list"></div>
   </div>
 
   <!-- MÉTODOS DE PAGO -->
@@ -1985,71 +1986,151 @@ function setCrmFilter(f){
 
 function searchClients(q){ crmSearch=q; renderCRM(); }
 
+function getAutoTag(movs){
+  // Automatic segmentation rules
+  const count = movs.length;
+  if(count === 0) return null;
+  if(count >= 10) return 'vip';
+  if(count >= 5) return 'frecuente';
+  // Check inactivo: no purchase in last 30 days
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-30);
+  const cutStr = cutoff.toISOString().slice(0,10);
+  const recent = movs.some(m => m.date >= cutStr);
+  if(!recent) return 'inactivo';
+  return 'nuevo';
+}
+
+function getClientMovs(cl){
+  // Match by phone OR name (for movements without phone)
+  return D.movements.filter(m => m.type==='salida' && (
+    (cl.phone && m.clientPhone === cl.phone) ||
+    (cl.name && m.clientName && m.clientName.toLowerCase() === cl.name.toLowerCase())
+  ));
+}
+
+function buildClientsFromMovements(){
+  // Auto-create client records from movements that have client data
+  const existing = window._clients || {};
+  const fromMovs = {};
+  D.movements.filter(m => m.type==='salida' && m.clientName).forEach(m => {
+    const key = m.clientPhone || m.clientName;
+    if(!fromMovs[key]){
+      fromMovs[key] = {
+        id: 'AUTO-'+key.replace(/\s+/g,'').slice(0,10)+'-'+Date.now(),
+        name: m.clientName,
+        phone: m.clientPhone||'',
+        email: m.clientEmail||'',
+        autoCreated: true
+      };
+    }
+  });
+  // Merge: existing clients override auto-created ones with same phone
+  const merged = {...fromMovs};
+  Object.values(existing).forEach(cl => {
+    const key = cl.phone || cl.name;
+    merged[key] = cl; // existing overrides
+  });
+  return Object.values(merged);
+}
+
 function renderCRM(){
-  if(!db){return;}
-  db.ref('clients').once('value', snap=>{
-    const all=snap.val()||{};
-    const allClients=Object.values(all);
+  if(!db) return;
+  db.ref('clients').once('value', snap => {
+    window._clients = snap.val() || {};
+    const allClients = buildClientsFromMovements();
+
+    // Compute tags and stats for each client
+    const enriched = allClients.map(cl => {
+      const movs = getClientMovs(cl);
+      const autoTag = getAutoTag(movs);
+      const tag = cl.tag || autoTag; // manual tag overrides auto
+      const total = movs.reduce((a,m)=>a+m.qty*(m.price||0),0);
+      const lastBuy = movs.length ? movs.slice().sort((a,b)=>b.date.localeCompare(a.date))[0].date : '';
+      return {...cl, tag, autoTag, movs, total, lastBuy};
+    });
+
     // KPIs
-    const vip=allClients.filter(c=>c.tag==='vip').length;
-    const totalSpent=allClients.reduce((a,cl)=>{
-      return a+D.movements.filter(m=>m.type==='salida'&&m.clientPhone===cl.phone&&cl.phone)
-        .reduce((b,m)=>b+m.qty*(m.price||0),0);
-    },0);
-    const kpiEl=document.getElementById('crm-kpis');
-    if(kpiEl) kpiEl.innerHTML=`
-      <div class="crm-kpi"><div class="crm-kpi-lbl">Total Clientes</div><div class="crm-kpi-val">${allClients.length}</div></div>
-      <div class="crm-kpi"><div class="crm-kpi-lbl">Clientes VIP</div><div class="crm-kpi-val" style="color:var(--G)">⭐ ${vip}</div></div>
-      <div class="crm-kpi"><div class="crm-kpi-lbl">Venta Total</div><div class="crm-kpi-val" style="color:var(--grn);font-size:18px">${fmtM(totalSpent)}</div></div>
-      <div class="crm-kpi"><div class="crm-kpi-lbl">Ticket Promedio</div><div class="crm-kpi-val" style="font-size:18px">${allClients.length?fmtM(Math.round(totalSpent/allClients.length)):fmtM(0)}</div></div>`;
+    const vipCount = enriched.filter(c=>c.tag==='vip').length;
+    const totalSpent = enriched.reduce((a,c)=>a+c.total,0);
+    const avgTicket = enriched.length ? Math.round(totalSpent/enriched.length) : 0;
+    const kpiEl = document.getElementById('crm-kpis');
+    if(kpiEl) kpiEl.innerHTML = `
+      <div class="kpi p"><div class="kpi-lbl">Total Clientes</div><div class="kpi-val">${enriched.length}</div></div>
+      <div class="kpi g"><div class="kpi-lbl">VIP ⭐</div><div class="kpi-val">${vipCount}</div></div>
+      <div class="kpi gr"><div class="kpi-lbl">Venta Total</div><div class="kpi-val gr" style="font-size:18px">${fmtM(totalSpent)}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Ticket Promedio</div><div class="kpi-val" style="font-size:18px">${fmtM(avgTicket)}</div></div>`;
+
     // Filter
-    let clients=[...allClients];
-    if(crmFilter!=='todos') clients=clients.filter(c=>c.tag===crmFilter);
-    if(crmSearch) clients=clients.filter(c=>
-      c.name.toLowerCase().includes(crmSearch.toLowerCase())||
-      (c.phone&&c.phone.includes(crmSearch))||
-      (c.email&&c.email.toLowerCase().includes(crmSearch.toLowerCase())));
+    let filtered = [...enriched];
+    if(crmFilter !== 'todos') filtered = filtered.filter(c => c.tag === crmFilter);
+    if(crmSearch){
+      const q = crmSearch.toLowerCase();
+      filtered = filtered.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        (c.phone && c.phone.includes(q)) ||
+        (c.email && c.email.toLowerCase().includes(q))
+      );
+    }
+
     // Count label
-    const countEl=document.getElementById('crm-count');
-    if(countEl) countEl.textContent=`${clients.length} cliente${clients.length!==1?'s':''} · ${crmFilter!=='todos'?crmFilter:'todos los estados'}`;
-    const el=document.getElementById('crm-grid');
-    if(!clients.length){
-      el.innerHTML=`<div class="empty" style="grid-column:1/-1">
-        <div class="empty-ic">👥</div>
-        <div class="empty-msg">${crmFilter!=='todos'?'Sin clientes con etiqueta "'+crmFilter+'"':'Sin clientes aún. Agrégalos con + Cliente o al registrar ventas.'}</div>
-      </div>`;
+    const countEl = document.getElementById('crm-count');
+    if(countEl) countEl.textContent = `${filtered.length} cliente${filtered.length!==1?'s':''} · ${crmFilter==='todos'?'todos los segmentos':crmFilter}`;
+
+    // Update pill labels with counts
+    const tagCounts = {todos:enriched.length, vip:0, frecuente:0, nuevo:0, inactivo:0};
+    enriched.forEach(c => { if(tagCounts[c.tag]!==undefined) tagCounts[c.tag]++; });
+    const pillLabels = {todos:'Todos',vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
+    document.querySelectorAll('#crm-tag-pills .pill').forEach(p => {
+      const filter = p.onclick.toString().match(/'([^']+)'/)?.[1];
+      if(filter && tagCounts[filter]!==undefined)
+        p.textContent = pillLabels[filter] + ' (' + tagCounts[filter] + ')';
+    });
+
+    const el = document.getElementById('crm-list');
+    if(!filtered.length){
+      el.innerHTML = `<div class="empty"><div class="empty-ic">👥</div><div class="empty-msg">${
+        crmFilter!=='todos'?'Sin clientes en el segmento "'+crmFilter+'"':'Sin clientes aún. Se crean automáticamente al registrar ventas.'
+      }</div></div>`;
       return;
     }
-    el.innerHTML=clients.map(cl=>{
-      const movs=D.movements.filter(m=>m.type==='salida'&&m.clientPhone===cl.phone&&cl.phone);
-      const purchases=movs.length;
-      const total=movs.reduce((a,m)=>a+m.qty*(m.price||0),0);
-      const lastBuy=movs.length?movs.slice().sort((a,b)=>b.date.localeCompare(a.date))[0].date:'';
-      const tagHtml=cl.tag?`<span class="tag ${cl.tag}">${{vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'}[cl.tag]||cl.tag}</span>`:'';
-      return `<div class="client-card" onclick="openClientDet('${cl.id}')">
-        <div class="client-card-top">
-          <div class="client-avatar" style="background:${cl.tag==='vip'?'#FFF3CD':cl.tag==='frecuente'?'var(--grn-bg)':'var(--PL)'};color:${cl.tag==='vip'?'#856404':cl.tag==='frecuente'?'var(--grn)':'var(--P)'}">${cl.name[0].toUpperCase()}</div>
-          <div style="flex:1;min-width:0">
-            <div class="client-name">${cl.name}</div>
-            <div class="client-meta">${cl.phone||'Sin teléfono'}${cl.email?' · '+cl.email:''}</div>
-          </div>
-          ${tagHtml}
+
+    const tagColors = {vip:['#FFF3CD','#856404'],frecuente:['var(--grn-bg)','var(--grn)'],nuevo:['var(--blu-bg)','var(--blu)'],inactivo:['var(--surf3)','var(--tx3)']};
+    const tagLabels = {vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
+
+    el.innerHTML = filtered.sort((a,b)=>b.total-a.total).map(cl => {
+      const [tagBg, tagFg] = tagColors[cl.tag] || ['var(--PL)','var(--P)'];
+      const tagBadge = cl.tag ? `<span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${tagBg};color:${tagFg}">${tagLabels[cl.tag]||cl.tag}</span>` : '';
+      const autoNote = cl.autoTag !== cl.tag ? '<span style="font-size:9px;color:var(--tx3);margin-left:4px">(manual)</span>' : '';
+      return `<div class="prod-row" style="cursor:pointer;padding:12px 16px" onclick="openClientDet('${cl.id}','${cl.phone||''}','${encodeURIComponent(cl.name)}')">
+        <div class="prod-thumb" style="background:${tagBg};color:${tagFg};font-weight:600;font-size:16px">${cl.name[0].toUpperCase()}</div>
+        <div class="prod-info">
+          <div class="prod-name">${cl.name} ${tagBadge}${autoNote}</div>
+          <div class="prod-meta">${cl.phone||'Sin teléfono'}${cl.email?' · '+cl.email:''}</div>
         </div>
-        <div class="client-card-bottom">
-          <div class="client-stat">🛍️ <strong>${purchases}</strong> compra${purchases!==1?'s':''}</div>
-          <div class="client-stat">💰 <strong>${fmtM(total)}</strong></div>
-          ${lastBuy?`<div class="client-stat" style="color:var(--tx3)">Última: ${lastBuy}</div>`:''}
-          ${cl.bday?`<div class="client-stat">🎂 ${cl.bday}</div>`:''}
+        <div class="prod-right">
+          <div style="font-family:var(--fd);font-size:15px;font-weight:600;color:var(--P)">${fmtM(cl.total)}</div>
+          <span style="font-size:10px;color:var(--tx3)">${cl.movs.length} compra${cl.movs.length!==1?'s':''}</span>
+          ${cl.lastBuy?`<span style="font-size:10px;color:var(--tx3)">${cl.lastBuy}</span>`:''}
         </div>
       </div>`;
     }).join('');
   });
 }
-
-function openClientDet(id){
+function openClientDet(id, phone, encodedName){
   curClientId=id;
+  // For auto-created clients, find by matching movements
+  const name = encodedName ? decodeURIComponent(encodedName) : '';
   db.ref('clients/'+id).once('value', snap=>{
-    const cl=snap.val();if(!cl)return;
+    let cl = snap.val();
+    // If not found (auto-created from movements), build from movements data
+    if(!cl && (phone||name)){
+      const movs = D.movements.filter(m=>m.type==='salida'&&(
+        (phone&&m.clientPhone===phone)||(name&&m.clientName&&m.clientName.toLowerCase()===name.toLowerCase())
+      ));
+      if(movs.length) cl={id,name:movs[0].clientName||name,phone:movs[0].clientPhone||phone,email:movs[0].clientEmail||'',tag:''};
+    }
+    if(!cl)return;
+    window._detPhone = cl.phone||'';
     document.getElementById('client-det-title').textContent=cl.name;
     const purchases=D.movements.filter(m=>m.type==='salida'&&m.clientPhone===cl.phone&&cl.phone);
     const total=purchases.reduce((a,m)=>a+m.qty*(m.price||0),0);
@@ -2086,7 +2167,13 @@ function closeClientDet(){ document.getElementById('client-det-panel').classList
 function editClientFromDet(){
   if(!curClientId)return;
   db.ref('clients/'+curClientId).once('value',snap=>{
-    const cl=snap.val();if(!cl)return;
+    let cl=snap.val();
+    if(!cl){
+      // Auto-created: build from movements
+      const movs=D.movements.filter(m=>m.type==='salida'&&m.clientPhone===window._detPhone);
+      if(movs.length) cl={id:curClientId,name:movs[0].clientName||'',phone:movs[0].clientPhone||'',email:movs[0].clientEmail||'',tag:''};
+      else return;
+    }
     closeClientDet();
     setTimeout(()=>{
       document.getElementById('client-modal-title').textContent='Editar Cliente';
@@ -2214,7 +2301,7 @@ function renderPromos(){
       const dateStr=pr.from?(pr.to?`${pr.from} → ${pr.to}`:`Desde ${pr.from}`):'Sin límite de fecha';
       const iconBg=pr.type==='pct'?'var(--grn-bg)':'var(--blu-bg)';
       const iconColor=pr.type==='pct'?'var(--grn)':'var(--blu)';
-      return `<div class="promo-card" style="border-left:3px solid ${statusColor[st]}">
+      return `<div class="promo-card" style="border-left:3px solid ${statusColor[st]};width:100%;box-sizing:border-box">
         <div class="promo-icon" style="background:${iconBg};color:${iconColor};font-size:16px;font-weight:700">${pr.type==='pct'?'%':'S/'}</div>
         <div class="promo-body">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
