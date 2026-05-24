@@ -778,14 +778,13 @@ function initFB(){
   try{
     if(firebase.apps.length===0)firebase.initializeApp(cfg);
     db=firebase.database();
-    db.ref('products').on('value',s=>{const v=s.val();D.products=v?Object.values(v):[];renderAll();setSy('ok');});
-    db.ref('movements').on('value',s=>{const v=s.val();D.movements=v?Object.values(v):[];renderAll();});
+    auth=firebase.auth(); // initialize auth immediately
+    // DB listeners started after auth confirmed (in showApp)
     db.ref('.info/connected').on('value',s=>{
       const connected=s.val();
-      document.getElementById('offline-bar').classList.toggle('show',!connected);
+      const bar=document.getElementById('offline-bar');
+      if(bar)bar.classList.toggle('show',!connected);
       setSy(connected?'ok':'of');
-      // Load pay data once connected
-      if(connected) loadPayFromFirebase();
     });
   }catch(e){try{D=JSON.parse(localStorage.getItem(LK)||'{"products":[],"movements":[]}');}catch(e2){}renderAll();}
 }
@@ -1792,7 +1791,7 @@ let currentRole = null;
 let auth = null;
 
 function initAuth(){
-  auth = firebase.auth();
+  if(!auth) auth = firebase.auth();
   auth.onAuthStateChanged(async user => {
     if(user){
       currentUser = user;
@@ -1848,9 +1847,17 @@ function showApp(){
   if(currentRole !== 'admin'){
     applyVendedorRestrictions();
   }
-  // Init app
-  initFB();
-  setTimeout(loadPayFromFirebase, 1500);
+  // Start DB listeners now that user is authenticated
+  db.ref('products').on('value',s=>{const v=s.val();D.products=v?Object.values(v):[];renderAll();setSy('ok');});
+  db.ref('movements').on('value',s=>{const v=s.val();D.movements=v?Object.values(v):[];renderAll();});
+  db.ref('.info/connected').on('value',s=>{
+    const connected=s.val();
+    const bar=document.getElementById('offline-bar');
+    if(bar)bar.classList.toggle('show',!connected);
+    setSy(connected?'ok':'of');
+    if(connected) loadPayFromFirebase();
+  });
+  setTimeout(loadPayFromFirebase, 1000);
   showDesktopBtns();
   handleOrientation();
 }
@@ -2026,7 +2033,8 @@ function toggleDL(e){
 document.addEventListener('click',function(){const m=document.getElementById('dl-menu');if(m)m.style.display='none';});
 
 window.addEventListener('load',()=>{
-  // Auth controls everything - initFB and showDesktopBtns called from showApp()
+  // Initialize Firebase first (sets up auth and db), then start auth listener
+  initFB();
   initAuth();
   // Responsive resize
   window.addEventListener('resize',()=>{renderList();handleOrientation();});
