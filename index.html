@@ -280,6 +280,38 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 .empty-msg{font-size:13px;line-height:1.6}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+/* ── CRM ────────────────────────────────────────── */
+.client-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .15s}
+.client-card:hover{border-color:var(--PM);box-shadow:0 2px 12px rgba(139,26,58,.08)}
+.client-card-top{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--bdr)}
+.client-avatar{width:40px;height:40px;border-radius:50%;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex-shrink:0;border:1px solid var(--bdr)}
+.client-name{font-weight:500;font-size:14px;color:var(--tx)}
+.client-meta{font-size:11px;color:var(--tx3);margin-top:1px}
+.client-card-bottom{display:flex;align-items:center;gap:10px;padding:10px 16px;flex-wrap:wrap}
+.client-stat{font-size:11px;color:var(--tx2)}
+.client-stat strong{color:var(--tx);font-weight:600}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.tag.vip{background:#FFF3CD;color:#856404}
+.tag.frecuente{background:var(--grn-bg);color:var(--grn)}
+.tag.nuevo{background:var(--blu-bg);color:var(--blu)}
+.tag.inactivo{background:var(--surf3);color:var(--tx3)}
+/* CRM grid */
+.crm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+
+/* ── PROMOTIONS ──────────────────────────────────── */
+.promo-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px;display:flex;align-items:flex-start;gap:12px}
+.promo-icon{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.promo-icon.pct{background:var(--grn-bg)}
+.promo-icon.fijo{background:var(--blu-bg)}
+.promo-body{flex:1;min-width:0}
+.promo-name{font-weight:500;font-size:13px;color:var(--tx);margin-bottom:3px}
+.promo-detail{font-size:11px;color:var(--tx3)}
+.promo-status{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-top:5px}
+.promo-status.active{background:var(--grn-bg);color:var(--grn)}
+.promo-status.expired{background:var(--surf3);color:var(--tx3)}
+.promo-status.upcoming{background:var(--amb-bg);color:var(--amb)}
+/* Discount badge in movement modal */
+.disc-applied{background:var(--grn-bg);border:1px solid var(--green-light);border-radius:var(--rs);padding:8px 12px;font-size:12px;color:var(--grn);display:none;margin-top:6px}
 
 /* ── LOGIN SCREEN ───────────────────────────────── */
 #login-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -419,6 +451,8 @@ body.role-admin .admin-only-block{display:flex !important}
     <div class="tnav admin-only-block" id="tn-dashboard" onclick="showPage('dashboard')">Dashboard</div>
     <div class="tnav admin-only-block" id="tn-finanzas" onclick="showPage('finanzas')">Finanzas</div>
     <div class="tnav admin-only-block" id="tn-pagos" onclick="showPage('pagos')">Métodos de Pago</div>
+    <div class="tnav admin-only-block" id="tn-crm" onclick="showPage('crm')">👥 Clientes</div>
+    <div class="tnav admin-only-block" id="tn-promos" onclick="showPage('promos')">🏷️ Promociones</div>
   </nav>
   <div class="tr">
     <div class="sync" id="sync-dot"></div>
@@ -547,6 +581,32 @@ body.role-admin .admin-only-block{display:flex !important}
   <div class="det-body" id="det-body"></div>
 </div>
 
+  <!-- CRM CLIENTES -->
+  <div class="page" id="page-crm">
+    <div class="sh">
+      <div class="st">Clientes</div>
+      <button class="bsm pri" onclick="openModal('client')">+ Cliente</button>
+    </div>
+    <div class="srch" style="margin-bottom:10px"><span style="color:var(--tx3);font-size:15px">🔍</span><input type="text" placeholder="Buscar cliente..." oninput="searchClients(this.value)" id="crm-search"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="crm-tag-pills">
+      <button class="pill on" onclick="setCrmFilter('todos')">Todos</button>
+      <button class="pill" onclick="setCrmFilter('VIP')">⭐ VIP</button>
+      <button class="pill" onclick="setCrmFilter('frecuente')">🔄 Frecuente</button>
+      <button class="pill" onclick="setCrmFilter('nuevo')">🆕 Nuevo</button>
+      <button class="pill" onclick="setCrmFilter('inactivo')">💤 Inactivo</button>
+    </div>
+    <div class="crm-grid" id="crm-grid"></div>
+  </div>
+
+  <!-- PROMOCIONES -->
+  <div class="page" id="page-promos">
+    <div class="sh">
+      <div class="st">Promociones</div>
+      <button class="bsm pri" onclick="openModal('promo')">+ Promoción</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px" id="promos-list"></div>
+  </div>
+
   <!-- MÉTODOS DE PAGO -->
   <div class="page" id="page-pagos">
 
@@ -619,6 +679,8 @@ body.role-admin .admin-only-block{display:flex !important}
   <div class="bi admin-only-block" id="bn-dashboard" onclick="showPage('dashboard')"><div class="bi-ic">📊</div>Dash</div>
   <div class="bi admin-only-block" id="bn-finanzas" onclick="showPage('finanzas')"><div class="bi-ic">💰</div>Finanzas</div>
   <div class="bi admin-only-block" id="bn-pagos" onclick="showPage('pagos')"><div class="bi-ic">💳</div>Pagos</div>
+  <div class="bi admin-only-block" id="bn-crm" onclick="showPage('crm')"><div class="bi-ic">👥</div>Clientes</div>
+  <div class="bi admin-only-block" id="bn-promos" onclick="showPage('promos')"><div class="bi-ic">🏷️</div>Promos</div>
 </div>
 <button class="fab" onclick="openProd()">＋</button>
 </div><!-- /app -->
@@ -762,6 +824,7 @@ body.role-admin .admin-only-block{display:flex !important}
     </div>
   </div>
   <div class="sib" id="mv-inf"></div>
+  <div class="disc-applied" id="mv-disc"></div>
   <div class="mf">
     <button class="mb" onclick="closeOv('mov')">Cancelar</button>
     <button class="mb p" onclick="saveMov()">Registrar</button>
@@ -1082,7 +1145,7 @@ function updDetImg(id,inp){const f=inp.files[0];if(!f)return;const r=new FileRea
 // ════════════════════════════════════════════════
 let curPage='catalogo';
 function showPage(name){
-  ['catalogo','movimientos','alertas','dashboard','finanzas','pagos'].forEach(p=>{
+  ['catalogo','movimientos','alertas','dashboard','finanzas','pagos','crm','promos'].forEach(p=>{
     document.getElementById('page-'+p).classList.toggle('on',p===name);
     const t=document.getElementById('tn-'+p);if(t)t.classList.toggle('active',p===name);
     const b=document.getElementById('bn-'+p);if(b)b.classList.toggle('on',p===name);
@@ -1093,6 +1156,8 @@ function showPage(name){
   if(name==='dashboard')renderDash();
   if(name==='finanzas'){initFinMonth();renderFinanzas();renderPayMethods();}
   if(name==='pagos'){loadPayFields();renderPayMethods();}
+  if(name==='crm'){renderCRM();}
+  if(name==='promos'){renderPromos();}
   closeDet();
 }
 
@@ -1145,6 +1210,9 @@ function onMvCh(){
   document.getElementById('mv-prc').value=t==='salida'?p.price:p.cost;
   document.getElementById('mv-inf').textContent=`"${p.name}" — Stock: ${stk(p.id)} u. (mín. ${p.minStock})`;
   document.getElementById('mv-cli').style.display=t==='salida'?'block':'none';
+  // Apply promos only for sales
+  if(t==='salida') applyPromoToSale();
+  else { const d=document.getElementById('mv-disc');if(d)d.style.display='none';}
 }
 
 // ════════════════════════════════════════════════
@@ -1787,6 +1855,292 @@ function handleOrientation(){
   }
 }
 // ════════════════════════════════════════════════
+// CRM — CLIENTES
+// ════════════════════════════════════════════════
+let crmFilter = 'todos';
+let crmSearch = '';
+let curClientId = null;
+
+function openModal(type){ 
+  if(type==='client'){
+    document.getElementById('client-modal-title').textContent='Nuevo Cliente';
+    document.getElementById('cl-id').value='';
+    ['cl-name','cl-phone','cl-email','cl-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cl-bday').value='';
+    document.getElementById('cl-tag').value='';
+    document.getElementById('ov-client').classList.add('open');
+  } else if(type==='promo'){
+    document.getElementById('promo-modal-title').textContent='Nueva Promoción';
+    document.getElementById('pr-id').value='';
+    ['pr-name','pr-value'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pr-type').value='pct';
+    document.getElementById('pr-scope').value='all';
+    document.getElementById('pr-cat-row').style.display='none';
+    document.getElementById('pr-from').value=today();
+    document.getElementById('pr-to').value='';
+    updatePromoPreview();
+    document.getElementById('ov-promo').classList.add('open');
+  }
+}
+
+function saveClient(){
+  const name=document.getElementById('cl-name').value.trim();
+  if(!name){alert('El nombre es obligatorio.');return;}
+  const id=document.getElementById('cl-id').value||'CLI-'+Date.now();
+  const client={
+    id,name,
+    phone:document.getElementById('cl-phone').value.trim(),
+    email:document.getElementById('cl-email').value.trim(),
+    bday:document.getElementById('cl-bday').value,
+    tag:document.getElementById('cl-tag').value,
+    notes:document.getElementById('cl-notes').value.trim(),
+    createdAt:today()
+  };
+  if(db) db.ref('clients/'+id).set(client);
+  closeOv('client');
+  renderCRM();
+}
+
+function deleteClient(id){
+  if(!confirm('¿Eliminar este cliente?')) return;
+  if(db) db.ref('clients/'+id).remove();
+  closeClientDet();
+  renderCRM();
+}
+
+function setCrmFilter(f){
+  crmFilter=f;
+  document.querySelectorAll('#crm-tag-pills .pill').forEach(p=>{
+    p.classList.toggle('on', p.textContent.toLowerCase().includes(f==='todos'?'todos':f));
+  });
+  renderCRM();
+}
+
+function searchClients(q){ crmSearch=q; renderCRM(); }
+
+function renderCRM(){
+  if(!db){document.getElementById('crm-grid').innerHTML='';return;}
+  db.ref('clients').once('value', snap=>{
+    const all=snap.val()||{};
+    let clients=Object.values(all);
+    // Filter
+    if(crmFilter!=='todos') clients=clients.filter(c=>c.tag===crmFilter);
+    if(crmSearch) clients=clients.filter(c=>c.name.toLowerCase().includes(crmSearch.toLowerCase())||
+      (c.phone&&c.phone.includes(crmSearch))||(c.email&&c.email.toLowerCase().includes(crmSearch.toLowerCase())));
+    const el=document.getElementById('crm-grid');
+    if(!clients.length){
+      el.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-ic">👥</div><div class="empty-msg">Sin clientes aún.<br>Agrégalos con + Cliente o al registrar ventas.</div></div>';
+      return;
+    }
+    el.innerHTML=clients.map(cl=>{
+      const purchases=D.movements.filter(m=>m.type==='salida'&&m.clientPhone===cl.phone&&cl.phone).length;
+      const total=D.movements.filter(m=>m.type==='salida'&&m.clientPhone===cl.phone&&cl.phone)
+        .reduce((a,m)=>a+m.qty*(m.price||0),0);
+      const tagHtml=cl.tag?`<span class="tag ${cl.tag}">${cl.tag}</span>`:'';
+      return `<div class="client-card" onclick="openClientDet('${cl.id}')">
+        <div class="client-card-top">
+          <div class="client-avatar">${cl.name[0].toUpperCase()}</div>
+          <div style="flex:1;min-width:0">
+            <div class="client-name">${cl.name} ${tagHtml}</div>
+            <div class="client-meta">${cl.phone||''} ${cl.email?'· '+cl.email:''}</div>
+          </div>
+        </div>
+        <div class="client-card-bottom">
+          <div class="client-stat"><strong>${purchases}</strong> compras</div>
+          <div class="client-stat" style="margin-left:auto"><strong>${fmtM(total)}</strong> total</div>
+          ${cl.bday?`<div class="client-stat" style="width:100%">🎂 ${cl.bday}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function openClientDet(id){
+  curClientId=id;
+  db.ref('clients/'+id).once('value', snap=>{
+    const cl=snap.val();if(!cl)return;
+    document.getElementById('client-det-title').textContent=cl.name;
+    const purchases=D.movements.filter(m=>m.type==='salida'&&m.clientPhone===cl.phone&&cl.phone);
+    const total=purchases.reduce((a,m)=>a+m.qty*(m.price||0),0);
+    const tagHtml=cl.tag?`<span class="tag ${cl.tag}" style="margin-bottom:12px;display:inline-block">${cl.tag.toUpperCase()}</span>`:'';
+    document.getElementById('client-det-body').innerHTML=`
+      <div style="text-align:center;padding:20px 0 16px">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:600;margin:0 auto 10px">${cl.name[0].toUpperCase()}</div>
+        <div style="font-family:var(--fd);font-size:22px;font-weight:600">${cl.name}</div>
+        ${tagHtml}
+      </div>
+      <div class="det-meta">
+        ${cl.phone?`<div class="det-mi"><div class="det-ml">Teléfono</div><div class="det-mv">${cl.phone}</div></div>`:''}
+        ${cl.email?`<div class="det-mi"><div class="det-ml">Correo</div><div class="det-mv" style="font-size:11px">${cl.email}</div></div>`:''}
+        ${cl.bday?`<div class="det-mi"><div class="det-ml">Cumpleaños</div><div class="det-mv">🎂 ${cl.bday}</div></div>`:''}
+        <div class="det-mi"><div class="det-ml">Compras</div><div class="det-mv" style="color:var(--grn)">${purchases.length} · ${fmtM(total)}</div></div>
+      </div>
+      ${cl.notes?`<div class="det-desc">📝 ${cl.notes}</div>`:''}
+      <div style="margin-top:16px">
+        <div style="font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px">Historial de compras</div>
+        ${purchases.length?purchases.slice().reverse().map(m=>{
+          const p=gP(m.prodId)||{name:m.prodId};
+          return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:12px">
+            <span>${p.name} · ${m.date}</span>
+            <span style="color:var(--P);font-weight:600">${fmtM(m.qty*(m.price||0))}</span>
+          </div>`;
+        }).join(''):'<div style="font-size:12px;color:var(--tx3)">Sin compras registradas aún.</div>'}
+      </div>`;
+    document.getElementById('client-det-panel').classList.add('open');
+  });
+}
+
+function closeClientDet(){ document.getElementById('client-det-panel').classList.remove('open'); curClientId=null; }
+
+function editClientFromDet(){
+  if(!curClientId)return;
+  db.ref('clients/'+curClientId).once('value',snap=>{
+    const cl=snap.val();if(!cl)return;
+    closeClientDet();
+    setTimeout(()=>{
+      document.getElementById('client-modal-title').textContent='Editar Cliente';
+      document.getElementById('cl-id').value=cl.id;
+      document.getElementById('cl-name').value=cl.name||'';
+      document.getElementById('cl-phone').value=cl.phone||'';
+      document.getElementById('cl-email').value=cl.email||'';
+      document.getElementById('cl-bday').value=cl.bday||'';
+      document.getElementById('cl-tag').value=cl.tag||'';
+      document.getElementById('cl-notes').value=cl.notes||'';
+      document.getElementById('ov-client').classList.add('open');
+    },300);
+  });
+}
+
+function delClientFromDet(){ if(curClientId) deleteClient(curClientId); }
+
+// ════════════════════════════════════════════════
+// PROMOCIONES Y DESCUENTOS
+// ════════════════════════════════════════════════
+function updatePromoPreview(){
+  const type=document.getElementById('pr-type').value;
+  const val=parseFloat(document.getElementById('pr-value').value)||0;
+  const lbl=document.getElementById('pr-val-lbl');
+  const prev=document.getElementById('pr-preview');
+  const catRow=document.getElementById('pr-cat-row');
+  const scope=document.getElementById('pr-scope').value;
+  lbl.textContent=type==='pct'?'Descuento (%)':'Descuento (S/)';
+  catRow.style.display=scope==='cat'?'block':'none';
+  if(val>0){
+    const txt=type==='pct'?`${val}% de descuento`:`S/ ${val} de descuento`;
+    prev.textContent=`✨ Se aplicará: ${txt}`;
+    prev.style.display='block';
+  } else {
+    prev.style.display='none';
+  }
+}
+
+function savePromo(){
+  const name=document.getElementById('pr-name').value.trim();
+  const val=parseFloat(document.getElementById('pr-value').value)||0;
+  if(!name||val<=0){alert('Nombre y descuento son obligatorios.');return;}
+  const id=document.getElementById('pr-id').value||'PRO-'+Date.now();
+  const promo={
+    id,name,
+    type:document.getElementById('pr-type').value,
+    value:val,
+    from:document.getElementById('pr-from').value,
+    to:document.getElementById('pr-to').value,
+    scope:document.getElementById('pr-scope').value,
+    cat:document.getElementById('pr-cat').value,
+    active:true,
+    createdAt:today()
+  };
+  if(db) db.ref('promos/'+id).set(promo);
+  closeOv('promo');
+  renderPromos();
+}
+
+function deletePromo(id){
+  if(!confirm('¿Eliminar esta promoción?'))return;
+  if(db) db.ref('promos/'+id).remove();
+  renderPromos();
+}
+
+function getPromoStatus(p){
+  const t=today();
+  if(!p.active) return 'expired';
+  if(p.from&&p.from>t) return 'upcoming';
+  if(p.to&&p.to<t) return 'expired';
+  return 'active';
+}
+
+function getActivePromos(prodId){
+  // Returns promos applicable to a product right now
+  const p=gP(prodId);if(!p)return[];
+  const t=today();
+  return Object.values(window._promos||{}).filter(pr=>{
+    if(!pr.active)return false;
+    if(pr.from&&pr.from>t)return false;
+    if(pr.to&&pr.to<t)return false;
+    if(pr.scope==='cat'&&pr.cat!==p.cat)return false;
+    return true;
+  });
+}
+
+function renderPromos(){
+  if(!db)return;
+  db.ref('promos').once('value',snap=>{
+    window._promos=snap.val()||{};
+    const list=Object.values(window._promos);
+    const el=document.getElementById('promos-list');
+    if(!el)return;
+    if(!list.length){
+      el.innerHTML='<div class="empty"><div class="empty-ic">🏷️</div><div class="empty-msg">Sin promociones activas.<br>Crea una con + Promoción.</div></div>';
+      return;
+    }
+    const statusLbl={active:'Activa',expired:'Vencida',upcoming:'Próximamente'};
+    el.innerHTML=list.sort((a,b)=>a.from>b.from?-1:1).map(pr=>{
+      const st=getPromoStatus(pr);
+      const disc=pr.type==='pct'?`${pr.value}% descuento`:`S/ ${pr.value} descuento`;
+      const scope=pr.scope==='cat'?`Solo ${pr.cat}`:'Todos los productos';
+      const dates=pr.from?(pr.to?`${pr.from} → ${pr.to}`:`Desde ${pr.from}`):'Sin límite de fecha';
+      return `<div class="promo-card">
+        <div class="promo-icon ${pr.type}">${pr.type==='pct'?'%':'S/'}</div>
+        <div class="promo-body">
+          <div class="promo-name">${pr.name}</div>
+          <div class="promo-detail">${disc} · ${scope}</div>
+          <div class="promo-detail">${dates}</div>
+          <span class="promo-status ${st}">${statusLbl[st]}</span>
+        </div>
+        <button onclick="deletePromo('${pr.id}')" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:18px;align-self:flex-start">✕</button>
+      </div>`;
+    }).join('');
+  });
+}
+
+// ── Apply promo in movement modal ───────────────
+function applyPromoToSale(){
+  const pid=document.getElementById('mv-prd').value;
+  const promos=getActivePromos(pid);
+  const p=gP(pid);if(!p)return;
+  const basePrice=p.price;
+  const discEl=document.getElementById('mv-disc');
+  const prcEl=document.getElementById('mv-prc');
+  if(!promos.length){
+    if(discEl)discEl.style.display='none';
+    if(prcEl)prcEl.value=basePrice;
+    return;
+  }
+  // Apply best promo (highest discount)
+  const best=promos.reduce((a,pr)=>{
+    const discA=a.type==='pct'?a.value/100*basePrice:a.value;
+    const discB=pr.type==='pct'?pr.value/100*basePrice:pr.value;
+    return discB>discA?pr:a;
+  });
+  const discAmt=best.type==='pct'?Math.round(best.value/100*basePrice):best.value;
+  const finalPrice=Math.max(0,basePrice-discAmt);
+  if(prcEl)prcEl.value=finalPrice;
+  if(discEl){
+    discEl.textContent=`🏷️ Promo "${best.name}" aplicada: -${fmtM(discAmt)} → Precio final: ${fmtM(finalPrice)}`;
+    discEl.style.display='block';
+  }
+}
+// ════════════════════════════════════════════════
 // AUTHENTICATION SYSTEM
 // ════════════════════════════════════════════════
 let currentUser = null;
@@ -1863,6 +2217,7 @@ function showApp(){
   }
   // Start DB listeners now that user is authenticated
   db.ref('products').on('value',s=>{const v=s.val();D.products=v?Object.values(v):[];renderAll();setSy('ok');});
+  db.ref('promos').on('value',s=>{window._promos=s.val()||{};});
   db.ref('movements').on('value',s=>{const v=s.val();D.movements=v?Object.values(v):[];renderAll();});
   db.ref('.info/connected').on('value',s=>{
     const connected=s.val();
@@ -1878,8 +2233,8 @@ function showApp(){
 
 function applyAdminView(){
   // Ensure all nav items visible for admin
-  const showIds = ['tn-dashboard','tn-finanzas','tn-pagos','tn-alertas',
-                   'bn-dashboard','bn-finanzas','bn-alertas','bn-pagos',
+  const showIds = ['tn-dashboard','tn-finanzas','tn-pagos','tn-alertas','tn-crm','tn-promos',
+                   'bn-dashboard','bn-finanzas','bn-alertas','bn-pagos','bn-crm','bn-promos',
                    'dl-wrap','btn-clr','btn-mov','btn-prd'];
   showIds.forEach(id => {
     const el=document.getElementById(id);
@@ -2137,6 +2492,88 @@ window.addEventListener('load',()=>{
     <button class="mb p" onclick="closeOv('movdet')">Cerrar</button>
   </div>
 </div></div>
+<!-- CLIENT MODAL -->
+<div class="ov" id="ov-client" onclick="bgc(event,'client')">
+<div class="modal">
+  <span class="mh"></span>
+  <div class="mt" id="client-modal-title">Nuevo Cliente</div>
+  <input type="hidden" id="cl-id">
+  <div class="fg">
+    <div class="fr"><label>Nombre completo</label><input id="cl-name" placeholder="María García"></div>
+    <div class="fr"><label>Teléfono</label><input id="cl-phone" type="tel" placeholder="999 888 777"></div>
+  </div>
+  <div class="fg">
+    <div class="fr"><label>Correo electrónico</label><input id="cl-email" type="email" placeholder="correo@ejemplo.com"></div>
+    <div class="fr"><label>Fecha de cumpleaños</label><input id="cl-bday" type="date"></div>
+  </div>
+  <div class="fr"><label>Etiqueta</label>
+    <select id="cl-tag">
+      <option value="">Sin etiqueta</option>
+      <option value="nuevo">🆕 Nuevo</option>
+      <option value="frecuente">🔄 Frecuente</option>
+      <option value="vip">⭐ VIP</option>
+      <option value="inactivo">💤 Inactivo</option>
+    </select>
+  </div>
+  <div class="fr"><label>Notas</label><textarea id="cl-notes" placeholder="Preferencias, tallas, observaciones..."></textarea></div>
+  <div class="mf">
+    <button class="mb" onclick="closeOv('client')">Cancelar</button>
+    <button class="mb p" onclick="saveClient()">Guardar</button>
+  </div>
+</div></div>
+
+<!-- PROMO MODAL -->
+<div class="ov" id="ov-promo" onclick="bgc(event,'promo')">
+<div class="modal">
+  <span class="mh"></span>
+  <div class="mt" id="promo-modal-title">Nueva Promoción</div>
+  <input type="hidden" id="pr-id">
+  <div class="fr"><label>Nombre de la promoción</label><input id="pr-name" placeholder="Ej: Liquidación de temporada"></div>
+  <div class="fg">
+    <div class="fr"><label>Tipo de descuento</label>
+      <select id="pr-type" onchange="updatePromoPreview()">
+        <option value="pct">Porcentaje (%)</option>
+        <option value="fijo">Monto fijo (S/)</option>
+      </select>
+    </div>
+    <div class="fr"><label id="pr-val-lbl">Descuento (%)</label>
+      <input type="number" id="pr-value" placeholder="10" min="0" oninput="updatePromoPreview()">
+    </div>
+  </div>
+  <div class="fg">
+    <div class="fr"><label>Válido desde</label><input type="date" id="pr-from"></div>
+    <div class="fr"><label>Válido hasta</label><input type="date" id="pr-to"></div>
+  </div>
+  <div class="fr"><label>Aplica a</label>
+    <select id="pr-scope">
+      <option value="all">Todos los productos</option>
+      <option value="cat">Una categoría</option>
+    </select>
+  </div>
+  <div class="fr" id="pr-cat-row" style="display:none"><label>Categoría</label>
+    <select id="pr-cat">
+      <option>Anillos</option><option>Collares</option><option>Aretes</option>
+      <option>Pulseras</option><option>Dijes</option><option>Conjunto</option><option>Otro</option>
+    </select>
+  </div>
+  <div style="background:var(--grn-bg);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--grn);margin-top:4px" id="pr-preview"></div>
+  <div class="mf">
+    <button class="mb" onclick="closeOv('promo')">Cancelar</button>
+    <button class="mb p" onclick="savePromo()">Guardar</button>
+  </div>
+</div></div>
+
+<!-- CLIENT DETAIL PANEL -->
+<div class="det-panel" id="client-det-panel">
+  <div class="det-top">
+    <button class="ibtop" onclick="closeClientDet()">←</button>
+    <span style="font-family:var(--fd);font-size:17px;font-weight:600;color:var(--tx);flex:1" id="client-det-title">Cliente</span>
+    <button class="ibtop" onclick="editClientFromDet()">✏️</button>
+    <button class="ibtop" onclick="delClientFromDet()" style="color:var(--red)">✕</button>
+  </div>
+  <div class="det-body" id="client-det-body"></div>
+</div>
+
 <!-- USER MANAGEMENT MODAL (admin only) -->
 <div class="ov" id="ov-users" onclick="bgc(event,'users')">
 <div class="modal" style="max-width:560px">
