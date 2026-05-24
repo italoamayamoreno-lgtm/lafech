@@ -401,6 +401,9 @@ body.role-admin .admin-only-block{display:flex !important}
     </div>
     <button class="login-btn" id="login-btn" onclick="doLogin()">Ingresar</button>
     <div class="login-error" id="login-error"></div>
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="doForgotPassword()" style="background:none;border:none;font-family:var(--fb);font-size:12px;color:var(--P);cursor:pointer;text-decoration:underline">¿Olvidaste tu contraseña?</button>
+    </div>
     <div class="login-footer">LaFech © 2026 — Acceso restringido</div>
   </div>
 </div>
@@ -2020,6 +2023,7 @@ async function loadUsersList(){
           <option value="vendedor"${u.role==='vendedor'?' selected':''}>Vendedor</option>
           <option value="admin"${u.role==='admin'?' selected':''}>Admin</option>
         </select>
+        <button onclick="resetUserPassword('${u.email}')" style="background:none;border:none;cursor:pointer;color:var(--amb);font-size:14px;padding:2px 6px;border:1px solid var(--bdr);border-radius:var(--rs);font-family:var(--fb);font-size:11px" title="Resetear contraseña">🔑 Reset</button>
         <button onclick="deactivateUser('${uid}','${u.name||u.email}')" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:16px;padding:2px 4px" title="Desactivar">✕</button>
         ` : '<span style="font-size:11px;color:var(--tx3)">(tú)</span>'}
       </div>`).join('');
@@ -2034,6 +2038,36 @@ function deactivateUser(uid, name){
   if(!confirm('¿Desactivar a "'+name+'"? El usuario no podrá iniciar sesión.')) return;
   db.ref('users/'+uid+'/active').set(false);
   loadUsersList();
+}
+
+async function doForgotPassword(){
+  const email = document.getElementById('login-email').value.trim();
+  if(!email){
+    showLoginError('Ingresa tu correo primero para restablecer la contraseña.');
+    return;
+  }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    showLoginError('✅ Correo de restablecimiento enviado a ' + email + '. Revisa tu bandeja de entrada.');
+    document.getElementById('login-error').style.background = 'var(--grn-bg)';
+    document.getElementById('login-error').style.color = 'var(--grn)';
+  } catch(e){
+    const msgs = {
+      'auth/user-not-found': 'No existe una cuenta con ese correo.',
+      'auth/invalid-email': 'Correo inválido.',
+    };
+    showLoginError(msgs[e.code] || 'Error: ' + e.message);
+  }
+}
+
+async function resetUserPassword(email){
+  if(!confirm('¿Enviar correo de restablecimiento de contraseña a "' + email + '"?')) return;
+  try {
+    await auth.sendPasswordResetEmail(email);
+    alert('✅ Correo de restablecimiento enviado a ' + email + '.\nEl usuario recibirá un link para crear su nueva contraseña.');
+  } catch(e){
+    alert('Error al enviar: ' + e.message);
+  }
 }
 
 async function createUser(){
