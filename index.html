@@ -1879,6 +1879,15 @@ function showLogin(){
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('app-container').style.display = 'none';
   document.getElementById('user-badge').style.display = 'none';
+  // Reset login button
+  const btn = document.getElementById('login-btn');
+  if(btn){ btn.disabled = false; btn.textContent = 'Ingresar'; }
+  // Clear error
+  const err = document.getElementById('login-error');
+  if(err) err.classList.remove('show');
+  // Clear password field
+  const pass = document.getElementById('login-pass');
+  if(pass) pass.value = '';
 }
 
 async function doLogin(){
