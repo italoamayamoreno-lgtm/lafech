@@ -14,6 +14,7 @@ const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectU
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -279,6 +280,48 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 .empty-msg{font-size:13px;line-height:1.6}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+/* ── LOGIN SCREEN ───────────────────────────────── */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px}
+#login-screen.hidden{display:none}
+.login-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:36px 32px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(139,26,58,.1)}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;justify-content:center}
+.login-logo-gem{width:40px;height:40px;background:var(--PL);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--bdr)}
+.login-logo-name{font-family:var(--fd);font-size:28px;font-weight:600;color:var(--P)}
+.login-title{font-size:14px;font-weight:500;color:var(--tx2);text-align:center;margin-bottom:24px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--tx2);margin-bottom:5px}
+.login-field input{width:100%;padding:11px 14px;border:1px solid var(--bdr2);border-radius:var(--rs);font-family:var(--fb);font-size:14px;color:var(--tx);background:var(--surf2);outline:none;transition:border .15s}
+.login-field input:focus{border-color:var(--P);background:var(--surf)}
+.login-btn{width:100%;padding:12px;border-radius:var(--rs);background:var(--P);border:none;color:#fff;font-family:var(--fb);font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;transition:background .15s}
+.login-btn:hover{background:var(--PD)}
+.login-btn:disabled{background:var(--bdr2);cursor:not-allowed}
+.login-error{font-size:12px;color:var(--red);text-align:center;margin-top:10px;min-height:18px;padding:6px;border-radius:var(--rs);background:var(--red-bg);display:none}
+.login-error.show{display:block}
+.login-footer{font-size:11px;color:var(--tx3);text-align:center;margin-top:20px}
+
+/* ── USER BADGE ─────────────────────────────────── */
+.user-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;background:var(--PL);border:1px solid var(--bdr);cursor:pointer;transition:all .15s;position:relative}
+.user-badge:hover{background:var(--surf3)}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:var(--P);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-name{font-size:12px;font-weight:500;color:var(--P);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-role{font-size:10px;color:var(--tx3)}
+.user-menu{position:absolute;top:38px;right:0;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:180px;z-index:100;display:none;overflow:hidden}
+.user-menu.open{display:block}
+.user-menu-item{padding:10px 16px;font-size:13px;color:var(--tx);cursor:pointer;transition:background .12s;display:flex;align-items:center;gap:8px;border:none;background:none;width:100%;text-align:left;font-family:var(--fb)}
+.user-menu-item:hover{background:var(--surf2)}
+.user-menu-item.danger{color:var(--red)}
+.user-menu-item.danger:hover{background:var(--red-bg)}
+.user-menu-sep{height:1px;background:var(--bdr);margin:2px 0}
+
+/* ── USER MANAGEMENT MODAL ──────────────────────── */
+.admin-only{display:none}
+body.role-admin .admin-only{display:flex}
+body.role-admin .admin-only-block{display:block}
+.admin-only-block{display:none}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.role-badge.admin{background:var(--PL);color:var(--P)}
+.role-badge.vendedor{background:var(--grn-bg);color:var(--grn)}
 /* ── MOBILE PORTRAIT (default) ─────────────────────
    Hides topbar action buttons, shows bottom nav
 ────────────────────────────────────────────────── */
@@ -340,17 +383,39 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 </style>
 </head>
 <body>
-<div class="app">
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-gem">💎</div>
+      <div class="login-logo-name">LaFech</div>
+    </div>
+    <div class="login-title">Sistema de Gestión Comercial</div>
+    <div class="login-field">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="correo@ejemplo.com" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-footer">LaFech © 2026 — Acceso restringido</div>
+  </div>
+</div>
+
+<div class="app" style="display:none" id="app-container">
 <div id="offline-bar">Sin conexión — los cambios se sincronizarán al reconectar</div>
 <div class="topbar">
   <div class="logo" onclick="showPage('catalogo')"><span class="logo-gem">💎</span>LaFech</div>
   <nav class="topbar-nav">
     <div class="tnav active" id="tn-catalogo" onclick="showPage('catalogo')">Catálogo</div>
     <div class="tnav" id="tn-movimientos" onclick="showPage('movimientos')">Movimientos <span class="nbadge" id="nb-mov">0</span></div>
-    <div class="tnav" id="tn-alertas" onclick="showPage('alertas')">Alertas <span class="nbadge" id="nb-alrt" style="display:none">0</span></div>
-    <div class="tnav" id="tn-dashboard" onclick="showPage('dashboard')">Dashboard</div>
-    <div class="tnav" id="tn-finanzas" onclick="showPage('finanzas')">Finanzas</div>
-    <div class="tnav" id="tn-pagos" onclick="showPage('pagos')">Métodos de Pago</div>
+    <div class="tnav admin-only-block" id="tn-alertas" onclick="showPage('alertas')">Alertas <span class="nbadge" id="nb-alrt" style="display:none">0</span></div>
+    <div class="tnav admin-only-block" id="tn-dashboard" onclick="showPage('dashboard')">Dashboard</div>
+    <div class="tnav admin-only-block" id="tn-finanzas" onclick="showPage('finanzas')">Finanzas</div>
+    <div class="tnav admin-only-block" id="tn-pagos" onclick="showPage('pagos')">Métodos de Pago</div>
   </nav>
   <div class="tr">
     <div class="sync" id="sync-dot"></div>
@@ -367,6 +432,19 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
     <button class="tbtn dng" id="btn-clr" onclick="confirmClear()" style="display:none">🗑</button>
     <button class="tbtn" id="btn-mov" onclick="openMov()" style="display:none">+ Movimiento</button>
     <button class="tbtn pri" id="btn-prd" onclick="openProd()" style="display:none">+ Producto</button>
+    <!-- User badge -->
+    <div class="user-badge" id="user-badge" onclick="toggleUserMenu(event)" style="display:none">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div>
+        <div class="user-name" id="user-name-label">Usuario</div>
+        <div class="user-role" id="user-role-label">—</div>
+      </div>
+      <div class="user-menu" id="user-menu">
+        <button class="user-menu-item admin-only" onclick="openUserMgmt();toggleUserMenu()" id="btn-users">👥 Gestión de usuarios</button>
+        <div class="user-menu-sep admin-only"></div>
+        <button class="user-menu-item danger" onclick="doLogout()">🚪 Cerrar sesión</button>
+      </div>
+    </div>
   </div>
 </div>
 <div class="workspace">
@@ -534,10 +612,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 <div class="bnav">
   <div class="bi on" id="bn-catalogo" onclick="showPage('catalogo')"><div class="bi-ic">◇</div>Catálogo</div>
   <div class="bi" id="bn-movimientos" onclick="showPage('movimientos')"><div class="bi-ic">⇄</div>Movs.</div>
-  <div class="bi" id="bn-alertas" onclick="showPage('alertas')"><div class="bi-ic" id="alrt-ic">⚠</div>Alertas</div>
-  <div class="bi" id="bn-dashboard" onclick="showPage('dashboard')"><div class="bi-ic">📊</div>Dash</div>
-  <div class="bi" id="bn-finanzas" onclick="showPage('finanzas')"><div class="bi-ic">💰</div>Finanzas</div>
-  <div class="bi" id="bn-pagos" onclick="showPage('pagos')"><div class="bi-ic">💳</div>Pagos</div>
+  <div class="bi admin-only-block" id="bn-alertas" onclick="showPage('alertas')"><div class="bi-ic" id="alrt-ic">⚠</div>Alertas</div>
+  <div class="bi admin-only-block" id="bn-dashboard" onclick="showPage('dashboard')"><div class="bi-ic">📊</div>Dash</div>
+  <div class="bi admin-only-block" id="bn-finanzas" onclick="showPage('finanzas')"><div class="bi-ic">💰</div>Finanzas</div>
+  <div class="bi admin-only-block" id="bn-pagos" onclick="showPage('pagos')"><div class="bi-ic">💳</div>Pagos</div>
 </div>
 <button class="fab" onclick="openProd()">＋</button>
 </div><!-- /app -->
@@ -1707,6 +1785,235 @@ function handleOrientation(){
   }
 }
 // ════════════════════════════════════════════════
+// AUTHENTICATION SYSTEM
+// ════════════════════════════════════════════════
+let currentUser = null;
+let currentRole = null;
+let auth = null;
+
+function initAuth(){
+  auth = firebase.auth();
+  auth.onAuthStateChanged(async user => {
+    if(user){
+      currentUser = user;
+      await loadUserRole(user.uid);
+      showApp();
+    } else {
+      currentUser = null;
+      currentRole = null;
+      showLogin();
+    }
+  });
+}
+
+async function loadUserRole(uid){
+  return new Promise(resolve => {
+    db.ref('users/'+uid).once('value', snap => {
+      const data = snap.val();
+      if(data && data.role){
+        currentRole = data.role;
+      } else {
+        // First time: check if this is the admin email
+        const adminEmail = 'italoamaya.moreno@gmail.com';
+        currentRole = currentUser.email.startsWith('italoamaya.moreno') ? 'admin' : 'vendedor';
+        // Save role to database
+        db.ref('users/'+uid).set({
+          email: currentUser.email,
+          role: currentRole,
+          name: data&&data.name ? data.name : currentUser.email.split('@')[0],
+          createdAt: new Date().toISOString()
+        });
+      }
+      resolve(currentRole);
+    });
+  });
+}
+
+function showApp(){
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-container').style.display = 'flex';
+  // Apply role
+  document.body.classList.remove('role-admin','role-vendedor');
+  document.body.classList.add('role-'+currentRole);
+  // Update user badge
+  const badge = document.getElementById('user-badge');
+  if(badge) badge.style.display = 'flex';
+  const nameEl = document.getElementById('user-name-label');
+  const roleEl = document.getElementById('user-role-label');
+  const avatarEl = document.getElementById('user-avatar');
+  if(nameEl) nameEl.textContent = currentUser.email.split('@')[0];
+  if(roleEl) roleEl.textContent = currentRole === 'admin' ? 'Administrador' : 'Vendedor';
+  if(avatarEl) avatarEl.textContent = currentUser.email[0].toUpperCase();
+  // Hide admin-only elements for vendedor
+  if(currentRole !== 'admin'){
+    applyVendedorRestrictions();
+  }
+  // Init app
+  initFB();
+  setTimeout(loadPayFromFirebase, 1500);
+  showDesktopBtns();
+  handleOrientation();
+}
+
+function applyVendedorRestrictions(){
+  // Hide financial modules for vendedor
+  const hideIds = ['tn-dashboard','tn-finanzas','tn-pagos','tn-alertas',
+                   'bn-dashboard','bn-finanzas','bn-alertas','bn-pagos',
+                   'dl-wrap','btn-clr','btn-mov'];
+  hideIds.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+  // Hide + Producto button
+  const prd = document.getElementById('btn-prd');
+  if(prd) prd.style.display = 'none';
+  // Show only catalogo tab
+  showPage('catalogo');
+}
+
+function showLogin(){
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app-container').style.display = 'none';
+  document.getElementById('user-badge').style.display = 'none';
+}
+
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  if(!email || !pass){ showLoginError('Completa todos los campos.'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Ingresando...';
+  errEl.classList.remove('show');
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    // onAuthStateChanged handles the rest
+  } catch(e){
+    btn.disabled = false;
+    btn.textContent = 'Ingresar';
+    const msgs = {
+      'auth/user-not-found': 'Correo no registrado.',
+      'auth/wrong-password': 'Contraseña incorrecta.',
+      'auth/invalid-email': 'Correo inválido.',
+      'auth/too-many-requests': 'Demasiados intentos. Espera un momento.',
+      'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+    };
+    showLoginError(msgs[e.code] || 'Error al ingresar. Intenta de nuevo.');
+  }
+}
+
+function showLoginError(msg){
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function doLogout(){
+  toggleUserMenu();
+  await auth.signOut();
+}
+
+function toggleUserMenu(e){
+  if(e) e.stopPropagation();
+  const menu = document.getElementById('user-menu');
+  if(menu) menu.classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  const menu = document.getElementById('user-menu');
+  if(menu) menu.classList.remove('open');
+});
+
+// ── USER MANAGEMENT ───────────────────────────────
+function openUserMgmt(){
+  if(currentRole !== 'admin') return;
+  openOv('users');
+  loadUsersList();
+}
+
+function openOv(id){ document.getElementById('ov-'+id).classList.add('open'); }
+
+function openAddUser(){
+  document.getElementById('add-user-form').style.display = 'block';
+  document.getElementById('add-user-error').style.display = 'none';
+  ['new-user-email','new-user-pass','new-user-name'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+async function loadUsersList(){
+  const el = document.getElementById('users-list');
+  el.innerHTML = '<div style="font-size:13px;color:var(--tx3);padding:8px">Cargando...</div>';
+  db.ref('users').once('value', snap => {
+    const users = snap.val() || {};
+    const list = Object.entries(users);
+    if(!list.length){
+      el.innerHTML = '<div style="font-size:13px;color:var(--tx3);padding:8px">Sin usuarios registrados.</div>';
+      return;
+    }
+    el.innerHTML = list.map(([uid, u]) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--bdr);border-radius:var(--rs)">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex-shrink:0">${(u.name||u.email||'?')[0].toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;color:var(--tx)">${u.name||'Sin nombre'}</div>
+          <div style="font-size:11px;color:var(--tx3)">${u.email}</div>
+        </div>
+        <span class="role-badge ${u.role}">${u.role==='admin'?'Admin':'Vendedor'}</span>
+        ${uid !== currentUser.uid ? `
+        <select onchange="changeRole('${uid}',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--bdr2);border-radius:var(--rs);background:var(--surf2);color:var(--tx)">
+          <option value="vendedor"${u.role==='vendedor'?' selected':''}>Vendedor</option>
+          <option value="admin"${u.role==='admin'?' selected':''}>Admin</option>
+        </select>
+        <button onclick="deactivateUser('${uid}','${u.name||u.email}')" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:16px;padding:2px 4px" title="Desactivar">✕</button>
+        ` : '<span style="font-size:11px;color:var(--tx3)">(tú)</span>'}
+      </div>`).join('');
+  });
+}
+
+function changeRole(uid, newRole){
+  db.ref('users/'+uid+'/role').set(newRole);
+}
+
+function deactivateUser(uid, name){
+  if(!confirm('¿Desactivar a "'+name+'"? El usuario no podrá iniciar sesión.')) return;
+  db.ref('users/'+uid+'/active').set(false);
+  loadUsersList();
+}
+
+async function createUser(){
+  const email = document.getElementById('new-user-email').value.trim();
+  const pass = document.getElementById('new-user-pass').value;
+  const name = document.getElementById('new-user-name').value.trim();
+  const role = document.getElementById('new-user-role').value;
+  const errEl = document.getElementById('add-user-error');
+  if(!email||!pass||pass.length<6){
+    errEl.textContent='Correo y contraseña (mín. 6 caracteres) son obligatorios.';
+    errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+  try {
+    // Create secondary auth instance to avoid logging out current user
+    const secondApp = firebase.initializeApp(firebase.app().options, 'secondary_'+Date.now());
+    const secondAuth = secondApp.auth();
+    const cred = await secondAuth.createUserWithEmailAndPassword(email, pass);
+    const uid = cred.user.uid;
+    await secondApp.database().ref('users/'+uid).set({
+      email, name: name||email.split('@')[0], role, active: true,
+      createdAt: new Date().toISOString(), createdBy: currentUser.uid
+    });
+    await secondAuth.signOut();
+    await secondApp.delete();
+    document.getElementById('add-user-form').style.display = 'none';
+    loadUsersList();
+    addBotMsg('Usuario <strong>'+name+'</strong> creado con rol <strong>'+role+'</strong>.');
+  } catch(e){
+    const msgs = {
+      'auth/email-already-in-use':'Ese correo ya está registrado.',
+      'auth/invalid-email':'Correo inválido.',
+      'auth/weak-password':'Contraseña muy débil (mín. 6 caracteres).',
+    };
+    errEl.textContent = msgs[e.code]||'Error: '+e.message;
+    errEl.style.display='block';
+  }
+}
+// ════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════
 function toggleDL(e){
@@ -1717,12 +2024,8 @@ function toggleDL(e){
 document.addEventListener('click',function(){const m=document.getElementById('dl-menu');if(m)m.style.display='none';});
 
 window.addEventListener('load',()=>{
-  initFB();
-  // Load pay data from Firebase immediately on startup
-  setTimeout(loadPayFromFirebase, 1500); // wait for Firebase to connect
-  // Show desktop buttons
-  const dlw=document.getElementById('dl-wrap');if(dlw)dlw.style.display='flex';
-  ['btn-clr','btn-mov','btn-prd'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
+  // Auth controls everything - initFB and showDesktopBtns called from showApp()
+  initAuth();
   // Responsive resize
   window.addEventListener('resize',()=>{renderList();handleOrientation();});
   window.addEventListener('orientationchange',()=>{setTimeout(()=>{renderList();handleOrientation();},150);});
@@ -1740,5 +2043,41 @@ window.addEventListener('load',()=>{
     <button class="mb p" onclick="closeOv('movdet')">Cerrar</button>
   </div>
 </div></div>
+<!-- USER MANAGEMENT MODAL (admin only) -->
+<div class="ov" id="ov-users" onclick="bgc(event,'users')">
+<div class="modal" style="max-width:560px">
+  <span class="mh"></span>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div class="mt" style="margin-bottom:0">👥 Gestión de Usuarios</div>
+    <button class="bsm pri" onclick="openAddUser()">+ Agregar</button>
+  </div>
+  <div id="users-list" style="margin-bottom:16px"></div>
+  <!-- Add user form (hidden by default) -->
+  <div id="add-user-form" style="display:none;background:var(--surf2);border-radius:var(--r);padding:16px;border:1px solid var(--bdr)">
+    <div style="font-size:12px;font-weight:500;color:var(--tx2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em">Nuevo usuario</div>
+    <div class="fg">
+      <div class="fr"><label>Correo electrónico</label><input type="email" id="new-user-email" placeholder="correo@ejemplo.com"></div>
+      <div class="fr"><label>Contraseña temporal</label><input type="password" id="new-user-pass" placeholder="Mín. 6 caracteres"></div>
+    </div>
+    <div class="fg">
+      <div class="fr"><label>Nombre</label><input type="text" id="new-user-name" placeholder="Nombre completo"></div>
+      <div class="fr"><label>Rol</label>
+        <select id="new-user-role">
+          <option value="vendedor">Vendedor</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+    </div>
+    <div id="add-user-error" style="font-size:12px;color:var(--red);margin-top:8px;display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="mb" onclick="document.getElementById('add-user-form').style.display='none'">Cancelar</button>
+      <button class="mb p" onclick="createUser()">Crear usuario</button>
+    </div>
+  </div>
+  <div class="mf">
+    <button class="mb p" onclick="closeOv('users')">Cerrar</button>
+  </div>
+</div></div>
+</div><!-- /app-container -->
 </body>
 </html>
