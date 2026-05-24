@@ -316,8 +316,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 
 /* ── USER MANAGEMENT MODAL ──────────────────────── */
 .admin-only{display:none}
-body.role-admin .admin-only{display:flex}
-body.role-admin .admin-only-block{display:block}
+body.role-admin .admin-only{display:flex !important}
+body.role-admin .admin-only-block{display:flex !important}
 .admin-only-block{display:none}
 .role-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
 .role-badge.admin{background:var(--PL);color:var(--P)}
@@ -1809,16 +1809,24 @@ async function loadUserRole(uid){
   return new Promise(resolve => {
     db.ref('users/'+uid).once('value', snap => {
       const data = snap.val();
-      if(data && data.role){
+      // Always enforce admin for known admin emails, regardless of DB value
+      const adminEmails = ['italoamaya.moreno@gmail.com','kristeldextre.caro@gmail.com'];
+      const isAdmin = adminEmails.includes(currentUser.email);
+      if(isAdmin){
+        currentRole = 'admin';
+        // Update DB if role is wrong
+        if(!data || data.role !== 'admin'){
+          db.ref('users/'+uid+'/role').set('admin');
+          db.ref('users/'+uid+'/email').set(currentUser.email);
+        }
+      } else if(data && data.role){
         currentRole = data.role;
       } else {
-        // First time: check if this is the admin email
-        const adminEmail = 'italoamaya.moreno@gmail.com';
-        currentRole = currentUser.email.startsWith('italoamaya.moreno') ? 'admin' : 'vendedor';
-        // Save role to database
+        // First time non-admin user
+        currentRole = 'vendedor';
         db.ref('users/'+uid).set({
           email: currentUser.email,
-          role: currentRole,
+          role: 'vendedor',
           name: data&&data.name ? data.name : currentUser.email.split('@')[0],
           createdAt: new Date().toISOString()
         });
@@ -1831,7 +1839,7 @@ async function loadUserRole(uid){
 function showApp(){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-container').style.display = 'flex';
-  // Apply role
+  // Apply role class to body
   document.body.classList.remove('role-admin','role-vendedor');
   document.body.classList.add('role-'+currentRole);
   // Update user badge
@@ -1843,9 +1851,12 @@ function showApp(){
   if(nameEl) nameEl.textContent = currentUser.email.split('@')[0];
   if(roleEl) roleEl.textContent = currentRole === 'admin' ? 'Administrador' : 'Vendedor';
   if(avatarEl) avatarEl.textContent = currentUser.email[0].toUpperCase();
-  // Hide admin-only elements for vendedor
-  if(currentRole !== 'admin'){
+  // Apply restrictions ONLY for vendedor
+  if(currentRole === 'vendedor'){
     applyVendedorRestrictions();
+  } else {
+    // Admin: ensure ALL nav items are visible
+    applyAdminView();
   }
   // Start DB listeners now that user is authenticated
   db.ref('products').on('value',s=>{const v=s.val();D.products=v?Object.values(v):[];renderAll();setSy('ok');});
@@ -1862,16 +1873,46 @@ function showApp(){
   handleOrientation();
 }
 
-function applyVendedorRestrictions(){
-  // Hide financial modules for vendedor
-  const hideIds = ['tn-dashboard','tn-finanzas','tn-pagos','tn-alertas',
+function applyAdminView(){
+  // Ensure all nav items visible for admin
+  const showIds = ['tn-dashboard','tn-finanzas','tn-pagos','tn-alertas',
                    'bn-dashboard','bn-finanzas','bn-alertas','bn-pagos',
-                   'dl-wrap','btn-clr','btn-mov'];
+                   'dl-wrap','btn-clr','btn-mov','btn-prd'];
+  showIds.forEach(id => {
+    const el=document.getElementById(id);
+    if(el) el.style.removeProperty('display');
+  });
+  // Also remove any CSS overrides from role class conflicts
+  document.querySelectorAll('.admin-only-block').forEach(el => {
+    el.style.display = '';
+  });
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = 'flex';
+  });
+}
+
+function applyVendedorRestrictions(){
+  // Vendedor: only Catálogo and Métodos de Pago (for PDF download)
+  const hideIds = ['tn-dashboard','tn-finanzas','tn-alertas',
+                   'bn-dashboard','bn-finanzas','bn-alertas',
+                   'dl-wrap','btn-clr','btn-mov','btn-prd'];
   hideIds.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
-  // Hide + Producto button
-  const prd = document.getElementById('btn-prd');
-  if(prd) prd.style.display = 'none';
-  // Show only catalogo tab
+  // Vendedor CAN see Métodos de Pago (to download PDF for client)
+  const pagoIds = ['tn-pagos','bn-pagos'];
+  pagoIds.forEach(id => { const el=document.getElementById(id); if(el) el.style.removeProperty('display'); });
+  // Show only a limited Descargables for vendedor (catalogo PDF only)
+  const dlWrap = document.getElementById('dl-wrap');
+  if(dlWrap){
+    dlWrap.style.display = 'flex';
+    // Replace dropdown content with vendedor-only options
+    const menu = document.getElementById('dl-menu');
+    if(menu){
+      menu.innerHTML = `
+        <button onclick="exportPDF();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">📄 Descargar catálogo</button>
+        <button onclick="exportPayPDF();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">💳 Medios de pago (PDF)</button>`;
+    }
+  }
+  // Show only catalogo tab initially
   showPage('catalogo');
 }
 
