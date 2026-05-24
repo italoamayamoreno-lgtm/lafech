@@ -1430,9 +1430,11 @@ function loadPayFields(){
 }
 
 function renderPayMethods(){
-  // Build sales by method data
+  // Filter by selected month if on finanzas page
+  const moEl=document.getElementById('fin-month');
+  const mo=moEl?moEl.value:null;
   const byMethod={};
-  D.movements.filter(m=>m.type==='salida').forEach(m=>{
+  D.movements.filter(m=>m.type==='salida'&&(!mo||m.date.startsWith(mo))).forEach(m=>{
     const key=m.payMethod||'Sin especificar';
     if(!byMethod[key])byMethod[key]={count:0,total:0};
     byMethod[key].count++;
