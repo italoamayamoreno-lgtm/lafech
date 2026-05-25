@@ -619,12 +619,15 @@ body.role-admin .admin-only-block{display:flex !important}
       </div>
       <button class="bsm pri" onclick="openModal('promo')">+ Promoción</button>
     </div>
-    <div style="display:flex;gap:2px;background:var(--surf2);padding:3px;border-radius:var(--r);width:fit-content">
-      <button class="promo-tab on" id="ptab-active" onclick="setPromoTab('active')">Activas</button>
-      <button class="promo-tab" id="ptab-upcoming" onclick="setPromoTab('upcoming')">Próximas</button>
-      <button class="promo-tab" id="ptab-expired" onclick="setPromoTab('expired')">Vencidas</button>
+    <!-- KPIs -->
+    <div class="kpi-grid" id="promos-kpis"></div>
+    <!-- Tabs como pills -->
+    <div class="pills">
+      <button class="promo-tab pill on" id="ptab-active" onclick="setPromoTab('active')">Activas</button>
+      <button class="promo-tab pill" id="ptab-upcoming" onclick="setPromoTab('upcoming')">Próximas</button>
+      <button class="promo-tab pill" id="ptab-expired" onclick="setPromoTab('expired')">Vencidas</button>
     </div>
-    <div id="promos-list"></div>
+    <div class="prod-list" id="promos-list"></div>
   </div>
 
   <!-- MÉTODOS DE PAGO -->
@@ -1939,8 +1942,8 @@ function openMovDet(id){
   const rows=[
     ['Fecha',m.date],
     m.clientDoc?[`Documento (${m.clientDocType||'Doc'})`,m.clientDoc]:null,
-    m.originalPrice?['Precio Original','S/ '+fmt(m.originalPrice)]:null,
-    m.discountAmt?['Descuento Aplicado','− S/ '+fmt(m.discountAmt)+(m.promoName?' ('+m.promoName+')':(m.discountType==='pct'||m.discountType==='fijo'?' (manual)':''))]:null,
+    ['Precio Regular', m.originalPrice ? fmtM(m.originalPrice) : fmtM(m.price)],
+    ['Precio con Descuento', m.originalPrice ? `${fmtM(m.price)}${m.promoName?' · Promo: '+m.promoName:m.discountAmt?' · Descuento manual':''}` : '—'],
     ['Producto',p.name+' ('+m.prodId+')'],
     ['Categoría',p.cat||'—'],
     ['Tipo',lb[m.type]||m.type],
@@ -2346,45 +2349,55 @@ function renderPromos(){
   db.ref('promos').once('value',snap=>{
     window._promos=snap.val()||{};
     const all=Object.values(window._promos);
-    const list=all.filter(p=>getPromoStatus(p)===promoTab);
-    const el=document.getElementById('promos-list');
-    if(!el)return;
-    // Summary counts
+
+    // KPIs
     const active=all.filter(p=>getPromoStatus(p)==='active').length;
     const upcoming=all.filter(p=>getPromoStatus(p)==='upcoming').length;
     const expired=all.filter(p=>getPromoStatus(p)==='expired').length;
+    const kpiEl=document.getElementById('promos-kpis');
+    if(kpiEl) kpiEl.innerHTML=`
+      <div class="kpi gr"><div class="kpi-lbl">Activas</div><div class="kpi-val gr">${active}</div><div class="kpi-sub">en vigencia</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Próximas</div><div class="kpi-val">${upcoming}</div><div class="kpi-sub">programadas</div></div>
+      <div class="kpi"><div class="kpi-lbl">Vencidas</div><div class="kpi-val" style="color:var(--tx3)">${expired}</div><div class="kpi-sub">historial</div></div>
+      <div class="kpi p"><div class="kpi-lbl">Total</div><div class="kpi-val">${all.length}</div><div class="kpi-sub">creadas</div></div>`;
+
     // Update tab labels
-    const labels={active:`Activas${active?' ('+active+')':''}`,upcoming:`Próximas${upcoming?' ('+upcoming+')':''}`,expired:`Vencidas${expired?' ('+expired+')':''}`};
     ['active','upcoming','expired'].forEach(t=>{
-      const el2=document.getElementById('ptab-'+t);
-      if(el2)el2.textContent=labels[t];
+      const el=document.getElementById('ptab-'+t);
+      const counts={active,upcoming,expired};
+      const labels={active:'Activas',upcoming:'Próximas',expired:'Vencidas'};
+      if(el)el.textContent=`${labels[t]} (${counts[t]})`;
     });
+
+    const list=all.filter(p=>getPromoStatus(p)===promoTab);
+    const el=document.getElementById('promos-list');
+    if(!el)return;
+
     if(!list.length){
-      const msgs={active:'Sin promociones activas en este momento.',upcoming:'No hay promociones programadas.',expired:'Sin promociones vencidas.'};
+      const msgs={active:'Sin promociones activas.',upcoming:'Sin promociones programadas.',expired:'Sin historial de promociones vencidas.'};
       el.innerHTML=`<div class="empty"><div class="empty-ic">🏷️</div><div class="empty-msg">${msgs[promoTab]}<br><button class="bsm pri" onclick="openModal('promo')" style="margin-top:10px">+ Crear promoción</button></div></div>`;
       return;
     }
-    const statusLbl={active:'✅ Activa',expired:'⏱ Vencida',upcoming:'⏳ Próximamente'};
-    const statusColor={active:'var(--grn)',expired:'var(--tx3)',upcoming:'var(--amb)'};
-    el.innerHTML=list.map(pr=>{
+
+    const stColor={active:'var(--grn)',upcoming:'var(--amb)',expired:'var(--tx3)'};
+    const stLabel={active:'✅ Activa',upcoming:'⏳ Próxima',expired:'⏱ Vencida'};
+    const typeLabel={pct:'%',fijo:'S/'};
+
+    el.innerHTML=list.sort((a,b)=>(b.from||'').localeCompare(a.from||'')).map(pr=>{
       const st=getPromoStatus(pr);
-      const disc=pr.type==='pct'?`${pr.value}% de descuento`:`S/ ${fmt(pr.value)} de descuento`;
-      const scope=pr.scope==='cat'?`Solo categoría: ${pr.cat}`:'Aplica a todos los productos';
-      const dateStr=pr.from?(pr.to?`${pr.from} → ${pr.to}`:`Desde ${pr.from}`):'Sin límite de fecha';
-      const iconBg=pr.type==='pct'?'var(--grn-bg)':'var(--blu-bg)';
-      const iconColor=pr.type==='pct'?'var(--grn)':'var(--blu)';
-      return `<div class="promo-card" style="border-left:3px solid ${statusColor[st]};width:100%;box-sizing:border-box">
-        <div class="promo-icon" style="background:${iconBg};color:${iconColor};font-size:16px;font-weight:700">${pr.type==='pct'?'%':'S/'}</div>
-        <div class="promo-body">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <div class="promo-name">${pr.name}</div>
-            <span class="promo-status ${st}">${statusLbl[st]}</span>
-          </div>
-          <div class="promo-detail" style="font-size:13px;font-weight:500;color:var(--P);margin-bottom:3px">${disc}</div>
-          <div class="promo-detail">📦 ${scope}</div>
-          <div class="promo-detail">📅 ${dateStr}</div>
+      const discText=pr.type==='pct'?`${pr.value}% de descuento`:`S/ ${fmt(pr.value)} de descuento`;
+      const scopeText=pr.scope==='cat'?`Categoría: ${pr.cat}`:'Todos los productos';
+      const dateText=pr.from?(pr.to?`${pr.from} → ${pr.to}`:`Desde ${pr.from}`):'Sin límite';
+      const typeBg=pr.type==='pct'?'var(--grn-bg)':'var(--blu-bg)';
+      const typeFg=pr.type==='pct'?'var(--grn)':'var(--blu)';
+      return `<div class="prod-row" style="padding:14px 16px">
+        <div class="prod-thumb" style="background:${typeBg};color:${typeFg};font-size:14px;font-weight:700;border:none">${typeLabel[pr.type]}</div>
+        <div class="prod-info">
+          <div class="prod-name">${pr.name} <span style="padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;background:${stColor[st]}22;color:${stColor[st]};vertical-align:middle">${stLabel[st]}</span></div>
+          <div class="prod-meta">${discText} · ${scopeText}</div>
+          <div class="prod-meta">📅 ${dateText}</div>
         </div>
-        <button onclick="deletePromo('${pr.id}')" class="ib dl" title="Eliminar" style="align-self:flex-start;flex-shrink:0">✕</button>
+        <button onclick="deletePromo('${pr.id}')" class="ib dl" title="Eliminar" style="flex-shrink:0">✕</button>
       </div>`;
     }).join('');
   });
@@ -2439,7 +2452,7 @@ function applyPromoToSale(){
   if(prcEl)prcEl.value=finalPrice;
   window._lastPromoName=best.name; // store for saving
   if(discEl){
-    discEl.innerHTML=`🏷️ Promo "<strong>${best.name}</strong>" — <span style="text-decoration:line-through;opacity:.6">${fmtM(basePrice)}</span> → <strong>${fmtM(finalPrice)}</strong> (-${fmtM(discAmt)})`;
+    discEl.innerHTML=`🏷️ Promo "<strong>${best.name}</strong>" — Precio regular: <span style="text-decoration:line-through;opacity:.6">${fmtM(basePrice)}</span> → Precio con descuento: <strong style="color:var(--grn)">${fmtM(finalPrice)}</strong> <span style="opacity:.7">(-${fmtM(discAmt)})</span>`;
     discEl.style.display='block';
   }
 }
