@@ -359,42 +359,27 @@ body.role-admin .admin-only-block{display:flex !important}
 .role-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
 .role-badge.admin{background:var(--PL);color:var(--P)}
 .role-badge.vendedor{background:var(--grn-bg);color:var(--grn)}
-/* ── MOBILE PORTRAIT (default) ─────────────────────
-   Hides topbar action buttons, shows bottom nav
-────────────────────────────────────────────────── */
 @media(max-width:899px){
-  /* Hide big action buttons from topbar on mobile */
   #btn-xls,#btn-pdf,#btn-exp,#btn-clr,#btn-mov,#btn-prd{display:none !important}
-  /* Stack form grids on mobile */
   .pay-bank-card .fg{grid-template-columns:1fr !important}
-  /* Prevent any horizontal overflow */
   .main,#page-pagos{overflow-x:hidden;max-width:100vw}
-  /* Compact topbar */
   .topbar{padding:0 12px;gap:6px}
   .logo{font-size:18px}
 }
-
-/* ── MOBILE LANDSCAPE ──────────────────────────────
-   When phone rotated horizontal (height < width)
-────────────────────────────────────────────────── */
 @media(max-width:899px) and (orientation:landscape){
-  /* Show desktop nav, hide bottom nav */
   .topbar-nav{display:flex !important;gap:1px;margin-left:8px}
   .bnav{display:none !important}
   .fab{bottom:10px;right:14px;width:40px;height:40px;font-size:18px}
-  /* Compact everything */
   .topbar{height:40px;padding:0 10px}
   .logo{font-size:16px}
   .tnav{padding:3px 8px;font-size:11px}
   .main{padding:8px 12px;gap:8px}
-  /* 4 KPIs in one row */
   .kpi-grid{grid-template-columns:repeat(4,1fr) !important;gap:6px}
   .kpi{padding:7px 10px}
   .kpi-val{font-size:16px !important}
   .kpi-lbl{font-size:8px;margin-bottom:2px}
   .kpi-sub{font-size:8px}
   .st{font-size:15px}
-  /* Table layout instead of cards */
   .tbl-head{display:grid !important}
   .prod-thumb{display:none !important}
   .prod-right{display:contents !important}
@@ -402,14 +387,11 @@ body.role-admin .admin-only-block{display:flex !important}
   .prod-actions{opacity:1 !important;display:flex !important;align-items:center !important}
   .prod-cat,.prod-mat,.prod-cost,.prod-margin{display:flex !important;align-items:center;font-size:10px;color:var(--tx2)}
   .prod-row{padding:7px 10px}
-  /* Dashboard 2 cols */
   .dash-grid{grid-template-columns:1fr 1fr !important;gap:10px}
   .mov-row{padding:7px 10px}
   .det-panel{top:40px}
-  /* Show action buttons in landscape */
   #dl-wrap,#btn-clr,#btn-mov,#btn-prd{display:flex !important}
   #chat-toggle{display:none !important}
-  /* Pagos page: 2 cols */
   #page-pagos .pay-bank-card{margin-bottom:8px}
 }
 
@@ -461,7 +443,6 @@ body.role-admin .admin-only-block{display:flex !important}
   </nav>
   <div class="tr">
     <div class="sync" id="sync-dot"></div>
-    <!-- Descargables dropdown -->
     <div class="dl-wrap" id="dl-wrap" style="display:none;position:relative">
       <button class="tbtn" onclick="toggleDL(event)">⬇ Descargables ▾</button>
       <div id="dl-menu" style="display:none;position:absolute;top:38px;right:0;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:210px;z-index:100;overflow:hidden">
@@ -474,7 +455,6 @@ body.role-admin .admin-only-block{display:flex !important}
     <button class="tbtn dng" id="btn-clr" onclick="confirmClear()" style="display:none">🗑</button>
     <button class="tbtn" id="btn-mov" onclick="openMov()" style="display:none">+ Movimiento</button>
     <button class="tbtn pri" id="btn-prd" onclick="openProd()" style="display:none">+ Producto</button>
-    <!-- User badge -->
     <div class="user-badge" id="user-badge" onclick="toggleUserMenu(event)" style="display:none">
       <div class="user-avatar" id="user-avatar">?</div>
       <div>
@@ -619,9 +599,7 @@ body.role-admin .admin-only-block{display:flex !important}
       </div>
       <button class="bsm pri" onclick="openModal('promo')">+ Promoción</button>
     </div>
-    <!-- KPIs -->
     <div class="kpi-grid" id="promos-kpis"></div>
-    <!-- Tabs como pills -->
     <div class="pills">
       <button class="promo-tab pill on" id="ptab-active" onclick="setPromoTab('active')">Activas</button>
       <button class="promo-tab pill" id="ptab-upcoming" onclick="setPromoTab('upcoming')">Próximas</button>
@@ -633,11 +611,7 @@ body.role-admin .admin-only-block{display:flex !important}
 
   <!-- MÉTODOS DE PAGO -->
   <div class="page" id="page-pagos">
-
-
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px;width:100%;overflow-x:hidden">
-
-      <!-- BCP -->
       <div class="pay-bank-card" style="margin-bottom:0">
         <div class="pay-bank-head">
           <span class="pay-bank-icon">🏦</span>
@@ -647,8 +621,6 @@ body.role-admin .admin-only-block{display:flex !important}
         <div class="fr"><label>N° Cuenta Interbancaria (CCI)</label><input id="bcp-cci" placeholder="00219100123456780112" oninput="savePay()"></div>
         <div class="fr"><label>Titular</label><input id="bcp-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
       </div>
-
-      <!-- Interbank -->
       <div class="pay-bank-card" style="margin-bottom:0">
         <div class="pay-bank-head">
           <span class="pay-bank-icon">🏦</span>
@@ -658,8 +630,6 @@ body.role-admin .admin-only-block{display:flex !important}
         <div class="fr"><label>N° Cuenta Interbancaria (CCI)</label><input id="ibk-cci" placeholder="00320000301234567890" oninput="savePay()"></div>
         <div class="fr"><label>Titular</label><input id="ibk-nm" placeholder="Nombre del titular" oninput="savePay()"></div>
       </div>
-
-      <!-- Yape -->
       <div class="pay-bank-card" style="margin-bottom:0">
         <div class="pay-bank-head">
           <span class="pay-bank-icon" style="background:#6C2D9B;color:#fff;font-size:15px;font-weight:700">Y</span>
@@ -674,8 +644,6 @@ body.role-admin .admin-only-block{display:flex !important}
           <img id="yape-qr-pv" class="img-pv" style="max-height:160px;object-fit:contain;display:none;margin-top:8px">
         </div>
       </div>
-
-      <!-- Plin -->
       <div class="pay-bank-card" style="margin-bottom:0">
         <div class="pay-bank-head">
           <span class="pay-bank-icon" style="background:#00A9E0;color:#fff;font-size:15px;font-weight:700">P</span>
@@ -690,7 +658,6 @@ body.role-admin .admin-only-block{display:flex !important}
           <img id="plin-qr-pv" class="img-pv" style="max-height:160px;object-fit:contain;display:none;margin-top:8px">
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -825,14 +792,17 @@ body.role-admin .admin-only-block{display:flex !important}
         <option value="ajuste-">⬇ Ajuste negativo</option>
       </select>
     </div>
-    <div class="fr"><label>Cantidad</label><input type="number" id="mv-qty" value="1" min="1"></div>
+    <div class="fr"><label>Cantidad</label><input type="number" id="mv-qty" value="1" min="1" oninput="checkStockAvail()"></div>
+  </div>
+  <!-- FIX 4: Stock warning banner -->
+  <div id="mv-stock-warn" style="display:none;background:var(--red-bg);border:1px solid #F5BABA;border-radius:var(--rs);padding:8px 12px;font-size:12px;color:var(--red);margin-bottom:6px">
+    ⛔ Stock insuficiente. Solo hay <strong id="mv-stock-avail">0</strong> unidades disponibles.
   </div>
   <div class="fg">
     <div class="fr"><label>Precio Unit. (S/)</label><input type="number" id="mv-prc"></div>
     <div class="fr"><label>Responsable</label><input id="mv-rsp"></div>
   </div>
   <div class="fr"><label>Referencia / Factura</label><input id="mv-obs" placeholder="N° Factura..."></div>
-  <!-- Cliente siempre visible para ventas -->
   <div id="mv-cli" style="display:none">
     <div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rs);padding:12px;margin-bottom:8px">
       <div class="cli-lbl" style="margin-bottom:10px">👤 Identificación del Cliente <span style="color:var(--red);font-size:10px">*obligatorio</span></div>
@@ -850,7 +820,6 @@ body.role-admin .admin-only-block{display:flex !important}
           <input id="mv-doc" placeholder="Ej: 12345678" oninput="lookupClient(this.value)">
         </div>
       </div>
-      <!-- Client found badge -->
       <div id="mv-client-found" style="display:none;padding:8px 12px;background:var(--grn-bg);border-radius:var(--rs);border:1px solid #A8D4BC;font-size:12px;color:var(--grn);margin-top:6px">
         ✅ Cliente encontrado: <strong id="mv-client-found-name"></strong> · <span id="mv-client-found-tag"></span>
       </div>
@@ -858,7 +827,6 @@ body.role-admin .admin-only-block{display:flex !important}
         🆕 Cliente nuevo — completa sus datos
       </div>
     </div>
-    <!-- Client data fields (always shown for sales) -->
     <div id="mv-client-fields" style="display:none;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rs);padding:12px;margin-bottom:8px">
       <div class="fr"><label>Nombre completo</label><input id="mv-cnm" placeholder="María García"></div>
       <div class="fg">
@@ -876,7 +844,6 @@ body.role-admin .admin-only-block{display:flex !important}
   </div>
   <div class="sib" id="mv-inf"></div>
   <div class="disc-applied" id="mv-disc"></div>
-  <!-- Manual discount (visible only for sales) -->
   <div id="mv-manual-disc" style="display:none;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rs);padding:12px;margin-top:6px">
     <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);margin-bottom:8px">💰 Descuento manual (opcional)</div>
     <div class="fg">
@@ -897,7 +864,7 @@ body.role-admin .admin-only-block{display:flex !important}
   </div>
   <div class="mf">
     <button class="mb" onclick="closeOv('mov')">Cancelar</button>
-    <button class="mb p" onclick="saveMov()">Registrar</button>
+    <button class="mb p" id="mv-save-btn" onclick="saveMov()">Registrar</button>
   </div>
 </div></div>
 
@@ -914,8 +881,7 @@ function initFB(){
   try{
     if(firebase.apps.length===0)firebase.initializeApp(cfg);
     db=firebase.database();
-    auth=firebase.auth(); // initialize auth immediately
-    // DB listeners started after auth confirmed (in showApp)
+    auth=firebase.auth();
     db.ref('.info/connected').on('value',s=>{
       const connected=s.val();
       const bar=document.getElementById('offline-bar');
@@ -1080,26 +1046,22 @@ function renderBadges(){
 // DASHBOARD
 // ════════════════════════════════════════════════
 function renderDash(){
-  // Sales by category
   const catSales={};
   D.movements.filter(m=>m.type==='salida').forEach(m=>{const p=gP(m.prodId);if(!p)return;const c=p.cat;catSales[c]=(catSales[c]||0)+m.qty*(m.price||0);});
   const maxCS=Math.max(...Object.values(catSales),1);
   document.getElementById('dash-cat').innerHTML=Object.entries(catSales).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c,v])=>`
     <div class="bar-row"><div class="bar-label">${c}</div><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(v/maxCS*100)}%"></div></div><div class="bar-val">${fmtM(v)}</div></div>`).join('')||'<div class="empty" style="padding:20px"><div class="empty-ic">📊</div><div class="empty-msg">Sin ventas aún</div></div>';
 
-  // Top products
   const prodSales={};
   D.movements.filter(m=>m.type==='salida').forEach(m=>{prodSales[m.prodId]=(prodSales[m.prodId]||0)+m.qty;});
   const maxPS=Math.max(...Object.values(prodSales),1);
   document.getElementById('dash-top').innerHTML=Object.entries(prodSales).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,q])=>{const p=gP(id)||{name:id};return`<div class="bar-row"><div class="bar-label">${p.name}</div><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(q/maxPS*100)}%"></div></div><div class="bar-val">${q} u.</div></div>`;}).join('')||'<div class="empty" style="padding:20px"><div class="empty-ic">🛍️</div><div class="empty-msg">Sin ventas aún</div></div>';
 
-  // Slow movers
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);const cutStr=cutoff.toISOString().slice(0,10);
   const recentMoved=new Set(D.movements.filter(m=>m.date>=cutStr).map(m=>m.prodId));
   const slow=D.products.filter(p=>!recentMoved.has(p.id)&&stk(p.id)>0);
   document.getElementById('dash-slow').innerHTML=slow.length?slow.slice(0,6).map(p=>`<div class="bar-row"><div class="bar-label">${p.name}</div><div style="flex:1"></div><div class="bar-val">${stk(p.id)} u.</div></div>`).join(''):'<div class="empty" style="padding:20px"><div class="empty-ic">✅</div><div class="empty-msg">Todos los productos han tenido movimiento</div></div>';
 
-  // Inventory summary
   const tot=D.products.length;const totS=D.products.reduce((a,p)=>a+Math.max(0,stk(p.id)),0);
   const valC=D.products.reduce((a,p)=>a+Math.max(0,stk(p.id))*p.cost,0);
   const valV=D.products.reduce((a,p)=>a+Math.max(0,stk(p.id))*p.price,0);
@@ -1124,8 +1086,6 @@ function initFinMonth(){
 }
 
 function renderFinanzas(){
-  // Don't call initFinMonth here - it resets the selector
-  // initFinMonth is called once when page is opened
   const mo=document.getElementById('fin-month').value;
   const moMovs=D.movements.filter(m=>m.date.startsWith(mo));
   const sales=moMovs.filter(m=>m.type==='salida');
@@ -1136,14 +1096,12 @@ function renderFinanzas(){
   const utilidad=ingreso-costo;
   const margenPct=ingreso>0?Math.round(utilidad/ingreso*100):0;
 
-  // Stats
   document.getElementById('fin-stats').innerHTML=`
     <div class="stat-box"><div class="stat-lbl">Ventas (unidades)</div><div class="stat-val p">${sales.reduce((a,m)=>a+m.qty,0)}</div></div>
     <div class="stat-box"><div class="stat-lbl">Transacciones</div><div class="stat-val">${sales.length}</div></div>
     <div class="stat-box"><div class="stat-lbl">Margen del Mes</div><div class="stat-val g">${margenPct}%</div></div>
     <div class="stat-box"><div class="stat-lbl">Compras realizadas</div><div class="stat-val">${buys.reduce((a,m)=>a+m.qty,0)} u.</div></div>`;
 
-  // P&L
   document.getElementById('fin-pnl').innerHTML=`
     <div class="fin-row"><div class="fin-lbl">💰 Ingresos por Ventas</div><div class="fin-val pos">${fmtM(ingreso)}</div></div>
     <div class="fin-row"><div class="fin-lbl">📦 Costo de Productos Vendidos</div><div class="fin-val neg">− ${fmtM(costo)}</div></div>
@@ -1151,17 +1109,14 @@ function renderFinanzas(){
     <div class="fin-row"><div class="fin-lbl">🛒 Compras del Período</div><div class="fin-val">${fmtM(compras)}</div></div>
     <div class="fin-row"><div class="fin-lbl">📊 Margen Bruto</div><div class="fin-val ${margenPct>=30?'pos':'neg'}">${margenPct}%</div></div>`;
 
-  // Sales by cat this month
   const catS={};
   sales.forEach(m=>{const p=gP(m.prodId);if(!p)return;catS[p.cat]=(catS[p.cat]||0)+m.qty*(m.price||0);});
   const maxC=Math.max(...Object.values(catS),1);
   document.getElementById('fin-cat').innerHTML=Object.entries(catS).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="bar-row"><div class="bar-label">${c}</div><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(v/maxC*100)}%"></div></div><div class="bar-val">${fmtM(v)}</div></div>`).join('')||'<div class="empty" style="padding:20px"><div class="empty-ic">📊</div><div class="empty-msg">Sin ventas este mes</div></div>';
 
-  // Monthly history (last 6 months)
   const history={};
   D.movements.filter(m=>m.type==='salida').forEach(m=>{const mo2=m.date.slice(0,7);history[mo2]=(history[mo2]||{ing:0,cos:0});history[mo2].ing+=m.qty*(m.price||0);const p=gP(m.prodId);history[mo2].cos+=m.qty*(p?p.cost:0);});
   const sortedH=Object.entries(history).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6);
-  const maxI=Math.max(...sortedH.map(([,v])=>v.ing),1);
   document.getElementById('fin-hist').innerHTML=sortedH.length?`<div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead><tr style="background:var(--surf2)">${['Mes','Ingresos','Costo','Utilidad','Margen'].map(h=>`<th style="padding:8px 12px;text-align:left;color:var(--tx3);font-weight:500;text-transform:uppercase;font-size:10px;letter-spacing:.07em;border-bottom:1px solid var(--bdr)">${h}</th>`).join('')}</tr></thead>
@@ -1273,6 +1228,9 @@ function openMov(id,tp){
   document.getElementById('mv-client-found').style.display='none';
   document.getElementById('mv-client-new').style.display='none';
   document.getElementById('mv-client-fields').style.display='none';
+  document.getElementById('mv-stock-warn').style.display='none';
+  const saveBtn=document.getElementById('mv-save-btn');
+  if(saveBtn){saveBtn.disabled=false;saveBtn.style.opacity='';}
   window._foundClient=null;
   onMvCh();
   document.getElementById('ov-mov').classList.add('open');
@@ -1288,24 +1246,48 @@ function onMvCh(){
   document.getElementById('mv-inf').textContent=`"${p.name}" — Stock: ${stk(p.id)} u. (mín. ${p.minStock})`;
   document.getElementById('mv-cli').style.display=t==='salida'?'block':'none';
   if(t==='salida'){
-    // Reset doc lookup when product/type changes
     if(!window._foundClient){
       document.getElementById('mv-client-found').style.display='none';
       document.getElementById('mv-client-new').style.display='none';
     }
   }
-  // Show discount options only for sales
   const manualDisc=document.getElementById('mv-manual-disc');
   if(manualDisc) manualDisc.style.display=t==='salida'?'block':'none';
   if(t==='salida'){
     applyPromoToSale();
-    // Reset manual discount
     document.getElementById('mv-disc-type').value='none';
     document.getElementById('mv-disc-val').value='';
     document.getElementById('mv-disc-preview').style.display='none';
   } else {
     const d=document.getElementById('mv-disc');if(d)d.style.display='none';
   }
+  // Reset stock warning when product/type changes
+  document.getElementById('mv-stock-warn').style.display='none';
+  const saveBtn=document.getElementById('mv-save-btn');
+  if(saveBtn){saveBtn.disabled=false;saveBtn.style.opacity='';}
+  // Recheck stock with current qty
+  checkStockAvail();
+}
+
+// ── FIX 4: Stock validation — blocks save, no confirm() ──────────
+function checkStockAvail(){
+  const pid=document.getElementById('mv-prd').value;
+  const tp=document.getElementById('mv-tp').value;
+  const qty=parseInt(document.getElementById('mv-qty').value)||0;
+  const warnEl=document.getElementById('mv-stock-warn');
+  const saveBtn=document.getElementById('mv-save-btn');
+  if((tp==='salida'||tp==='ajuste-')&&qty>0){
+    const available=stk(pid);
+    if(qty>available){
+      document.getElementById('mv-stock-avail').textContent=available;
+      warnEl.style.display='block';
+      if(saveBtn){saveBtn.disabled=true;saveBtn.style.opacity='0.5';}
+      return false;
+    }
+  }
+  warnEl.style.display='none';
+  if(saveBtn){saveBtn.disabled=false;saveBtn.style.opacity='';}
+  return true;
 }
 
 // ════════════════════════════════════════════════
@@ -1343,23 +1325,26 @@ function saveEdit(){
   const ni=getImg('ep-img-pv');if(ni)p.img=ni;
   updP(oid,p);closeOv('edit');
 }
+
 function saveMov(){
   const pid=document.getElementById('mv-prd').value;
   const tp=document.getElementById('mv-tp').value;
   const qty=parseInt(document.getElementById('mv-qty').value)||0;
   const prc=parseFloat(document.getElementById('mv-prc').value)||0;
-  // Capture discount info
   const discType=document.getElementById('mv-disc-type')?document.getElementById('mv-disc-type').value:'none';
-  const discVal=parseFloat(document.getElementById('mv-disc-val')?document.getElementById('mv-disc-val').value:0)||0;
   const p2=gP(document.getElementById('mv-prd').value);
   const originalPrice=p2?p2.price:prc;
   if(!pid||qty<=0){alert('Completa todos los campos.');return;}
-  const p=gP(pid);
-  if((tp==='salida'||tp==='ajuste-')&&stk(pid)<qty)if(!confirm(`Stock insuficiente (${stk(pid)} u.). ¿Registrar igual?`))return;
+
+  // FIX 4: Hard block on insufficient stock — no confirm()
+  if((tp==='salida'||tp==='ajuste-')&&stk(pid)<qty){
+    alert(`⛔ No se puede registrar la venta.\nStock disponible: ${stk(pid)} u.\nCantidad solicitada: ${qty} u.`);
+    return;
+  }
+
   const m={prodId:pid,type:tp,qty,price:prc,resp:document.getElementById('mv-rsp').value||'—',obs:document.getElementById('mv-obs').value||'',date:today()};
-  // Save price info for sales — always store originalPrice
   if(tp==='salida'){
-    m.originalPrice=originalPrice; // always save original catalog price
+    m.originalPrice=originalPrice;
     if(originalPrice>prc){
       m.discountAmt=originalPrice-prc;
       m.discountType=discType!=='none'?discType:(window._lastPromoName?'promo':'');
@@ -1381,19 +1366,32 @@ function saveMov(){
     if(cp)m.clientPhone=cp;
     if(ce)m.clientEmail=ce;
     if(pay)m.payMethod=pay;
-    // Save or update client record
+
+    // FIX 5: Use update() on existing client record, never duplicate
     if(doc&&cn&&db){
-      const clientData={id:'CLI-'+doc,doc,docType,name:cn,phone:cp||'',email:ce||'',updatedAt:today()};
-      if(!window._foundClient){
-        // New client
-        clientData.createdAt=today();
-        clientData.tag=''; // auto-segmented
-      }
-      db.ref('clients/CLI-'+doc).set(clientData);
+      const clientKey='CLI-'+doc;
+      db.ref('clients/'+clientKey).once('value', snap => {
+        const existing=snap.val();
+        if(existing){
+          // Update only changed fields, preserve everything else
+          db.ref('clients/'+clientKey).update({
+            name:cn, phone:cp||existing.phone||'',
+            email:ce||existing.email||'', updatedAt:today()
+          });
+        } else {
+          // New client
+          db.ref('clients/'+clientKey).set({
+            id:clientKey, doc, docType, name:cn,
+            phone:cp||'', email:ce||'', tag:'',
+            createdAt:today(), updatedAt:today()
+          });
+        }
+      });
     }
   }
   addM(m);closeOv('mov');
 }
+
 function confirmDel(id){
   const p=gP(id);if(!p)return;
   if(!confirm(`¿Eliminar "${p.name}"?\n\nEsta acción no se puede deshacer.`))return;
@@ -1409,17 +1407,25 @@ function confirmClear(){
 // ════════════════════════════════════════════════
 // EXPORTS
 // ════════════════════════════════════════════════
+
+// FIX 3: exportClients — added Tipo Documento + N° Documento columns
 function exportClients(){
   const sales=D.movements.filter(m=>m.type==='salida'&&m.clientName);
   if(!sales.length){alert('No hay datos de clientes. Agrega el nombre del cliente al registrar ventas.');return;}
-  const rows=[['Fecha','ID Producto','Producto','Categoría','Cantidad','Precio Unit. (S/)','Total (S/)','Cliente','Teléfono','Correo','Método de Pago','Referencia']];
+  const rows=[['Fecha','ID Producto','Producto','Categoría','Cantidad','Precio Unit. (S/)','Total (S/)','Tipo Documento','N° Documento','Cliente','Teléfono','Correo','Método de Pago','Referencia']];
   sales.forEach(m=>{
     const p=gP(m.prodId)||{name:m.prodId,cat:'—'};
-    rows.push([m.date,m.prodId,p.name,p.cat||'—',m.qty,m.price||0,parseFloat((m.qty*(m.price||0)).toFixed(2)),m.clientName||'',m.clientPhone||'',m.clientEmail||'',m.payMethod||'',m.obs||'']);
+    rows.push([
+      m.date, m.prodId, p.name, p.cat||'—', m.qty, m.price||0,
+      parseFloat((m.qty*(m.price||0)).toFixed(2)),
+      m.clientDocType||'', m.clientDoc||'',
+      m.clientName||'', m.clientPhone||'', m.clientEmail||'',
+      m.payMethod||'', m.obs||''
+    ]);
   });
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:12},{wch:10},{wch:30},{wch:14},{wch:10},{wch:14},{wch:12},{wch:22},{wch:14},{wch:26},{wch:16},{wch:20}];
+  ws['!cols']=[{wch:12},{wch:10},{wch:30},{wch:14},{wch:10},{wch:14},{wch:12},{wch:14},{wch:14},{wch:22},{wch:14},{wch:26},{wch:16},{wch:20}];
   XLSX.utils.book_append_sheet(wb,ws,'Clientes');
   XLSX.writeFile(wb,'LaFech_Clientes_'+today()+'.xlsx');
 }
@@ -1430,16 +1436,38 @@ function exportXLS(){
   D.products.forEach(p=>{const s=stk(p.id);const mg=margin(p);rows.push([p.id,p.name,p.cat,p.material||'—',p.quilates||'—',p.desc||'',p.cost,p.price,mg+'%',s,p.minStock]);});
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  // Column widths
   ws['!cols']=[{wch:10},{wch:32},{wch:14},{wch:10},{wch:14},{wch:36},{wch:12},{wch:14},{wch:10},{wch:12},{wch:12}];
   XLSX.utils.book_append_sheet(wb,ws,'Catálogo');
-  // Movements sheet
-  const mrows=[['Fecha','ID Producto','Producto','Tipo','Cantidad','Precio Unit (S/)','Total (S/)','Responsable','Cliente','Referencia']];
-  D.movements.forEach(m=>{const p=gP(m.prodId)||{name:m.prodId};const tp={entrada:'Entrada',salida:'Venta','ajuste+':'Ajuste +','ajuste-':'Ajuste −'}[m.type]||m.type;mrows.push([m.date,m.prodId,p.name,tp,m.qty,m.price||0,(m.qty*(m.price||0)).toFixed(2),m.resp||'',m.clientName||'',m.obs||'']);});
+  const mrows=[['Fecha','ID Producto','Producto','Tipo','Cantidad','Precio Unit (S/)','Total (S/)','Responsable','Tipo Doc','N° Documento','Cliente','Teléfono','Correo','Referencia']];
+  D.movements.forEach(m=>{const p=gP(m.prodId)||{name:m.prodId};const tp={entrada:'Entrada',salida:'Venta','ajuste+':'Ajuste +','ajuste-':'Ajuste −'}[m.type]||m.type;mrows.push([m.date,m.prodId,p.name,tp,m.qty,m.price||0,(m.qty*(m.price||0)).toFixed(2),m.resp||'',m.clientDocType||'',m.clientDoc||'',m.clientName||'',m.clientPhone||'',m.clientEmail||'',m.obs||'']);});
   const ws2=XLSX.utils.aoa_to_sheet(mrows);
-  ws2['!cols']=[{wch:12},{wch:10},{wch:30},{wch:12},{wch:10},{wch:14},{wch:12},{wch:16},{wch:20},{wch:20}];
+  ws2['!cols']=[{wch:12},{wch:10},{wch:30},{wch:12},{wch:10},{wch:14},{wch:12},{wch:16},{wch:12},{wch:14},{wch:20},{wch:14},{wch:26},{wch:20}];
   XLSX.utils.book_append_sheet(wb,ws2,'Movimientos');
   XLSX.writeFile(wb,'LaFech_Inventario_'+today()+'.xlsx');
+}
+
+// FIX 2: exportPDF — convert img URL to base64 before adding to PDF
+async function urlToBase64(url){
+  return new Promise((resolve)=>{
+    // If already base64 data URL, return as-is
+    if(url&&url.startsWith('data:'))return resolve(url);
+    // If external URL, fetch and convert
+    try{
+      const img=new Image();
+      img.crossOrigin='Anonymous';
+      img.onload=function(){
+        const canvas=document.createElement('canvas');
+        canvas.width=this.naturalWidth||this.width;
+        canvas.height=this.naturalHeight||this.height;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(this,0,0);
+        try{resolve(canvas.toDataURL('image/jpeg',0.85));}
+        catch(e){resolve(null);}
+      };
+      img.onerror=()=>resolve(null);
+      img.src=url;
+    }catch(e){resolve(null);}
+  });
 }
 
 async function exportPDF(){
@@ -1467,9 +1495,9 @@ async function exportPDF(){
   doc.text(D.products.length+' productos en '+cats.length+' categorias',18,94);
   doc.setTextColor(...WH);doc.setFont('helvetica','normal');doc.setFontSize(8);
   doc.text('Documento confidencial - uso exclusivo del cliente',18,H-5);
-  doc.text(today(),W-18,H-5,{align:'right'});
+  doc.text(today(),W-14,H-5,{align:'right'});
 
-  // ── PRODUCTS: 3 per page, photo prominent ──────────
+  // ── PRODUCTS: 2 per page ──────────────────────────
   const catMap={};
   D.products.forEach(p=>{if(!catMap[p.cat])catMap[p.cat]=[];catMap[p.cat].push(p);});
 
@@ -1477,7 +1505,6 @@ async function exportPDF(){
     doc.addPage();
     doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
     doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
-    // Cat header
     doc.setFillColor(...GR);doc.rect(0,0,W,26,'F');
     doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setCharSpace(2);
     doc.text(cat.toUpperCase(),14,17);doc.setCharSpace(0);
@@ -1485,11 +1512,9 @@ async function exportPDF(){
     doc.text(prods.length+' producto'+(prods.length!==1?'s':''),W-14,17,{align:'right'});
     doc.setDrawColor(...RO);doc.setLineWidth(0.4);doc.line(14,28,W-14,28);
 
-    // 2 products per page — full description + large photo
-    // Available height: 297 - 34 (header) - 14 (footer) = 249
     const availH=249;
-    const cardH=Math.floor(availH/2)-4; // ~120mm each — room for description
-    const cardW=W-28; // 182mm
+    const cardH=Math.floor(availH/2)-4;
+    const cardW=W-28;
 
     for(let i=0;i<prods.length;i++){
       const p=prods[i];
@@ -1502,49 +1527,51 @@ async function exportPDF(){
       const cX=14;
       const cY=32+(pagePos*(cardH+4));
 
-      // Card shadow + bg
       doc.setFillColor(235,218,226);doc.roundedRect(cX+0.6,cY+0.6,cardW,cardH,2,2,'F');
       doc.setFillColor(...WH);doc.roundedRect(cX,cY,cardW,cardH,2,2,'F');
-      // Left accent
       doc.setFillColor(...GR);doc.rect(cX,cY,2.5,cardH,'F');
 
-      // PHOTO — large, left side, occupies ~40% of card width
-      // Square photo - fixed size regardless of card height
-      const imgW=78;const imgH=78; // Square 78x78mm
+      const imgW=78;const imgH=78;
       const imgX=cX+8;const imgY=cY+8;
-      if(p.img&&p.img.startsWith('data:image')){
-        try{
-          const fm=p.img.includes('png')?'PNG':'JPEG';
-          doc.addImage(p.img,fm,imgX,imgY,imgW,imgH);
-          doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
-        }catch(e2){
+
+      // FIX 2: Convert image to base64 before adding to PDF
+      if(p.img){
+        const imgData=await urlToBase64(p.img);
+        if(imgData){
+          try{
+            const fm=imgData.includes('data:image/png')?'PNG':'JPEG';
+            doc.addImage(imgData,fm,imgX,imgY,imgW,imgH);
+            doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
+          }catch(e2){
+            doc.setFillColor(248,242,245);doc.rect(imgX,imgY,imgW,imgH,'F');
+            doc.setFontSize(9);doc.setTextColor(...LN);
+            doc.setFont('helvetica','normal');
+            doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+2,{align:'center'});
+          }
+        } else {
           doc.setFillColor(248,242,245);doc.rect(imgX,imgY,imgW,imgH,'F');
-          doc.setFontSize(20);doc.setTextColor(...LN);
-          doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+3,{align:'center'});
+          doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
+          doc.setFontSize(9);doc.setTextColor(...LN);doc.setFont('helvetica','normal');
+          doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+2,{align:'center'});
         }
-      }else{
+      } else {
         doc.setFillColor(248,242,245);doc.rect(imgX,imgY,imgW,imgH,'F');
         doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
-        doc.setFontSize(9);doc.setTextColor(...LN);
-        doc.setFont('helvetica','normal');
+        doc.setFontSize(9);doc.setTextColor(...LN);doc.setFont('helvetica','normal');
         doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+2,{align:'center'});
       }
 
-      // CONTENT — right side
       const txX=imgX+imgW+8;
       const txW=cardW-imgW-20;
       let txY=cY+10;
 
-      // Product name — large
       doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...TX);
       const nLines=doc.splitTextToSize(p.name,txW);
       doc.text(nLines.slice(0,2),txX,txY);
       txY+=nLines.slice(0,2).length*7+4;
 
-      // Separator
       doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(txX,txY,txX+txW,txY);txY+=4;
 
-      // Fields
       const fields=[
         ['CODIGO',p.id],
         ['CATEGORIA',p.cat],
@@ -1560,7 +1587,6 @@ async function exportPDF(){
         txY+=13;
       });
 
-      // Description if space allows
       if(p.desc&&txY<cY+cardH-16){
         doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TX2);
         doc.text('DESCRIPCIÓN',txX,txY);txY+=5.5;
@@ -1570,7 +1596,6 @@ async function exportPDF(){
         if(maxDL>0)doc.text(dL.slice(0,maxDL),txX,txY);
       }
 
-      // Price box — bottom right of content area
       const priceBoxY=cY+cardH-13;
       const priceBoxX=txX;
       const priceBoxW=txW;
@@ -1582,7 +1607,6 @@ async function exportPDF(){
     }
   }
 
-  // ── FOOTER ALL PAGES ──
   const total=doc.getNumberOfPages();
   for(let pg=1;pg<=total;pg++){
     doc.setPage(pg);if(pg===1)continue;
@@ -1593,16 +1617,15 @@ async function exportPDF(){
   }
   doc.save('LaFech_Catalogo_'+today()+'.pdf');
 }
+
 // ════════════════════════════════════════════════
 // MÉTODOS DE PAGO
 // ════════════════════════════════════════════════
 const PAY_KEY='lafech_pay_data_v2';
 let payData=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
 
-// Sync payData to/from Firebase when available
 function syncPayToFirebase(){
   if(!db)return;
-  // QR images are large - save separately
   const slim={
     bcp_cta:payData.bcp_cta||'',bcp_cci:payData.bcp_cci||'',bcp_nm:payData.bcp_nm||'',
     ibk_cta:payData.ibk_cta||'',ibk_cci:payData.ibk_cci||'',ibk_nm:payData.ibk_nm||'',
@@ -1610,13 +1633,11 @@ function syncPayToFirebase(){
     plin_num:payData.plin_num||'',plin_nm:payData.plin_nm||'',
   };
   db.ref('payData').set(slim);
-  // Save QRs separately as they are large base64 strings
   if(payData.yape_qr) db.ref('payQR/yape').set({data:payData.yape_qr});
   if(payData.plin_qr) db.ref('payQR/plin').set({data:payData.plin_qr});
 }
 
 function fillPayInputs(){
-  // Fill all input fields from payData - called after Firebase load
   const f=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.value=val;};
   f('bcp-cta',payData.bcp_cta);f('bcp-cci',payData.bcp_cci);f('bcp-nm',payData.bcp_nm);
   f('ibk-cta',payData.ibk_cta);f('ibk-cci',payData.ibk_cci);f('ibk-nm',payData.ibk_nm);
@@ -1628,52 +1649,29 @@ function loadPayFromFirebase(){
   if(!db)return;
   db.ref('payData').once('value',snap=>{
     const v=snap.val();
-    if(v){
-      Object.assign(payData,v);
-      localStorage.setItem(PAY_KEY,JSON.stringify(payData));
-      fillPayInputs(); // update fields immediately when Firebase responds
-    }
+    if(v){Object.assign(payData,v);localStorage.setItem(PAY_KEY,JSON.stringify(payData));fillPayInputs();}
   });
   db.ref('payQR/yape').once('value',snap=>{
     const v=snap.val();
-    if(v&&v.data){
-      payData.yape_qr=v.data;
-      localStorage.setItem(PAY_KEY,JSON.stringify(payData));
-      const pv=document.getElementById('yape-qr-pv');
-      if(pv){pv.src=v.data;pv.style.display='block';}
-    }
+    if(v&&v.data){payData.yape_qr=v.data;localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+    const pv=document.getElementById('yape-qr-pv');if(pv){pv.src=v.data;pv.style.display='block';}}
   });
   db.ref('payQR/plin').once('value',snap=>{
     const v=snap.val();
-    if(v&&v.data){
-      payData.plin_qr=v.data;
-      localStorage.setItem(PAY_KEY,JSON.stringify(payData));
-      const pv=document.getElementById('plin-qr-pv');
-      if(pv){pv.src=v.data;pv.style.display='block';}
-    }
+    if(v&&v.data){payData.plin_qr=v.data;localStorage.setItem(PAY_KEY,JSON.stringify(payData));
+    const pv=document.getElementById('plin-qr-pv');if(pv){pv.src=v.data;pv.style.display='block';}}
   });
 }
 
 function savePay(){
-  // Preserve QR data that lives separately in payData
-  const yqr=payData.yape_qr||null;
-  const pqr=payData.plin_qr||null;
+  const yqr=payData.yape_qr||null;const pqr=payData.plin_qr||null;
   payData={
-    bcp_cta:document.getElementById('bcp-cta').value,
-    bcp_cci:document.getElementById('bcp-cci').value,
-    bcp_nm:document.getElementById('bcp-nm').value,
-    ibk_cta:document.getElementById('ibk-cta').value,
-    ibk_cci:document.getElementById('ibk-cci').value,
-    ibk_nm:document.getElementById('ibk-nm').value,
-    yape_num:document.getElementById('yape-num').value,
-    yape_nm:document.getElementById('yape-nm').value,
-    yape_qr:yqr,
-    plin_num:document.getElementById('plin-num').value,
-    plin_nm:document.getElementById('plin-nm').value,
-    plin_qr:pqr,
+    bcp_cta:document.getElementById('bcp-cta').value,bcp_cci:document.getElementById('bcp-cci').value,bcp_nm:document.getElementById('bcp-nm').value,
+    ibk_cta:document.getElementById('ibk-cta').value,ibk_cci:document.getElementById('ibk-cci').value,ibk_nm:document.getElementById('ibk-nm').value,
+    yape_num:document.getElementById('yape-num').value,yape_nm:document.getElementById('yape-nm').value,yape_qr:yqr,
+    plin_num:document.getElementById('plin-num').value,plin_nm:document.getElementById('plin-nm').value,plin_qr:pqr,
   };
-  localStorage.setItem(PAY_KEY,JSON.stringify(payData));
-  syncPayToFirebase();
+  localStorage.setItem(PAY_KEY,JSON.stringify(payData));syncPayToFirebase();
 }
 
 function loadQR(input,previewId,key){
@@ -1682,286 +1680,132 @@ function loadQR(input,previewId,key){
   r.onload=e=>{
     const img=document.getElementById(previewId);
     img.src=e.target.result;img.style.display='block';
-    // Merge with existing payData
     const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
     Object.assign(payData,saved);
     payData[key]=e.target.result;
     localStorage.setItem(PAY_KEY,JSON.stringify(payData));
-    // Save QR to Firebase directly
-    if(db){
-      const fbKey=key==='yape_qr'?'yape':'plin';
-      db.ref('payQR/'+fbKey).set({data:e.target.result})
-        .then(()=>console.log('QR saved to Firebase:',fbKey))
-        .catch(err=>console.error('QR Firebase save failed:',err));
-    }
+    if(db){const fbKey=key==='yape_qr'?'yape':'plin';db.ref('payQR/'+fbKey).set({data:e.target.result});}
   };
   r.readAsDataURL(f);
 }
 
 function loadPayFields(){
-  // First: fill from localStorage (instant)
   const saved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
-  Object.assign(payData,saved);
-  fillPayInputs();
-  // Then: refresh from Firebase (async - will update if newer data exists)
+  Object.assign(payData,saved);fillPayInputs();
   loadPayFromFirebase();
-  const showQR=(pvId,key)=>{const pv=document.getElementById(pvId);if(pv&&d[key]){pv.src=d[key];pv.style.display='block';}};
+  const showQR=(pvId,key)=>{const pv=document.getElementById(pvId);if(pv&&payData[key]){pv.src=payData[key];pv.style.display='block';}};
   showQR('yape-qr-pv','yape_qr');showQR('plin-qr-pv','plin_qr');
 }
 
 function renderPayMethods(){
-  // Filter by selected month if on finanzas page
-  const moEl=document.getElementById('fin-month');
-  const mo=moEl?moEl.value:null;
+  const moEl=document.getElementById('fin-month');const mo=moEl?moEl.value:null;
   const byMethod={};
   D.movements.filter(m=>m.type==='salida'&&(!mo||m.date.startsWith(mo))).forEach(m=>{
     const key=m.payMethod||'Sin especificar';
     if(!byMethod[key])byMethod[key]={count:0,total:0};
-    byMethod[key].count++;
-    byMethod[key].total+=m.qty*(m.price||0);
+    byMethod[key].count++;byMethod[key].total+=m.qty*(m.price||0);
   });
   const maxT=Math.max(...Object.values(byMethod).map(v=>v.total),1);
   const barsHTML=Object.entries(byMethod).sort((a,b)=>b[1].total-a[1].total).map(([k,v])=>`
-    <div class="bar-row">
-      <div class="bar-label">${k}</div>
-      <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(v.total/maxT*100)}%"></div></div>
-      <div class="bar-val">${fmtM(v.total)}</div>
-    </div>`).join('')||'<div class="empty" style="padding:16px"><div class="empty-ic">📊</div><div class="empty-msg">Sin ventas con método de pago registrado</div></div>';
-  // Render in Finanzas page
-  const finEl=document.getElementById('fin-pay-method');
-  if(finEl)finEl.innerHTML=barsHTML;
-  // Update movement modal dropdown
+    <div class="bar-row"><div class="bar-label">${k}</div><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(v.total/maxT*100)}%"></div></div><div class="bar-val">${fmtM(v.total)}</div></div>`).join('')||'<div class="empty" style="padding:16px"><div class="empty-ic">📊</div><div class="empty-msg">Sin ventas con método de pago registrado</div></div>';
+  const finEl=document.getElementById('fin-pay-method');if(finEl)finEl.innerHTML=barsHTML;
   const sel=document.getElementById('mv-pay');
-  if(sel){
-    const cur=sel.value;
-    const methods=['Efectivo','Tarjeta de crédito','Tarjeta de débito','Transferencia bancaria','Yape','Plin'];
-    sel.innerHTML='<option value="">— Seleccionar —</option>'+methods.map(m=>`<option${cur===m?' selected':''}>${m}</option>`).join('');
-  }
+  if(sel){const cur=sel.value;const methods=['Efectivo','Tarjeta de crédito','Tarjeta de débito','Transferencia bancaria','Yape','Plin'];sel.innerHTML='<option value="">— Seleccionar —</option>'+methods.map(m=>`<option${cur===m?' selected':''}>${m}</option>`).join('');}
 }
 
 async function exportPayPDF(){
-  // Step 1: reload from localStorage
   const localSaved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
   Object.assign(payData,localSaved);
-  // Step 2: fetch QRs from Firebase if missing
   if(db){
     await Promise.all([
-      new Promise(res=>{
-        if(payData.yape_qr){res();return;}
-        db.ref('payQR/yape').once('value',s=>{const v=s.val();if(v&&v.data){payData.yape_qr=v.data;}res();},()=>res());
-      }),
-      new Promise(res=>{
-        if(payData.plin_qr){res();return;}
-        db.ref('payQR/plin').once('value',s=>{const v=s.val();if(v&&v.data){payData.plin_qr=v.data;}res();},()=>res());
-      })
+      new Promise(res=>{if(payData.yape_qr){res();return;}db.ref('payQR/yape').once('value',s=>{const v=s.val();if(v&&v.data){payData.yape_qr=v.data;}res();},()=>res());}),
+      new Promise(res=>{if(payData.plin_qr){res();return;}db.ref('payQR/plin').once('value',s=>{const v=s.val();if(v&&v.data){payData.plin_qr=v.data;}res();},()=>res());})
     ]);
     localStorage.setItem(PAY_KEY,JSON.stringify(payData));
   }
   const d=payData;
-  console.log('PDF gen - yape_qr:',d.yape_qr?'present ('+d.yape_qr.length+' chars)':'MISSING');
-  console.log('PDF gen - plin_qr:',d.plin_qr?'present ('+d.plin_qr.length+' chars)':'MISSING');
-
   const hasAny=d.bcp_cta||d.bcp_cci||d.ibk_cta||d.ibk_cci||d.yape_num||d.plin_num;
   if(!hasAny){alert('Completa al menos un metodo de pago antes de generar el PDF.');return;}
-
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const W=210,H=297;
   const GR=[139,26,58],RO=[196,80,110],BG=[252,248,250],TX=[30,10,18],TX2=[100,60,75],LN=[220,190,205],WH=[255,255,255];
-
-  // Helper: safely add image to PDF - handles all formats
-  function safeAddImg(imgData, x, y, w, h){
-    if(!imgData) return false;
-    try {
-      // Detect format from data URL header
-      let fmt = 'JPEG';
-      if(imgData.includes('data:image/png')) fmt = 'PNG';
-      else if(imgData.includes('data:image/gif')) fmt = 'GIF';
-      else if(imgData.includes('data:image/webp')) fmt = 'WEBP';
-      // Strip the data URL prefix if present
-      const base64 = imgData.split(',')[1] || imgData;
-      doc.addImage(imgData, fmt, x, y, w, h);
-      return true;
-    } catch(e1) {
-      // Try as PNG if first attempt failed
-      try {
-        doc.addImage(imgData, 'PNG', x, y, w, h);
-        return true;
-      } catch(e2) {
-        // Try as JPEG
-        try {
-          doc.addImage(imgData, 'JPEG', x, y, w, h);
-          return true;
-        } catch(e3) {
-          console.error('Failed to add image:', e3.message);
-          return false;
-        }
-      }
-    }
+  function safeAddImg(imgData,x,y,w,h){
+    if(!imgData)return false;
+    try{let fmt='JPEG';if(imgData.includes('data:image/png'))fmt='PNG';doc.addImage(imgData,fmt,x,y,w,h);return true;}
+    catch(e1){try{doc.addImage(imgData,'PNG',x,y,w,h);return true;}catch(e2){try{doc.addImage(imgData,'JPEG',x,y,w,h);return true;}catch(e3){return false;}}}
   }
-
-  // Background
-  doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
-  doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
-
-  // Header band
+  doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
   doc.setFillColor(...GR);doc.rect(0,0,W,44,'F');
-  doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(28);
-  doc.text('LAFECH',14,26);
-  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setCharSpace(3);
-  doc.text('JOYERIA',15,36);doc.setCharSpace(0);
-  doc.setFontSize(8);doc.setTextColor(210,170,190);
-  doc.text('Informacion de Pago',W-14,24,{align:'right'});
-  doc.setFontSize(7);
-  doc.text(new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'}),W-14,32,{align:'right'});
-
-  // Subtitle
-  doc.setFont('helvetica','normal');doc.setFontSize(12);doc.setTextColor(...TX2);
-  doc.text('Medios de pago disponibles',14,58);
+  doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(28);doc.text('LAFECH',14,26);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setCharSpace(3);doc.text('JOYERIA',15,36);doc.setCharSpace(0);
+  doc.setFontSize(8);doc.setTextColor(210,170,190);doc.text('Informacion de Pago',W-14,24,{align:'right'});
+  doc.setFontSize(7);doc.text(new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'}),W-14,32,{align:'right'});
+  doc.setFont('helvetica','normal');doc.setFontSize(12);doc.setTextColor(...TX2);doc.text('Medios de pago disponibles',14,58);
   doc.setDrawColor(...LN);doc.setLineWidth(0.3);doc.line(14,63,W-14,63);
-
-  let y=72;
-  const colL=14;
-  const colR=W/2+5;
-  const halfW=(W/2)-19;
-
-  // Helper: draw a bank section card
+  let y=72;const colL=14,colR=W/2+5,halfW=(W/2)-19;
   function bankCard(title,colorArr,rows,x0,y0,cardW){
-    const validRows=rows.filter(r=>r[1]);
-    const cH=validRows.length*11+22;
+    const validRows=rows.filter(r=>r[1]);const cH=validRows.length*11+22;
     doc.setFillColor(240,225,232);doc.roundedRect(x0+0.5,y0+0.5,cardW,cH,2,2,'F');
-    doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');
-    doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);
-    doc.text(title,x0+7,y0+12);
+    doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);doc.text(title,x0+7,y0+12);
     doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(x0+7,y0+15,x0+cardW-4,y0+15);
     let ry=y0+23;
-    validRows.forEach(([lbl,val])=>{
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text(lbl,x0+7,ry);
-      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);
-      const lines=doc.splitTextToSize(String(val),cardW-46);
-      doc.text(lines[0],x0+44,ry);
-      ry+=11;
-    });
+    validRows.forEach(([lbl,val])=>{doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text(lbl,x0+7,ry);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);doc.text(doc.splitTextToSize(String(val),cardW-46)[0],x0+44,ry);ry+=11;});
     return y0+cH;
   }
-
-  // Helper: draw digital payment card with QR
   function digitalCard(title,colorArr,nameVal,numVal,qrData,x0,y0,cardW){
-    const qrSize=cardW-14; // QR width = card width - margins
-    const qrH=qrSize;      // Square QR
-    const hasQR=!!qrData;
-    const textH=(nameVal?11:0)+(numVal?11:0)+22;
-    const cH=textH+(hasQR?qrH+10:0);
-
+    const qrSize=cardW-14,qrH=qrSize,hasQR=!!qrData;
+    const textH=(nameVal?11:0)+(numVal?11:0)+22,cH=textH+(hasQR?qrH+10:0);
     doc.setFillColor(240,225,232);doc.roundedRect(x0+0.5,y0+0.5,cardW,cH,2,2,'F');
-    doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');
-    doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
-
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);
-    doc.text(title,x0+7,y0+12);
+    doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);doc.text(title,x0+7,y0+12);
     doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(x0+7,y0+15,x0+cardW-4,y0+15);
-
     let ry=y0+23;
-    if(nameVal){
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Nombre',x0+7,ry);
-      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);doc.text(String(nameVal),x0+7,ry+5);
-      ry+=13;
-    }
-    if(numVal){
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Numero',x0+7,ry);
-      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);doc.text(String(numVal),x0+7,ry+5);
-      ry+=13;
-    }
-
-    // QR image - centered in card
-    if(hasQR){
-      const qrX=x0+7;
-      const qrY=ry+2;
-      const added=safeAddImg(qrData, qrX, qrY, qrSize, qrH);
-      if(added){
-        doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(qrX,qrY,qrSize,qrH,'S');
-        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);
-        doc.text('Escanear para pagar',x0+cardW/2,qrY+qrH+5,{align:'center'});
-      } else {
-        // Fallback: show placeholder if image failed
-        doc.setFillColor(245,240,245);doc.rect(qrX,qrY,qrSize,qrH,'F');
-        doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(qrX,qrY,qrSize,qrH,'S');
-        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...TX2);
-        doc.text('QR no disponible',x0+cardW/2,qrY+qrH/2,{align:'center'});
-      }
-    }
+    if(nameVal){doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Nombre',x0+7,ry);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);doc.text(String(nameVal),x0+7,ry+5);ry+=13;}
+    if(numVal){doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Numero',x0+7,ry);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);doc.text(String(numVal),x0+7,ry+5);ry+=13;}
+    if(hasQR){const qrX=x0+7,qrY=ry+2;const added=safeAddImg(qrData,qrX,qrY,qrSize,qrH);if(added){doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(qrX,qrY,qrSize,qrH,'S');doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);doc.text('Escanear para pagar',x0+cardW/2,qrY+qrH+5,{align:'center'});}else{doc.setFillColor(245,240,245);doc.rect(x0+7,ry+2,qrSize,qrH,'F');doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(x0+7,ry+2,qrSize,qrH,'S');doc.setFontSize(8);doc.setTextColor(...TX2);doc.text('QR no disponible',x0+cardW/2,ry+2+qrH/2,{align:'center'});}}
     return y0+cH;
   }
-
-  // ── BCP + INTERBANK side by side ──
-  let leftH=y, rightH=y;
-  if(d.bcp_cta||d.bcp_cci||d.bcp_nm){
-    const rows=[['Titular',d.bcp_nm],['N. Cuenta',d.bcp_cta],['CCI',d.bcp_cci]];
-    leftH=bankCard('BCP — Banco de Credito del Peru',GR,rows,colL,y,halfW)+6;
-  }
-  if(d.ibk_cta||d.ibk_cci||d.ibk_nm){
-    const rows=[['Titular',d.ibk_nm],['N. Cuenta',d.ibk_cta],['CCI',d.ibk_cci]];
-    rightH=bankCard('Interbank',RO,rows,colR,y,halfW)+6;
-  }
+  let leftH=y,rightH=y;
+  if(d.bcp_cta||d.bcp_cci||d.bcp_nm){const rows=[['Titular',d.bcp_nm],['N. Cuenta',d.bcp_cta],['CCI',d.bcp_cci]];leftH=bankCard('BCP — Banco de Credito del Peru',GR,rows,colL,y,halfW)+6;}
+  if(d.ibk_cta||d.ibk_cci||d.ibk_nm){const rows=[['Titular',d.ibk_nm],['N. Cuenta',d.ibk_cta],['CCI',d.ibk_cci]];rightH=bankCard('Interbank',RO,rows,colR,y,halfW)+6;}
   y=Math.max(leftH,rightH)+6;
-
-  // ── YAPE + PLIN side by side ──
-  let yL=y, yR=y;
-  if(d.yape_num||d.yape_nm){
-    yL=digitalCard('Yape',[108,45,155],d.yape_nm,d.yape_num,d.yape_qr,colL,y,halfW)+6;
-  }
-  if(d.plin_num||d.plin_nm){
-    yR=digitalCard('Plin',[0,169,224],d.plin_nm,d.plin_num,d.plin_qr,colR,y,halfW)+6;
-  }
+  let yL=y,yR=y;
+  if(d.yape_num||d.yape_nm){yL=digitalCard('Yape',[108,45,155],d.yape_nm,d.yape_num,d.yape_qr,colL,y,halfW)+6;}
+  if(d.plin_num||d.plin_nm){yR=digitalCard('Plin',[0,169,224],d.plin_nm,d.plin_num,d.plin_qr,colR,y,halfW)+6;}
   y=Math.max(yL,yR)+4;
-
-  // Note
-  if(y<H-30){
-    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...TX2);
-    doc.text('Envia tu comprobante al WhatsApp o correo de contacto para confirmar tu pedido.',14,y+8);
-  }
-
-  // Footer
-  doc.setFillColor(...GR);doc.rect(0,H-14,W,14,'F');
-  doc.setTextColor(...WH);doc.setFont('helvetica','normal');doc.setFontSize(7);
-  doc.text('LaFech Joyeria',14,H-6);
-  doc.text(today(),W-14,H-6,{align:'right'});
-
+  if(y<H-30){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...TX2);doc.text('Envia tu comprobante al WhatsApp o correo de contacto para confirmar tu pedido.',14,y+8);}
+  doc.setFillColor(...GR);doc.rect(0,H-14,W,14,'F');doc.setTextColor(...WH);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text('LaFech Joyeria',14,H-6);doc.text(today(),W-14,H-6,{align:'right'});
   doc.save('LaFech_Informacion_Pago.pdf');
 }
+
 // ════════════════════════════════════════════════
 // MOVEMENT DETAIL
 // ════════════════════════════════════════════════
 function openMovDet(id){
-  // Try by id first, then by index
   let m=D.movements.slice().reverse().find(mv=>String(mv.id)===String(id));
-  if(!m&&!isNaN(id)) m=D.movements.slice().reverse()[parseInt(id)];
+  if(!m&&!isNaN(id))m=D.movements.slice().reverse()[parseInt(id)];
   if(!m){console.warn('Movement not found:',id);return;}
   const p=gP(m.prodId)||{name:m.prodId,cat:'—'};
-  const isIn=m.type==='entrada'||m.type==='ajuste+';
   const lb={entrada:'Entrada / Compra',salida:'Venta','ajuste+':'Ajuste positivo','ajuste-':'Ajuste negativo'};
   const ic=m.type==='entrada'?'📦':m.type==='salida'?'🛍️':'⚙️';
   const tot=m.qty*(m.price||0);
-  document.getElementById('movdet-title').textContent=ic+' '+( lb[m.type]||m.type);
+  document.getElementById('movdet-title').textContent=ic+' '+(lb[m.type]||m.type);
   const rows=[
     ['Fecha',m.date],
     m.clientDoc?[`Documento (${m.clientDocType||'Doc'})`,m.clientDoc]:null,
-    m.type==='salida'?['Precio Regular', m.originalPrice ? fmtM(m.originalPrice) : fmtM(m.price)]:null,
-    m.type==='salida'?['Precio con Descuento', m.originalPrice ? `${fmtM(m.price)}${m.promoName?' · Promo: '+m.promoName:m.discountAmt?' · Desc. manual':''}` : '—']:null,
-    ['Producto',p.name+' ('+m.prodId+')'],
-    ['Categoría',p.cat||'—'],
-    ['Tipo',lb[m.type]||m.type],
-    ['Cantidad',m.qty+' unidades'],
-    ['Precio Unitario',m.price?'S/ '+fmt(m.price):'—'],
-    ['Total',tot>0?'S/ '+fmt(tot):'—'],
-    ['Responsable',m.resp||'—'],
-    ['Referencia / Factura',m.obs||'—'],
+    m.type==='salida'?['Precio Regular',m.originalPrice?fmtM(m.originalPrice):fmtM(m.price)]:null,
+    m.type==='salida'?['Precio con Descuento',m.originalPrice?`${fmtM(m.price)}${m.promoName?' · Promo: '+m.promoName:m.discountAmt?' · Desc. manual':''}` :'—']:null,
+    ['Producto',p.name+' ('+m.prodId+')'],['Categoría',p.cat||'—'],
+    ['Tipo',lb[m.type]||m.type],['Cantidad',m.qty+' unidades'],
+    ['Precio Unitario',m.price?'S/ '+fmt(m.price):'—'],['Total',tot>0?'S/ '+fmt(tot):'—'],
+    ['Responsable',m.resp||'—'],['Referencia / Factura',m.obs||'—'],
   ];
-  if(m.clientName) rows.push(['Cliente',m.clientName]);
-  if(m.clientPhone) rows.push(['Teléfono',m.clientPhone]);
-  if(m.clientEmail) rows.push(['Correo',m.clientEmail]);
-  if(m.payMethod) rows.push(['Método de Pago',m.payMethod]);
+  if(m.clientName)rows.push(['Cliente',m.clientName]);
+  if(m.clientPhone)rows.push(['Teléfono',m.clientPhone]);
+  if(m.clientEmail)rows.push(['Correo',m.clientEmail]);
+  if(m.payMethod)rows.push(['Método de Pago',m.payMethod]);
   document.getElementById('movdet-body').innerHTML=`
     <div style="background:var(--surf2);border-radius:var(--rs);overflow:hidden;border:1px solid var(--bdr)">
       ${rows.filter(Boolean).map(([l,v],i)=>`<div style="display:flex;padding:9px 14px;border-bottom:1px solid var(--bdr);background:${i%2===0?'var(--surf)':'var(--surf2)'}">
@@ -1971,262 +1815,264 @@ function openMovDet(id){
     </div>`;
   document.getElementById('ov-movdet').classList.add('open');
 }
+
 function handleOrientation(){
-  const isLandMobile=window.innerWidth<900&&window.innerWidth>window.innerHeight;
   const isDesk=window.innerWidth>=900;
-  // In landscape mobile, chat close button should hide (desktop nav shows)
-  const ccb=document.getElementById('chat-close-btn');
   const ct=document.getElementById('chat-toggle');
-  if(isDesk){
-    if(ccb)ccb.style.display='none';
-    if(ct)ct.style.display='none';
-    document.getElementById('chat-panel').classList.remove('open');
-  } else if(isLandMobile){
-    if(ccb)ccb.style.display='flex';
-    if(ct)ct.style.display='none';
-  } else {
-    if(ccb)ccb.style.display='flex';
-    if(ct)ct.style.display='flex';
-  }
+  if(isDesk){if(ct)ct.style.display='none';}
 }
+
 // ════════════════════════════════════════════════
 // CRM — CLIENTES
 // ════════════════════════════════════════════════
-let crmFilter = 'todos';
-let crmSearch = '';
-let curClientId = null;
+let crmFilter='todos';
+let crmSearch='';
+let curClientId=null;
 
-function openModal(type){ 
+function openModal(type){
   if(type==='client'){
     document.getElementById('client-modal-title').textContent='Nuevo Cliente';
     document.getElementById('cl-id').value='';
     ['cl-name','cl-phone','cl-email','cl-notes'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('cl-bday').value='';
-    document.getElementById('cl-tag').value='';
+    document.getElementById('cl-bday').value='';document.getElementById('cl-tag').value='';
+    document.getElementById('cl-doc').value='';document.getElementById('cl-doctype').value='DNI';
     document.getElementById('ov-client').classList.add('open');
   } else if(type==='promo'){
     document.getElementById('promo-modal-title').textContent='Nueva Promoción';
     document.getElementById('pr-id').value='';
     ['pr-name','pr-value'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('pr-type').value='pct';
-    document.getElementById('pr-scope').value='all';
-    document.getElementById('pr-cat-row').style.display='none';
-    document.getElementById('pr-from').value=today();
-    document.getElementById('pr-to').value='';
-    updatePromoPreview();
+    document.getElementById('pr-type').value='pct';document.getElementById('pr-scope').value='all';
+    document.getElementById('pr-cat-row').style.display='none';document.getElementById('pr-from').value=today();
+    document.getElementById('pr-to').value='';updatePromoPreview();
     document.getElementById('ov-promo').classList.add('open');
   }
 }
 
+// FIX 5: saveClient — uses update() to prevent duplicates; tag change updates existing record
 function saveClient(){
   const name=document.getElementById('cl-name').value.trim();
   if(!name){alert('El nombre es obligatorio.');return;}
-  const id=document.getElementById('cl-id').value||'CLI-'+Date.now();
+  const existingId=document.getElementById('cl-id').value;
   const docVal=document.getElementById('cl-doc')?document.getElementById('cl-doc').value.trim():'';
   const docType=document.getElementById('cl-doctype')?document.getElementById('cl-doctype').value:'DNI';
-  const finalId = docVal ? 'CLI-'+docVal : id;
+  // Determine the canonical key: prefer doc-based id, else preserve existing id
+  const finalId=existingId||(docVal?'CLI-'+docVal:'CLI-'+Date.now());
   const client={
-    id:finalId,
-    doc:docVal,
-    docType,
-    name,
+    id:finalId, doc:docVal, docType, name,
     phone:document.getElementById('cl-phone').value.trim(),
     email:document.getElementById('cl-email').value.trim(),
     bday:document.getElementById('cl-bday').value,
     tag:document.getElementById('cl-tag').value,
     notes:document.getElementById('cl-notes').value.trim(),
-    createdAt:today()
+    updatedAt:today()
   };
-  if(db) db.ref('clients/'+client.id).set(client);
+  if(db){
+    // If editing an existing record (cl-id is set), just update
+    if(existingId){
+      db.ref('clients/'+existingId).update(client);
+    } else {
+      // New client: check if doc already exists to avoid duplicates
+      if(docVal){
+        db.ref('clients/CLI-'+docVal).once('value', snap=>{
+          if(snap.val()){
+            // Already exists — update, never create duplicate
+            db.ref('clients/CLI-'+docVal).update(client);
+          } else {
+            client.createdAt=today();
+            db.ref('clients/'+finalId).set(client);
+          }
+        });
+      } else {
+        client.createdAt=today();
+        db.ref('clients/'+finalId).set(client);
+      }
+    }
+  }
   closeOv('client');
-  renderCRM();
+  setTimeout(()=>renderCRM(),500);
 }
 
 function deleteClient(id){
-  if(!confirm('¿Eliminar este cliente?')) return;
-  if(db) db.ref('clients/'+id).remove();
-  closeClientDet();
-  renderCRM();
+  if(!confirm('¿Eliminar este cliente?'))return;
+  if(db)db.ref('clients/'+id).remove();
+  closeClientDet();renderCRM();
 }
 
 function setCrmFilter(f){
   crmFilter=f;
   document.querySelectorAll('#crm-tag-pills .pill').forEach(p=>{
-    p.classList.toggle('on', p.textContent.toLowerCase().includes(f==='todos'?'todos':f));
+    p.classList.toggle('on',p.textContent.toLowerCase().includes(f==='todos'?'todos':f));
   });
-  renderCRMList(); // use cached data, no Firebase re-query
+  renderCRMList();
 }
 
-function searchClients(q){ crmSearch=q; renderCRMList(); }
+// FIX 1: searchClients — correctly triggers re-render against full cached list
+function searchClients(q){
+  crmSearch=q.toLowerCase().trim();
+  renderCRMList();
+}
 
 function getAutoTag(movs){
-  // Automatic segmentation rules
-  const count = movs.length;
-  if(count === 0) return null;
-  if(count >= 10) return 'vip';
-  if(count >= 5) return 'frecuente';
-  // Check inactivo: no purchase in last 30 days
-  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-30);
-  const cutStr = cutoff.toISOString().slice(0,10);
-  const recent = movs.some(m => m.date >= cutStr);
-  if(!recent) return 'inactivo';
+  const count=movs.length;
+  if(count===0)return null;
+  if(count>=10)return 'vip';
+  if(count>=5)return 'frecuente';
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);
+  const cutStr=cutoff.toISOString().slice(0,10);
+  const recent=movs.some(m=>m.date>=cutStr);
+  if(!recent)return 'inactivo';
   return 'nuevo';
 }
 
 function getClientMovs(cl){
-  // Match by doc (primary) OR phone OR name — no exclusions
-  return D.movements.filter(m => m.type==='salida' && (
-    (cl.doc && m.clientDoc && m.clientDoc === cl.doc) ||
-    (cl.phone && m.clientPhone && m.clientPhone === cl.phone) ||
-    (cl.name && m.clientName && m.clientName.toLowerCase() === cl.name.toLowerCase())
+  return D.movements.filter(m=>m.type==='salida'&&(
+    (cl.doc&&m.clientDoc&&m.clientDoc===cl.doc)||
+    (cl.phone&&m.clientPhone&&m.clientPhone===cl.phone)||
+    (cl.name&&m.clientName&&m.clientName.toLowerCase()===cl.name.toLowerCase())
   ));
 }
 
 function buildClientsFromMovements(){
-  const existing = window._clients || {};
-  const fromMovs = {};
-  // Build from movements — key is doc > phone > name
-  D.movements.filter(m => m.type==='salida' && m.clientName).forEach(m => {
-    // Use doc as key if available, otherwise phone, otherwise name
-    const key = m.clientDoc || m.clientPhone || m.clientName;
+  const existing=window._clients||{};
+  const fromMovs={};
+  D.movements.filter(m=>m.type==='salida'&&m.clientName).forEach(m=>{
+    const key=m.clientDoc||m.clientPhone||m.clientName;
     if(!fromMovs[key]){
-      fromMovs[key] = {
-        id: m.clientDoc ? 'CLI-'+m.clientDoc : 'AUTO-'+(m.clientPhone||m.clientName||'X').replace(/[^a-zA-Z0-9]/g,'').slice(0,12),
-        doc: m.clientDoc||'',
-        docType: m.clientDocType||'',
-        name: m.clientName||'',
-        phone: m.clientPhone||'',
-        email: m.clientEmail||'',
-        autoCreated: true
+      fromMovs[key]={
+        id:m.clientDoc?'CLI-'+m.clientDoc:'AUTO-'+(m.clientPhone||m.clientName||'X').replace(/[^a-zA-Z0-9]/g,'').slice(0,12),
+        doc:m.clientDoc||'',docType:m.clientDocType||'',name:m.clientName||'',
+        phone:m.clientPhone||'',email:m.clientEmail||'',autoCreated:true
       };
     } else {
-      // Update with more complete data if available
-      if(m.clientDoc && !fromMovs[key].doc) fromMovs[key].doc = m.clientDoc;
-      if(m.clientPhone && !fromMovs[key].phone) fromMovs[key].phone = m.clientPhone;
-      if(m.clientEmail && !fromMovs[key].email) fromMovs[key].email = m.clientEmail;
+      if(m.clientDoc&&!fromMovs[key].doc)fromMovs[key].doc=m.clientDoc;
+      if(m.clientPhone&&!fromMovs[key].phone)fromMovs[key].phone=m.clientPhone;
+      if(m.clientEmail&&!fromMovs[key].email)fromMovs[key].email=m.clientEmail;
     }
   });
-  // Existing DB records override auto-created
-  const merged = {...fromMovs};
-  Object.values(existing).forEach(cl => {
-    const key = cl.doc || cl.phone || cl.name;
-    merged[key] = {...(fromMovs[key]||{}), ...cl};
-  });
+  const merged={...fromMovs};
+  Object.values(existing).forEach(cl=>{const key=cl.doc||cl.phone||cl.name;merged[key]={...(fromMovs[key]||{}),...cl};});
   return Object.values(merged);
 }
 
 function renderCRM(){
-  if(!db) return;
-  db.ref('clients').once('value', snap => {
-    window._clients = snap.val() || {};
-    if(!window._promos) window._promos={};
-    window._allCRMClients = buildClientsFromMovements(); // cache
+  if(!db)return;
+  db.ref('clients').once('value',snap=>{
+    window._clients=snap.val()||{};
+    if(!window._promos)window._promos={};
+    window._allCRMClients=buildClientsFromMovements();
     renderCRMList();
   });
 }
 
 function renderCRMList(){
-  const allClients = window._allCRMClients || buildClientsFromMovements();
+  // FIX 1: Always work from the full cached list — never from a pre-filtered subset
+  const allClients=window._allCRMClients||buildClientsFromMovements();
 
-    // Compute tags and stats for each client
-    const enriched = allClients.map(cl => {
-      const movs = getClientMovs(cl);
-      const autoTag = getAutoTag(movs);
-      const tag = cl.tag || autoTag; // manual tag overrides auto
-      const total = movs.reduce((a,m)=>a+m.qty*(m.price||0),0);
-      const lastBuy = movs.length ? movs.slice().sort((a,b)=>b.date.localeCompare(a.date))[0].date : '';
-      return {...cl, tag, autoTag, movs, total, lastBuy};
-    });
+  const enriched=allClients.map(cl=>{
+    const movs=getClientMovs(cl);
+    const autoTag=getAutoTag(movs);
+    const tag=cl.tag||autoTag;
+    const total=movs.reduce((a,m)=>a+m.qty*(m.price||0),0);
+    const lastBuy=movs.length?movs.slice().sort((a,b)=>b.date.localeCompare(a.date))[0].date:'';
+    return{...cl,tag,autoTag,movs,total,lastBuy};
+  });
 
-    // KPIs
-    const vipCount = enriched.filter(c=>c.tag==='vip').length;
-    const totalSpent = enriched.reduce((a,c)=>a+c.total,0);
-    const avgTicket = enriched.length ? Math.round(totalSpent/enriched.length) : 0;
-    const kpiEl = document.getElementById('crm-kpis');
-    const newCount = enriched.filter(c=>c.tag==='nuevo').length;
-    const freqCount = enriched.filter(c=>c.tag==='frecuente').length;
-    const inactCount = enriched.filter(c=>c.tag==='inactivo').length;
-    if(kpiEl) kpiEl.innerHTML = `
-      <div class="kpi p"><div class="kpi-lbl">Total</div><div class="kpi-val">${enriched.length}</div><div class="kpi-sub">clientes</div></div>
-      <div class="kpi g"><div class="kpi-lbl">VIP ⭐</div><div class="kpi-val">${vipCount}</div><div class="kpi-sub">+10 compras</div></div>
-      <div class="kpi gr"><div class="kpi-lbl">Frecuentes 🔄</div><div class="kpi-val gr">${freqCount}</div><div class="kpi-sub">5-9 compras</div></div>
-      <div class="kpi re"><div class="kpi-lbl">Inactivos 💤</div><div class="kpi-val ${inactCount>0?'re':''}">${inactCount}</div><div class="kpi-sub">sin compras 30d</div></div>`;
+  // KPIs
+  const vipCount=enriched.filter(c=>c.tag==='vip').length;
+  const freqCount=enriched.filter(c=>c.tag==='frecuente').length;
+  const inactCount=enriched.filter(c=>c.tag==='inactivo').length;
+  const totalSpent=enriched.reduce((a,c)=>a+c.total,0);
+  const kpiEl=document.getElementById('crm-kpis');
+  if(kpiEl)kpiEl.innerHTML=`
+    <div class="kpi p"><div class="kpi-lbl">Total</div><div class="kpi-val">${enriched.length}</div><div class="kpi-sub">clientes</div></div>
+    <div class="kpi g"><div class="kpi-lbl">VIP ⭐</div><div class="kpi-val">${vipCount}</div><div class="kpi-sub">+10 compras</div></div>
+    <div class="kpi gr"><div class="kpi-lbl">Frecuentes 🔄</div><div class="kpi-val gr">${freqCount}</div><div class="kpi-sub">5-9 compras</div></div>
+    <div class="kpi re"><div class="kpi-lbl">Inactivos 💤</div><div class="kpi-val ${inactCount>0?'re':''}">${inactCount}</div><div class="kpi-sub">sin compras 30d</div></div>`;
 
-    // Filter
-    let filtered = [...enriched];
-    if(crmFilter !== 'todos') filtered = filtered.filter(c => c.tag === crmFilter);
-    if(crmSearch){
-      const q = crmSearch.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.name.toLowerCase().includes(q) ||
-        (c.phone && c.phone.includes(q)) ||
-        (c.email && c.email.toLowerCase().includes(q))
-      );
-    }
+  // Filter by segment
+  let filtered=[...enriched];
+  if(crmFilter!=='todos')filtered=filtered.filter(c=>c.tag===crmFilter);
 
-    // Count label
-    const countEl = document.getElementById('crm-count');
-    if(countEl) countEl.textContent = `${filtered.length} cliente${filtered.length!==1?'s':''} · ${crmFilter==='todos'?'todos los segmentos':crmFilter}`;
+  // FIX 1: Filter by search string across name, doc, phone, email
+  if(crmSearch){
+    filtered=filtered.filter(c=>
+      c.name.toLowerCase().includes(crmSearch)||
+      (c.doc&&c.doc.includes(crmSearch))||
+      (c.phone&&c.phone.includes(crmSearch))||
+      (c.email&&c.email.toLowerCase().includes(crmSearch))
+    );
+  }
 
-    // Update pill labels with counts
-    const tagCounts = {todos:enriched.length, vip:0, frecuente:0, nuevo:0, inactivo:0};
-    enriched.forEach(c => { if(tagCounts[c.tag]!==undefined) tagCounts[c.tag]++; });
-    const pillLabels = {todos:'Todos',vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
-    document.querySelectorAll('#crm-tag-pills .pill').forEach(p => {
-      const filter = p.onclick.toString().match(/'([^']+)'/)?.[1];
-      if(filter && tagCounts[filter]!==undefined)
-        p.textContent = pillLabels[filter] + ' (' + tagCounts[filter] + ')';
-    });
+  // Count label
+  const countEl=document.getElementById('crm-count');
+  if(countEl)countEl.textContent=`${filtered.length} cliente${filtered.length!==1?'s':''} · ${crmFilter==='todos'?'todos los segmentos':crmFilter}`;
 
-    const el = document.getElementById('crm-list');
-    if(!filtered.length){
-      el.innerHTML = `<div class="empty"><div class="empty-ic">👥</div><div class="empty-msg">${
-        crmFilter!=='todos'?'Sin clientes en el segmento "'+crmFilter+'"':'Sin clientes aún. Se crean automáticamente al registrar ventas.'
-      }</div></div>`;
-      return;
-    }
+  // Update pill labels
+  const tagCounts={todos:enriched.length,vip:0,frecuente:0,nuevo:0,inactivo:0};
+  enriched.forEach(c=>{if(tagCounts[c.tag]!==undefined)tagCounts[c.tag]++;});
+  const pillLabels={todos:'Todos',vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
+  document.querySelectorAll('#crm-tag-pills .pill').forEach(p=>{
+    const filter=p.onclick.toString().match(/'([^']+)'/)?.[1];
+    if(filter&&tagCounts[filter]!==undefined)p.textContent=pillLabels[filter]+' ('+tagCounts[filter]+')';
+  });
 
-    const tagColors = {vip:['#FFF3CD','#856404'],frecuente:['var(--grn-bg)','var(--grn)'],nuevo:['var(--blu-bg)','var(--blu)'],inactivo:['var(--surf3)','var(--tx3)']};
-    const tagLabels = {vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
+  const el=document.getElementById('crm-list');
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty"><div class="empty-ic">👥</div><div class="empty-msg">${
+      crmSearch?'Sin resultados para "'+crmSearch+'"':crmFilter!=='todos'?'Sin clientes en el segmento "'+crmFilter+'"':'Sin clientes aún. Se crean automáticamente al registrar ventas.'
+    }</div></div>`;
+    return;
+  }
 
-    el.innerHTML = filtered.sort((a,b)=>b.total-a.total).map(cl => {
-      const [tagBg, tagFg] = tagColors[cl.tag] || ['var(--surf3)','var(--tx3)'];
-      const tagLabel = tagLabels[cl.tag] || 'Sin segmento';
-      const docStr = cl.doc ? `${cl.docType||'Doc'}: ${cl.doc}` : (cl.phone||'Sin documento');
-      const isManual = cl.tag && cl.autoTag && cl.tag !== cl.autoTag;
-      return `<div class="prod-row" style="cursor:pointer" onclick="openClientDet('${cl.id}','${cl.doc||cl.phone||''}','${encodeURIComponent(cl.name)}')">
-        <div class="prod-thumb" style="background:${tagBg};color:${tagFg};font-weight:700;font-size:16px;border:none">${cl.name[0].toUpperCase()}</div>
-        <div class="prod-info">
-          <div class="prod-name">${cl.name}${cl.tag?` <span style="padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;background:${tagBg};color:${tagFg};vertical-align:middle">${tagLabel}${isManual?' ✏️':''}</span>`:''}</div>
-          <div class="prod-meta">${docStr}${cl.email?' · '+cl.email:''}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
-          <div style="font-family:var(--fd);font-size:15px;font-weight:600;color:var(--P)">${fmtM(cl.total)}</div>
-          <div style="font-size:11px;color:var(--tx3)">${cl.movs.length} compra${cl.movs.length!==1?'s':''}</div>
-          ${cl.lastBuy?`<div style="font-size:10px;color:var(--tx3)">${cl.lastBuy}</div>`:''}
-        </div>
-      </div>`;
-    }).join('');
+  const tagColors={vip:['#FFF3CD','#856404'],frecuente:['var(--grn-bg)','var(--grn)'],nuevo:['var(--blu-bg)','var(--blu)'],inactivo:['var(--surf3)','var(--tx3)']};
+  const tagLabels={vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
+
+  el.innerHTML=filtered.sort((a,b)=>b.total-a.total).map(cl=>{
+    const[tagBg,tagFg]=tagColors[cl.tag]||['var(--surf3)','var(--tx3)'];
+    const tagLabel=tagLabels[cl.tag]||'Sin segmento';
+    const docStr=cl.doc?`${cl.docType||'Doc'}: ${cl.doc}`:(cl.phone||'Sin documento');
+    const isManual=cl.tag&&cl.autoTag&&cl.tag!==cl.autoTag;
+    return`<div class="prod-row" style="cursor:pointer" onclick="openClientDet('${cl.id}','${cl.doc||cl.phone||''}','${encodeURIComponent(cl.name)}')">
+      <div class="prod-thumb" style="background:${tagBg};color:${tagFg};font-weight:700;font-size:16px;border:none">${cl.name[0].toUpperCase()}</div>
+      <div class="prod-info">
+        <div class="prod-name">${cl.name}${cl.tag?` <span style="padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;background:${tagBg};color:${tagFg};vertical-align:middle">${tagLabel}${isManual?' ✏️':''}</span>`:''}</div>
+        <div class="prod-meta">${docStr}${cl.email?' · '+cl.email:''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+        <div style="font-family:var(--fd);font-size:15px;font-weight:600;color:var(--P)">${fmtM(cl.total)}</div>
+        <div style="font-size:11px;color:var(--tx3)">${cl.movs.length} compra${cl.movs.length!==1?'s':''}</div>
+        ${cl.lastBuy?`<div style="font-size:10px;color:var(--tx3)">${cl.lastBuy}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
-function openClientDet(id, phone, encodedName){
+
+// FIX 5: openClientDet — uses doc field with correct label; matches by doc primarily
+function openClientDet(id,phone,encodedName){
   curClientId=id;
-  // For auto-created clients, find by matching movements
-  const name = encodedName ? decodeURIComponent(encodedName) : '';
-  db.ref('clients/'+id).once('value', snap=>{
-    let cl = snap.val();
-    // If not found (auto-created from movements), build from movements data
-    if(!cl && (phone||name)){
-      const movs = D.movements.filter(m=>m.type==='salida'&&(
+  const name=encodedName?decodeURIComponent(encodedName):'';
+  db.ref('clients/'+id).once('value',snap=>{
+    let cl=snap.val();
+    if(!cl&&(phone||name)){
+      const movs=D.movements.filter(m=>m.type==='salida'&&(
         (phone&&m.clientPhone===phone)||(name&&m.clientName&&m.clientName.toLowerCase()===name.toLowerCase())
       ));
-      if(movs.length) cl={id,name:movs[0].clientName||name,phone:movs[0].clientPhone||phone,email:movs[0].clientEmail||'',tag:''};
+      if(movs.length)cl={id,name:movs[0].clientName||name,doc:movs[0].clientDoc||'',docType:movs[0].clientDocType||'DNI',phone:movs[0].clientPhone||phone,email:movs[0].clientEmail||'',tag:''};
     }
     if(!cl)return;
-    window._detPhone = cl.phone||'';
+    window._detPhone=cl.phone||'';
     document.getElementById('client-det-title').textContent=cl.name;
-    const purchases=D.movements.filter(m=>m.type==='salida'&&m.clientPhone===cl.phone&&cl.phone);
+
+    // Match purchases by doc first, then phone, then name
+    const purchases=D.movements.filter(m=>m.type==='salida'&&(
+      (cl.doc&&m.clientDoc===cl.doc)||
+      (cl.phone&&m.clientPhone===cl.phone&&!cl.doc)||
+      (cl.name&&m.clientName&&m.clientName.toLowerCase()===cl.name.toLowerCase()&&!cl.doc&&!cl.phone)
+    ));
     const total=purchases.reduce((a,m)=>a+m.qty*(m.price||0),0);
     const tagHtml=cl.tag?`<span class="tag ${cl.tag}" style="margin-bottom:12px;display:inline-block">${cl.tag.toUpperCase()}</span>`:'';
+
+    // FIX 5: DNI always shown — use cl.doc with cl.docType as label
     document.getElementById('client-det-body').innerHTML=`
       <div style="text-align:center;padding:20px 0 16px">
         <div style="width:60px;height:60px;border-radius:50%;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:600;margin:0 auto 10px">${(cl.name||'?')[0].toUpperCase()}</div>
@@ -2235,7 +2081,7 @@ function openClientDet(id, phone, encodedName){
       </div>
       <div class="det-meta">
         <div class="det-mi"><div class="det-ml">${cl.docType||'DNI'}</div><div class="det-mv" style="font-weight:600;color:var(--P)">${cl.doc||'—'}</div></div>
-        ${cl.phone?`<div class="det-mi"><div class="det-ml">Teléfono</div><div class="det-mv">${cl.phone}</div></div>`:''}
+        <div class="det-mi"><div class="det-ml">Teléfono</div><div class="det-mv">${cl.phone||'—'}</div></div>
         ${cl.email?`<div class="det-mi"><div class="det-ml">Correo</div><div class="det-mv" style="font-size:11px">${cl.email}</div></div>`:''}
         ${cl.bday?`<div class="det-mi"><div class="det-ml">Cumpleaños</div><div class="det-mv">🎂 ${cl.bday}</div></div>`:''}
         <div class="det-mi"><div class="det-ml">Compras</div><div class="det-mv" style="color:var(--grn)">${purchases.length} · ${fmtM(total)}</div></div>
@@ -2245,7 +2091,7 @@ function openClientDet(id, phone, encodedName){
         <div style="font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px">Historial de compras</div>
         ${purchases.length?purchases.slice().reverse().map(m=>{
           const p=gP(m.prodId)||{name:m.prodId};
-          return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:12px">
+          return`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:12px">
             <span>${p.name} · ${m.date}</span>
             <span style="color:var(--P);font-weight:600">${fmtM(m.qty*(m.price||0))}</span>
           </div>`;
@@ -2255,16 +2101,15 @@ function openClientDet(id, phone, encodedName){
   });
 }
 
-function closeClientDet(){ document.getElementById('client-det-panel').classList.remove('open'); curClientId=null; }
+function closeClientDet(){document.getElementById('client-det-panel').classList.remove('open');curClientId=null;}
 
 function editClientFromDet(){
   if(!curClientId)return;
   db.ref('clients/'+curClientId).once('value',snap=>{
     let cl=snap.val();
     if(!cl){
-      // Auto-created: build from movements
       const movs=D.movements.filter(m=>m.type==='salida'&&m.clientPhone===window._detPhone);
-      if(movs.length) cl={id:curClientId,name:movs[0].clientName||'',phone:movs[0].clientPhone||'',email:movs[0].clientEmail||'',tag:''};
+      if(movs.length)cl={id:curClientId,name:movs[0].clientName||'',doc:movs[0].clientDoc||'',docType:movs[0].clientDocType||'DNI',phone:movs[0].clientPhone||'',email:movs[0].clientEmail||'',tag:''};
       else return;
     }
     closeClientDet();
@@ -2272,6 +2117,8 @@ function editClientFromDet(){
       document.getElementById('client-modal-title').textContent='Editar Cliente';
       document.getElementById('cl-id').value=cl.id;
       document.getElementById('cl-name').value=cl.name||'';
+      document.getElementById('cl-doc').value=cl.doc||'';
+      document.getElementById('cl-doctype').value=cl.docType||'DNI';
       document.getElementById('cl-phone').value=cl.phone||'';
       document.getElementById('cl-email').value=cl.email||'';
       document.getElementById('cl-bday').value=cl.bday||'';
@@ -2282,7 +2129,7 @@ function editClientFromDet(){
   });
 }
 
-function delClientFromDet(){ if(curClientId) deleteClient(curClientId); }
+function delClientFromDet(){if(curClientId)deleteClient(curClientId);}
 
 // ════════════════════════════════════════════════
 // PROMOCIONES Y DESCUENTOS
@@ -2296,13 +2143,8 @@ function updatePromoPreview(){
   const scope=document.getElementById('pr-scope').value;
   lbl.textContent=type==='pct'?'Descuento (%)':'Descuento (S/)';
   catRow.style.display=scope==='cat'?'block':'none';
-  if(val>0){
-    const txt=type==='pct'?`${val}% de descuento`:`S/ ${val} de descuento`;
-    prev.textContent=`✨ Se aplicará: ${txt}`;
-    prev.style.display='block';
-  } else {
-    prev.style.display='none';
-  }
+  if(val>0){prev.textContent=`✨ Se aplicará: ${type==='pct'?val+'% de descuento':'S/ '+val+' de descuento'}`;prev.style.display='block';}
+  else{prev.style.display='none';}
 }
 
 function savePromo(){
@@ -2310,72 +2152,39 @@ function savePromo(){
   const val=parseFloat(document.getElementById('pr-value').value)||0;
   if(!name||val<=0){alert('Nombre y descuento son obligatorios.');return;}
   const id=document.getElementById('pr-id').value||'PRO-'+Date.now();
-  const promo={
-    id,name,
-    type:document.getElementById('pr-type').value,
-    value:val,
-    from:document.getElementById('pr-from').value,
-    to:document.getElementById('pr-to').value,
-    scope:document.getElementById('pr-scope').value,
-    cat:document.getElementById('pr-cat').value,
-    active:true,
-    createdAt:today()
-  };
-  if(db) db.ref('promos/'+id).set(promo);
-  closeOv('promo');
-  renderPromos();
+  const promo={id,name,type:document.getElementById('pr-type').value,value:val,from:document.getElementById('pr-from').value,to:document.getElementById('pr-to').value,scope:document.getElementById('pr-scope').value,cat:document.getElementById('pr-cat').value,active:true,createdAt:today()};
+  if(db)db.ref('promos/'+id).set(promo);
+  closeOv('promo');renderPromos();
 }
 
 function deletePromo(id){
   if(!confirm('¿Eliminar esta promoción?'))return;
   if(db){
-    // Archive to history before deleting
-    db.ref('promos/'+id).once('value', snap=>{
+    db.ref('promos/'+id).once('value',snap=>{
       const pr=snap.val();
-      if(pr){
-        pr.deletedAt=today();
-        pr.active=false;
-        // Count ventas generated by this promo
-        const ventas=D.movements.filter(m=>m.promoName===pr.name);
-        pr.ventasCount=ventas.length;
-        pr.ventasMonto=ventas.reduce((a,m)=>a+m.qty*(m.price||0),0);
-        db.ref('promos_history/'+id).set(pr);
-      }
-      db.ref('promos/'+id).remove();
-      renderPromos();
+      if(pr){pr.deletedAt=today();pr.active=false;const ventas=D.movements.filter(m=>m.promoName===pr.name);pr.ventasCount=ventas.length;pr.ventasMonto=ventas.reduce((a,m)=>a+m.qty*(m.price||0),0);db.ref('promos_history/'+id).set(pr);}
+      db.ref('promos/'+id).remove();renderPromos();
     });
-  } else {
-    renderPromos();
-  }
+  }else{renderPromos();}
 }
 
 function getPromoStatus(p){
-  const t=today();
-  if(!p.active) return 'expired';
-  if(p.from&&p.from>t) return 'upcoming';
-  if(p.to&&p.to<t) return 'expired';
-  return 'active';
+  const t=today();if(!p.active)return 'expired';if(p.from&&p.from>t)return 'upcoming';if(p.to&&p.to<t)return 'expired';return 'active';
 }
 
 function getActivePromos(prodId){
-  // Returns promos applicable to a product right now
   const p=gP(prodId);if(!p)return[];
   const t=today();
   return Object.values(window._promos||{}).filter(pr=>{
-    if(!pr.active)return false;
-    if(pr.from&&pr.from>t)return false;
-    if(pr.to&&pr.to<t)return false;
-    if(pr.scope==='cat'&&pr.cat!==p.cat)return false;
-    return true;
+    if(!pr.active)return false;if(pr.from&&pr.from>t)return false;if(pr.to&&pr.to<t)return false;if(pr.scope==='cat'&&pr.cat!==p.cat)return false;return true;
   });
 }
 
-let promoTab = 'active';
+let promoTab='active';
 function setPromoTab(tab){
   promoTab=tab;
   document.querySelectorAll('.promo-tab').forEach(t=>t.classList.remove('on'));
-  const el=document.getElementById('ptab-'+tab);
-  if(el)el.classList.add('on');
+  const el=document.getElementById('ptab-'+tab);if(el)el.classList.add('on');
   renderPromos();
 }
 
@@ -2385,48 +2194,28 @@ function renderPromos(){
   db.ref('promos').once('value',snap=>{
     window._promos=snap.val()||{};
     const all=Object.values(window._promos);
-
-    // KPIs
     const active=all.filter(p=>getPromoStatus(p)==='active').length;
     const upcoming=all.filter(p=>getPromoStatus(p)==='upcoming').length;
     const expired=all.filter(p=>getPromoStatus(p)==='expired').length;
     const kpiEl=document.getElementById('promos-kpis');
-    if(kpiEl) kpiEl.innerHTML=`
+    if(kpiEl)kpiEl.innerHTML=`
       <div class="kpi gr"><div class="kpi-lbl">Activas</div><div class="kpi-val gr">${active}</div><div class="kpi-sub">en vigencia</div></div>
       <div class="kpi g"><div class="kpi-lbl">Próximas</div><div class="kpi-val">${upcoming}</div><div class="kpi-sub">programadas</div></div>
       <div class="kpi"><div class="kpi-lbl">Vencidas</div><div class="kpi-val" style="color:var(--tx3)">${expired}</div><div class="kpi-sub">historial</div></div>
       <div class="kpi p"><div class="kpi-lbl">Total</div><div class="kpi-val">${all.length}</div><div class="kpi-sub">creadas</div></div>`;
-
-    // Update tab labels
-    ['active','upcoming','expired'].forEach(t=>{
-      const el=document.getElementById('ptab-'+t);
-      const counts={active,upcoming,expired};
-      const labels={active:'Activas',upcoming:'Próximas',expired:'Vencidas'};
-      if(el)el.textContent=`${labels[t]} (${counts[t]})`;
-    });
-
+    ['active','upcoming','expired'].forEach(t=>{const el=document.getElementById('ptab-'+t);const counts={active,upcoming,expired};const labels={active:'Activas',upcoming:'Próximas',expired:'Vencidas'};if(el)el.textContent=`${labels[t]} (${counts[t]})`;});
     const list=all.filter(p=>getPromoStatus(p)===promoTab);
-    const el=document.getElementById('promos-list');
-    if(!el)return;
-
-    if(!list.length){
-      const msgs={active:'Sin promociones activas.',upcoming:'Sin promociones programadas.',expired:'Sin historial de promociones vencidas.'};
-      el.innerHTML=`<div class="empty"><div class="empty-ic">🏷️</div><div class="empty-msg">${msgs[promoTab]}<br><button class="bsm pri" onclick="openModal('promo')" style="margin-top:10px">+ Crear promoción</button></div></div>`;
-      return;
-    }
-
+    const el=document.getElementById('promos-list');if(!el)return;
+    if(!list.length){const msgs={active:'Sin promociones activas.',upcoming:'Sin promociones programadas.',expired:'Sin historial de promociones vencidas.'};el.innerHTML=`<div class="empty"><div class="empty-ic">🏷️</div><div class="empty-msg">${msgs[promoTab]}<br><button class="bsm pri" onclick="openModal('promo')" style="margin-top:10px">+ Crear promoción</button></div></div>`;return;}
     const stColor={active:'var(--grn)',upcoming:'var(--amb)',expired:'var(--tx3)'};
     const stLabel={active:'✅ Activa',upcoming:'⏳ Próxima',expired:'⏱ Vencida'};
     const typeLabel={pct:'%',fijo:'S/'};
-
     el.innerHTML=list.sort((a,b)=>(b.from||'').localeCompare(a.from||'')).map(pr=>{
-      const st=getPromoStatus(pr);
-      const discText=pr.type==='pct'?`${pr.value}% de descuento`:`S/ ${fmt(pr.value)} de descuento`;
+      const st=getPromoStatus(pr);const discText=pr.type==='pct'?`${pr.value}% de descuento`:`S/ ${fmt(pr.value)} de descuento`;
       const scopeText=pr.scope==='cat'?`Categoría: ${pr.cat}`:'Todos los productos';
       const dateText=pr.from?(pr.to?`${pr.from} → ${pr.to}`:`Desde ${pr.from}`):'Sin límite';
-      const typeBg=pr.type==='pct'?'var(--grn-bg)':'var(--blu-bg)';
-      const typeFg=pr.type==='pct'?'var(--grn)':'var(--blu)';
-      return `<div class="prod-row" style="padding:14px 16px">
+      const typeBg=pr.type==='pct'?'var(--grn-bg)':'var(--blu-bg)';const typeFg=pr.type==='pct'?'var(--grn)':'var(--blu)';
+      return`<div class="prod-row" style="padding:14px 16px">
         <div class="prod-thumb" style="background:${typeBg};color:${typeFg};font-size:14px;font-weight:700;border:none">${typeLabel[pr.type]}</div>
         <div class="prod-info">
           <div class="prod-name">${pr.name} <span style="padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;background:${stColor[st]}22;color:${stColor[st]};vertical-align:middle">${stLabel[st]}</span></div>
@@ -2439,89 +2228,48 @@ function renderPromos(){
   });
 }
 
-// ── Apply promo in movement modal ───────────────
 function recalcDiscount(){
-  const pid=document.getElementById('mv-prd').value;
-  const p=gP(pid);if(!p)return;
-  const type=document.getElementById('mv-disc-type').value;
-  const val=parseFloat(document.getElementById('mv-disc-val').value)||0;
-  const lbl=document.getElementById('mv-disc-val-lbl');
-  const prev=document.getElementById('mv-disc-preview');
+  const pid=document.getElementById('mv-prd').value;const p=gP(pid);if(!p)return;
+  const type=document.getElementById('mv-disc-type').value;const val=parseFloat(document.getElementById('mv-disc-val').value)||0;
+  const lbl=document.getElementById('mv-disc-val-lbl');const prev=document.getElementById('mv-disc-preview');
   lbl.textContent=type==='pct'?'Porcentaje (%)':'Monto (S/)';
-  if(type==='none'||val<=0){
-    // Restore promo price or original price
-    applyPromoToSale();
-    prev.style.display='none';
-    return;
-  }
-  const basePrice=p.price;
-  const discAmt=type==='pct'?Math.round(val/100*basePrice):val;
-  const finalPrice=Math.max(0,basePrice-discAmt);
+  if(type==='none'||val<=0){applyPromoToSale();prev.style.display='none';return;}
+  const basePrice=p.price;const discAmt=type==='pct'?Math.round(val/100*basePrice):val;const finalPrice=Math.max(0,basePrice-discAmt);
   document.getElementById('mv-prc').value=finalPrice;
-  // Hide auto promo badge and show manual one
-  const autoBadge=document.getElementById('mv-disc');
-  if(autoBadge)autoBadge.style.display='none';
+  const autoBadge=document.getElementById('mv-disc');if(autoBadge)autoBadge.style.display='none';
   prev.innerHTML=`💰 Descuento manual: ${fmtM(discAmt)} → <strong>Precio final: ${fmtM(finalPrice)}</strong> (antes ${fmtM(basePrice)})`;
   prev.style.display='block';
 }
 
 function applyPromoToSale(){
-  const pid=document.getElementById('mv-prd').value;
-  const promos=getActivePromos(pid);
-  const p=gP(pid);if(!p)return;
-  const basePrice=p.price;
-  const discEl=document.getElementById('mv-disc');
-  const prcEl=document.getElementById('mv-prc');
-  if(!promos.length){
-    if(discEl)discEl.style.display='none';
-    if(prcEl)prcEl.value=basePrice;
-    return;
-  }
-  // Apply best promo (highest discount)
-  const best=promos.reduce((a,pr)=>{
-    const discA=a.type==='pct'?a.value/100*basePrice:a.value;
-    const discB=pr.type==='pct'?pr.value/100*basePrice:pr.value;
-    return discB>discA?pr:a;
-  });
-  const discAmt=best.type==='pct'?Math.round(best.value/100*basePrice):best.value;
-  const finalPrice=Math.max(0,basePrice-discAmt);
-  if(prcEl)prcEl.value=finalPrice;
-  window._lastPromoName=best.name; // store for saving
-  if(discEl){
-    discEl.innerHTML=`🏷️ Promo "<strong>${best.name}</strong>" — Precio regular: <span style="text-decoration:line-through;opacity:.6">${fmtM(basePrice)}</span> → Precio con descuento: <strong style="color:var(--grn)">${fmtM(finalPrice)}</strong> <span style="opacity:.7">(-${fmtM(discAmt)})</span>`;
-    discEl.style.display='block';
-  }
+  const pid=document.getElementById('mv-prd').value;const promos=getActivePromos(pid);const p=gP(pid);if(!p)return;
+  const basePrice=p.price;const discEl=document.getElementById('mv-disc');const prcEl=document.getElementById('mv-prc');
+  if(!promos.length){if(discEl)discEl.style.display='none';if(prcEl)prcEl.value=basePrice;return;}
+  const best=promos.reduce((a,pr)=>{const discA=a.type==='pct'?a.value/100*basePrice:a.value;const discB=pr.type==='pct'?pr.value/100*basePrice:pr.value;return discB>discA?pr:a;});
+  const discAmt=best.type==='pct'?Math.round(best.value/100*basePrice):best.value;const finalPrice=Math.max(0,basePrice-discAmt);
+  if(prcEl)prcEl.value=finalPrice;window._lastPromoName=best.name;
+  if(discEl){discEl.innerHTML=`🏷️ Promo "<strong>${best.name}</strong>" — Precio regular: <span style="text-decoration:line-through;opacity:.6">${fmtM(basePrice)}</span> → Precio con descuento: <strong style="color:var(--grn)">${fmtM(finalPrice)}</strong> <span style="opacity:.7">(-${fmtM(discAmt)})</span>`;discEl.style.display='block';}
 }
+
 function renderPromosHistorial(){
   if(!db)return;
   db.ref('promos_history').once('value',snap=>{
-    const hist=snap.val()||{};
-    const list=Object.values(hist).sort((a,b)=>(b.deletedAt||'').localeCompare(a.deletedAt||''));
-    const el=document.getElementById('promos-list');
-    if(!el)return;
-    // Update KPI for historial
+    const hist=snap.val()||{};const list=Object.values(hist).sort((a,b)=>(b.deletedAt||'').localeCompare(a.deletedAt||''));
+    const el=document.getElementById('promos-list');if(!el)return;
     const kpiEl=document.getElementById('promos-kpis');
-    const totalMonto=list.reduce((a,p)=>a+p.ventasMonto,0);
-    const totalVentas=list.reduce((a,p)=>a+p.ventasCount,0);
-    if(kpiEl) kpiEl.innerHTML=`
+    const totalMonto=list.reduce((a,p)=>a+p.ventasMonto,0);const totalVentas=list.reduce((a,p)=>a+p.ventasCount,0);
+    if(kpiEl)kpiEl.innerHTML=`
       <div class="kpi"><div class="kpi-lbl">Promociones</div><div class="kpi-val">${list.length}</div><div class="kpi-sub">en historial</div></div>
       <div class="kpi gr"><div class="kpi-lbl">Ventas Generadas</div><div class="kpi-val gr">${totalVentas}</div><div class="kpi-sub">transacciones</div></div>
       <div class="kpi g"><div class="kpi-lbl">Monto Generado</div><div class="kpi-val" style="font-size:18px">${fmtM(totalMonto)}</div><div class="kpi-sub">total</div></div>
       <div class="kpi p"><div class="kpi-lbl">Ticket Prom.</div><div class="kpi-val" style="font-size:18px">${totalVentas?fmtM(Math.round(totalMonto/totalVentas)):fmtM(0)}</div><div class="kpi-sub">por venta</div></div>`;
-    if(!list.length){
-      el.innerHTML='<div class="empty"><div class="empty-ic">📋</div><div class="empty-msg">Sin historial de promociones aún.</div></div>';
-      return;
-    }
-    el.innerHTML=list.map(pr=>{
-      const typeBg=pr.type==='pct'?'var(--grn-bg)':'var(--blu-bg)';
-      const typeFg=pr.type==='pct'?'var(--grn)':'var(--blu)';
-      const discText=pr.type==='pct'?`${pr.value}% descuento`:`S/ ${fmt(pr.value)} descuento`;
-      const scopeText=pr.scope==='cat'?`Cat: ${pr.cat}`:'Todos';
-      return `<div class="prod-row" style="padding:14px 16px">
+    if(!list.length){el.innerHTML='<div class="empty"><div class="empty-ic">📋</div><div class="empty-msg">Sin historial de promociones aún.</div></div>';return;}
+    el.innerHTML=list.map(pr=>{const typeBg=pr.type==='pct'?'var(--grn-bg)':'var(--blu-bg)';const typeFg=pr.type==='pct'?'var(--grn)':'var(--blu)';
+      return`<div class="prod-row" style="padding:14px 16px">
         <div class="prod-thumb" style="background:${typeBg};color:${typeFg};font-size:14px;font-weight:700;border:none;opacity:.7">${pr.type==='pct'?'%':'S/'}</div>
         <div class="prod-info">
           <div class="prod-name">${pr.name}</div>
-          <div class="prod-meta">${discText} · ${scopeText} · Eliminada: ${pr.deletedAt||'—'}</div>
+          <div class="prod-meta">${pr.type==='pct'?pr.value+'% descuento':'S/ '+fmt(pr.value)+' descuento'} · ${pr.scope==='cat'?'Cat: '+pr.cat:'Todos'} · Eliminada: ${pr.deletedAt||'—'}</div>
           <div class="prod-meta" style="color:var(--grn)">💰 ${pr.ventasCount} venta${pr.ventasCount!==1?'s':''} · ${fmtM(pr.ventasMonto)} generados</div>
         </div>
       </div>`;
@@ -2529,97 +2277,57 @@ function renderPromosHistorial(){
   });
 }
 
-// ── CLIENT LOOKUP BY DOCUMENT ─────────────────────────────────────
-let _lookupTimer = null;
-window._foundClient = null;
+let _lookupTimer=null;
+window._foundClient=null;
 
 function lookupClient(docNum){
-  clearTimeout(_lookupTimer);
-  window._foundClient = null;
+  clearTimeout(_lookupTimer);window._foundClient=null;
   document.getElementById('mv-client-found').style.display='none';
   document.getElementById('mv-client-new').style.display='none';
   document.getElementById('mv-client-fields').style.display='none';
-  if(!docNum || docNum.length < 3) return;
-  
-  _lookupTimer = setTimeout(()=>{
-    if(!db) return;
-    db.ref('clients').orderByChild('doc').equalTo(docNum).once('value', snap=>{
-      const data = snap.val();
+  if(!docNum||docNum.length<3)return;
+  _lookupTimer=setTimeout(()=>{
+    if(!db)return;
+    db.ref('clients').orderByChild('doc').equalTo(docNum).once('value',snap=>{
+      const data=snap.val();
       if(data){
-        // Client found
-        const cl = Object.values(data)[0];
-        window._foundClient = cl;
-        document.getElementById('mv-cnm').value = cl.name||'';
-        document.getElementById('mv-cph').value = cl.phone||'';
-        document.getElementById('mv-cem').value = cl.email||'';
-        // Show found badge
-        document.getElementById('mv-client-found-name').textContent = cl.name;
+        const cl=Object.values(data)[0];window._foundClient=cl;
+        document.getElementById('mv-cnm').value=cl.name||'';document.getElementById('mv-cph').value=cl.phone||'';document.getElementById('mv-cem').value=cl.email||'';
+        document.getElementById('mv-client-found-name').textContent=cl.name;
         const tagLabels={vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
-        const movs = D.movements.filter(m=>m.type==='salida'&&m.clientDoc===docNum);
-        const autoT = getAutoTag(movs);
-        document.getElementById('mv-client-found-tag').textContent = tagLabels[cl.tag||autoT]||'Nuevo cliente';
-        document.getElementById('mv-client-found').style.display='block';
-        document.getElementById('mv-client-fields').style.display='block';
-      } else {
-        // Client not found — new client
-        window._foundClient = null;
-        document.getElementById('mv-cnm').value='';
-        document.getElementById('mv-cph').value='';
-        document.getElementById('mv-cem').value='';
-        document.getElementById('mv-client-new').style.display='block';
-        document.getElementById('mv-client-fields').style.display='block';
+        const movs=D.movements.filter(m=>m.type==='salida'&&m.clientDoc===docNum);const autoT=getAutoTag(movs);
+        document.getElementById('mv-client-found-tag').textContent=tagLabels[cl.tag||autoT]||'Nuevo cliente';
+        document.getElementById('mv-client-found').style.display='block';document.getElementById('mv-client-fields').style.display='block';
+      }else{
+        window._foundClient=null;document.getElementById('mv-cnm').value='';document.getElementById('mv-cph').value='';document.getElementById('mv-cem').value='';
+        document.getElementById('mv-client-new').style.display='block';document.getElementById('mv-client-fields').style.display='block';
       }
     });
-  }, 500);
+  },500);
 }
+
 // ════════════════════════════════════════════════
 // AUTHENTICATION SYSTEM
 // ════════════════════════════════════════════════
-let currentUser = null;
-let currentRole = null;
-let auth = null;
+let currentUser=null;let currentRole=null;let auth=null;
 
 function initAuth(){
-  if(!auth) auth = firebase.auth();
-  auth.onAuthStateChanged(async user => {
-    if(user){
-      currentUser = user;
-      await loadUserRole(user.uid);
-      showApp();
-    } else {
-      currentUser = null;
-      currentRole = null;
-      showLogin();
-    }
+  if(!auth)auth=firebase.auth();
+  auth.onAuthStateChanged(async user=>{
+    if(user){currentUser=user;await loadUserRole(user.uid);showApp();}
+    else{currentUser=null;currentRole=null;showLogin();}
   });
 }
 
 async function loadUserRole(uid){
-  return new Promise(resolve => {
-    db.ref('users/'+uid).once('value', snap => {
-      const data = snap.val();
-      // Always enforce admin for known admin emails, regardless of DB value
-      const adminEmails = ['italoamaya.moreno@gmail.com','kristeldextre.caro@gmail.com'];
-      const isAdmin = adminEmails.includes(currentUser.email);
-      if(isAdmin){
-        currentRole = 'admin';
-        // Update DB if role is wrong
-        if(!data || data.role !== 'admin'){
-          db.ref('users/'+uid+'/role').set('admin');
-          db.ref('users/'+uid+'/email').set(currentUser.email);
-        }
-      } else if(data && data.role){
-        currentRole = data.role;
-      } else {
-        // First time non-admin user
-        currentRole = 'vendedor';
-        db.ref('users/'+uid).set({
-          email: currentUser.email,
-          role: 'vendedor',
-          name: data&&data.name ? data.name : currentUser.email.split('@')[0],
-          createdAt: new Date().toISOString()
-        });
-      }
+  return new Promise(resolve=>{
+    db.ref('users/'+uid).once('value',snap=>{
+      const data=snap.val();
+      const adminEmails=['italoamaya.moreno@gmail.com','kristeldextre.caro@gmail.com'];
+      const isAdmin=adminEmails.includes(currentUser.email);
+      if(isAdmin){currentRole='admin';if(!data||data.role!=='admin'){db.ref('users/'+uid+'/role').set('admin');db.ref('users/'+uid+'/email').set(currentUser.email);}}
+      else if(data&&data.role){currentRole=data.role;}
+      else{currentRole='vendedor';db.ref('users/'+uid).set({email:currentUser.email,role:'vendedor',name:data&&data.name?data.name:currentUser.email.split('@')[0],createdAt:new Date().toISOString()});}
       resolve(currentRole);
     });
   });
@@ -2627,293 +2335,134 @@ async function loadUserRole(uid){
 
 function showApp(){
   document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('app-container').style.display = 'flex';
-  // Apply role class to body
-  document.body.classList.remove('role-admin','role-vendedor');
-  document.body.classList.add('role-'+currentRole);
-  // Update user badge
-  const badge = document.getElementById('user-badge');
-  if(badge) badge.style.display = 'flex';
-  const nameEl = document.getElementById('user-name-label');
-  const roleEl = document.getElementById('user-role-label');
-  const avatarEl = document.getElementById('user-avatar');
-  if(nameEl) nameEl.textContent = currentUser.email.split('@')[0];
-  if(roleEl) roleEl.textContent = currentRole === 'admin' ? 'Administrador' : 'Vendedor';
-  if(avatarEl) avatarEl.textContent = currentUser.email[0].toUpperCase();
-  // Apply restrictions ONLY for vendedor
-  if(currentRole === 'vendedor'){
-    applyVendedorRestrictions();
-  } else {
-    // Admin: ensure ALL nav items are visible
-    applyAdminView();
-  }
-  // Start DB listeners now that user is authenticated
+  document.getElementById('app-container').style.display='flex';
+  document.body.classList.remove('role-admin','role-vendedor');document.body.classList.add('role-'+currentRole);
+  const badge=document.getElementById('user-badge');if(badge)badge.style.display='flex';
+  const nameEl=document.getElementById('user-name-label');const roleEl=document.getElementById('user-role-label');const avatarEl=document.getElementById('user-avatar');
+  if(nameEl)nameEl.textContent=currentUser.email.split('@')[0];
+  if(roleEl)roleEl.textContent=currentRole==='admin'?'Administrador':'Vendedor';
+  if(avatarEl)avatarEl.textContent=currentUser.email[0].toUpperCase();
+  if(currentRole==='vendedor'){applyVendedorRestrictions();}else{applyAdminView();}
   db.ref('products').on('value',s=>{const v=s.val();D.products=v?Object.values(v):[];renderAll();setSy('ok');});
   db.ref('promos').on('value',s=>{window._promos=s.val()||{};});
   db.ref('movements').on('value',s=>{const v=s.val();D.movements=v?Object.values(v):[];renderAll();});
-  db.ref('.info/connected').on('value',s=>{
-    const connected=s.val();
-    const bar=document.getElementById('offline-bar');
-    if(bar)bar.classList.toggle('show',!connected);
-    setSy(connected?'ok':'of');
-    if(connected) loadPayFromFirebase();
-  });
-  setTimeout(loadPayFromFirebase, 1000);
-  showDesktopBtns();
-  handleOrientation();
+  db.ref('.info/connected').on('value',s=>{const connected=s.val();const bar=document.getElementById('offline-bar');if(bar)bar.classList.toggle('show',!connected);setSy(connected?'ok':'of');if(connected)loadPayFromFirebase();});
+  setTimeout(loadPayFromFirebase,1000);showDesktopBtns();handleOrientation();
+}
+
+function showDesktopBtns(){
+  if(window.innerWidth>=900){
+    const ids=['dl-wrap','btn-clr','btn-mov','btn-prd'];
+    ids.forEach(id=>{const el=document.getElementById(id);if(el&&currentRole==='admin')el.style.removeProperty('display');});
+  }
 }
 
 function applyAdminView(){
-  // Ensure all nav items visible for admin
-  const showIds = ['tn-dashboard','tn-finanzas','tn-pagos','tn-alertas','tn-crm','tn-promos',
-                   'bn-dashboard','bn-finanzas','bn-alertas','bn-pagos','bn-crm','bn-promos',
-                   'dl-wrap','btn-clr','btn-mov','btn-prd'];
-  showIds.forEach(id => {
-    const el=document.getElementById(id);
-    if(el) el.style.removeProperty('display');
-  });
-  // Also remove any CSS overrides from role class conflicts
-  document.querySelectorAll('.admin-only-block').forEach(el => {
-    el.style.display = '';
-  });
-  document.querySelectorAll('.admin-only').forEach(el => {
-    el.style.display = 'flex';
-  });
+  const showIds=['tn-dashboard','tn-finanzas','tn-pagos','tn-alertas','tn-crm','tn-promos','bn-dashboard','bn-finanzas','bn-alertas','bn-pagos','bn-crm','bn-promos','dl-wrap','btn-clr','btn-mov','btn-prd'];
+  showIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.removeProperty('display');});
+  document.querySelectorAll('.admin-only-block').forEach(el=>{el.style.display='';});
+  document.querySelectorAll('.admin-only').forEach(el=>{el.style.display='flex';});
 }
 
 function applyVendedorRestrictions(){
-  // Vendedor: only Catálogo and Métodos de Pago (for PDF download)
-  const hideIds = ['tn-dashboard','tn-finanzas','tn-alertas',
-                   'bn-dashboard','bn-finanzas','bn-alertas',
-                   'dl-wrap','btn-clr','btn-mov','btn-prd'];
-  hideIds.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
-  // Vendedor CAN see Métodos de Pago (to download PDF for client)
-  const pagoIds = ['tn-pagos','bn-pagos'];
-  pagoIds.forEach(id => { const el=document.getElementById(id); if(el) el.style.removeProperty('display'); });
-  // Show only a limited Descargables for vendedor (catalogo PDF only)
-  const dlWrap = document.getElementById('dl-wrap');
-  if(dlWrap){
-    dlWrap.style.display = 'flex';
-    // Replace dropdown content with vendedor-only options
-    const menu = document.getElementById('dl-menu');
-    if(menu){
-      menu.innerHTML = `
-        <button onclick="exportPDF();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">📄 Descargar catálogo</button>
-        <button onclick="exportPayPDF();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">💳 Medios de pago (PDF)</button>`;
-    }
-  }
-  // Show only catalogo tab initially
+  const hideIds=['tn-dashboard','tn-finanzas','tn-alertas','bn-dashboard','bn-finanzas','bn-alertas','dl-wrap','btn-clr','btn-mov','btn-prd'];
+  hideIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const pagoIds=['tn-pagos','bn-pagos'];pagoIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.removeProperty('display');});
+  const dlWrap=document.getElementById('dl-wrap');
+  if(dlWrap){dlWrap.style.display='flex';const menu=document.getElementById('dl-menu');if(menu){menu.innerHTML=`
+    <button onclick="exportPDF();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">📄 Descargar catálogo</button>
+    <button onclick="exportPayPDF();toggleDL()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--tx)">💳 Medios de pago (PDF)</button>`;}}
   showPage('catalogo');
 }
 
 function showLogin(){
-  document.getElementById('login-screen').classList.remove('hidden');
-  document.getElementById('app-container').style.display = 'none';
-  document.getElementById('user-badge').style.display = 'none';
-  // Reset login button
-  const btn = document.getElementById('login-btn');
-  if(btn){ btn.disabled = false; btn.textContent = 'Ingresar'; }
-  // Clear error
-  const err = document.getElementById('login-error');
-  if(err) err.classList.remove('show');
-  // Clear password field
-  const pass = document.getElementById('login-pass');
-  if(pass) pass.value = '';
+  document.getElementById('login-screen').classList.remove('hidden');document.getElementById('app-container').style.display='none';document.getElementById('user-badge').style.display='none';
+  const btn=document.getElementById('login-btn');if(btn){btn.disabled=false;btn.textContent='Ingresar';}
+  const err=document.getElementById('login-error');if(err)err.classList.remove('show');
+  const pass=document.getElementById('login-pass');if(pass)pass.value='';
 }
 
 async function doLogin(){
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-pass').value;
-  const btn = document.getElementById('login-btn');
-  const errEl = document.getElementById('login-error');
-  if(!email || !pass){ showLoginError('Completa todos los campos.'); return; }
-  btn.disabled = true;
-  btn.textContent = 'Ingresando...';
-  errEl.classList.remove('show');
-  try {
-    await auth.signInWithEmailAndPassword(email, pass);
-    // onAuthStateChanged handles the rest
-  } catch(e){
-    btn.disabled = false;
-    btn.textContent = 'Ingresar';
-    const msgs = {
-      'auth/user-not-found': 'Correo no registrado.',
-      'auth/wrong-password': 'Contraseña incorrecta.',
-      'auth/invalid-email': 'Correo inválido.',
-      'auth/too-many-requests': 'Demasiados intentos. Espera un momento.',
-      'auth/invalid-credential': 'Correo o contraseña incorrectos.',
-      'auth/network-request-failed': 'Error de red. Verifica tu conexión.',
-      'auth/operation-not-allowed': 'Método de login no habilitado en Firebase.',
-    };
-    showLoginError(msgs[e.code] || ('Error: ' + e.code + ' — ' + e.message));
-  }
+  const email=document.getElementById('login-email').value.trim();const pass=document.getElementById('login-pass').value;const btn=document.getElementById('login-btn');const errEl=document.getElementById('login-error');
+  if(!email||!pass){showLoginError('Completa todos los campos.');return;}
+  btn.disabled=true;btn.textContent='Ingresando...';errEl.classList.remove('show');
+  try{await auth.signInWithEmailAndPassword(email,pass);}
+  catch(e){btn.disabled=false;btn.textContent='Ingresar';const msgs={'auth/user-not-found':'Correo no registrado.','auth/wrong-password':'Contraseña incorrecta.','auth/invalid-email':'Correo inválido.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/invalid-credential':'Correo o contraseña incorrectos.','auth/network-request-failed':'Error de red. Verifica tu conexión.','auth/operation-not-allowed':'Método de login no habilitado en Firebase.'};showLoginError(msgs[e.code]||('Error: '+e.code+' — '+e.message));}
 }
 
-function showLoginError(msg){
-  const el = document.getElementById('login-error');
-  el.textContent = msg;
-  el.classList.add('show');
-}
+function showLoginError(msg){const el=document.getElementById('login-error');el.textContent=msg;el.classList.add('show');}
+async function doLogout(){toggleUserMenu();await auth.signOut();}
+function toggleUserMenu(e){if(e)e.stopPropagation();const menu=document.getElementById('user-menu');if(menu)menu.classList.toggle('open');}
+document.addEventListener('click',()=>{const menu=document.getElementById('user-menu');if(menu)menu.classList.remove('open');});
 
-async function doLogout(){
-  toggleUserMenu();
-  await auth.signOut();
-}
-
-function toggleUserMenu(e){
-  if(e) e.stopPropagation();
-  const menu = document.getElementById('user-menu');
-  if(menu) menu.classList.toggle('open');
-}
-document.addEventListener('click', () => {
-  const menu = document.getElementById('user-menu');
-  if(menu) menu.classList.remove('open');
-});
-
-// ── USER MANAGEMENT ───────────────────────────────
-function openUserMgmt(){
-  if(currentRole !== 'admin') return;
-  openOv('users');
-  loadUsersList();
-}
-
-function openOv(id){ document.getElementById('ov-'+id).classList.add('open'); }
-
-function openAddUser(){
-  document.getElementById('add-user-form').style.display = 'block';
-  document.getElementById('add-user-error').style.display = 'none';
-  ['new-user-email','new-user-pass','new-user-name'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-}
+function openUserMgmt(){if(currentRole!=='admin')return;openOv('users');loadUsersList();}
+function openOv(id){document.getElementById('ov-'+id).classList.add('open');}
+function openAddUser(){document.getElementById('add-user-form').style.display='block';document.getElementById('add-user-error').style.display='none';['new-user-email','new-user-pass','new-user-name'].forEach(id=>{document.getElementById(id).value='';});}
 
 async function loadUsersList(){
-  const el = document.getElementById('users-list');
-  el.innerHTML = '<div style="font-size:13px;color:var(--tx3);padding:8px">Cargando...</div>';
-  db.ref('users').once('value', snap => {
-    const users = snap.val() || {};
-    const list = Object.entries(users);
-    if(!list.length){
-      el.innerHTML = '<div style="font-size:13px;color:var(--tx3);padding:8px">Sin usuarios registrados.</div>';
-      return;
-    }
-    el.innerHTML = list.map(([uid, u]) => `
+  const el=document.getElementById('users-list');el.innerHTML='<div style="font-size:13px;color:var(--tx3);padding:8px">Cargando...</div>';
+  db.ref('users').once('value',snap=>{
+    const users=snap.val()||{};const list=Object.entries(users);
+    if(!list.length){el.innerHTML='<div style="font-size:13px;color:var(--tx3);padding:8px">Sin usuarios registrados.</div>';return;}
+    el.innerHTML=list.map(([uid,u])=>`
       <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--bdr);border-radius:var(--rs)">
         <div style="width:34px;height:34px;border-radius:50%;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex-shrink:0">${(u.name||u.email||'?')[0].toUpperCase()}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:500;color:var(--tx)">${u.name||'Sin nombre'}</div>
-          <div style="font-size:11px;color:var(--tx3)">${u.email}</div>
-        </div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:var(--tx)">${u.name||'Sin nombre'}</div><div style="font-size:11px;color:var(--tx3)">${u.email}</div></div>
         <span class="role-badge ${u.role}">${u.role==='admin'?'Admin':'Vendedor'}</span>
-        ${uid !== currentUser.uid ? `
+        ${uid!==currentUser.uid?`
         <select onchange="changeRole('${uid}',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--bdr2);border-radius:var(--rs);background:var(--surf2);color:var(--tx)">
           <option value="vendedor"${u.role==='vendedor'?' selected':''}>Vendedor</option>
           <option value="admin"${u.role==='admin'?' selected':''}>Admin</option>
         </select>
-        <button onclick="resetUserPassword('${u.email}')" style="background:none;border:none;cursor:pointer;color:var(--amb);font-size:14px;padding:2px 6px;border:1px solid var(--bdr);border-radius:var(--rs);font-family:var(--fb);font-size:11px" title="Resetear contraseña">🔑 Reset</button>
+        <button onclick="resetUserPassword('${u.email}')" style="background:none;border:1px solid var(--bdr);border-radius:var(--rs);cursor:pointer;color:var(--amb);font-family:var(--fb);font-size:11px;padding:2px 6px">🔑 Reset</button>
         <button onclick="deactivateUser('${uid}','${u.name||u.email}')" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:16px;padding:2px 4px" title="Desactivar">✕</button>
-        ` : '<span style="font-size:11px;color:var(--tx3)">(tú)</span>'}
+        `:'<span style="font-size:11px;color:var(--tx3)">(tú)</span>'}
       </div>`).join('');
   });
 }
 
-function changeRole(uid, newRole){
-  db.ref('users/'+uid+'/role').set(newRole);
-}
-
-function deactivateUser(uid, name){
-  if(!confirm('¿Desactivar a "'+name+'"? El usuario no podrá iniciar sesión.')) return;
-  db.ref('users/'+uid+'/active').set(false);
-  loadUsersList();
-}
+function changeRole(uid,newRole){db.ref('users/'+uid+'/role').set(newRole);}
+function deactivateUser(uid,name){if(!confirm('¿Desactivar a "'+name+'"? El usuario no podrá iniciar sesión.'))return;db.ref('users/'+uid+'/active').set(false);loadUsersList();}
 
 async function doForgotPassword(){
-  const email = document.getElementById('login-email').value.trim();
-  if(!email){
-    showLoginError('Ingresa tu correo primero para restablecer la contraseña.');
-    return;
-  }
-  try {
-    await auth.sendPasswordResetEmail(email);
-    showLoginError('✅ Correo de restablecimiento enviado a ' + email + '. Revisa tu bandeja de entrada.');
-    document.getElementById('login-error').style.background = 'var(--grn-bg)';
-    document.getElementById('login-error').style.color = 'var(--grn)';
-  } catch(e){
-    const msgs = {
-      'auth/user-not-found': 'No existe una cuenta con ese correo.',
-      'auth/invalid-email': 'Correo inválido.',
-    };
-    showLoginError(msgs[e.code] || 'Error: ' + e.message);
-  }
+  const email=document.getElementById('login-email').value.trim();
+  if(!email){showLoginError('Ingresa tu correo primero para restablecer la contraseña.');return;}
+  try{await auth.sendPasswordResetEmail(email);showLoginError('✅ Correo de restablecimiento enviado a '+email+'. Revisa tu bandeja de entrada.');document.getElementById('login-error').style.background='var(--grn-bg)';document.getElementById('login-error').style.color='var(--grn)';}
+  catch(e){const msgs={'auth/user-not-found':'No existe una cuenta con ese correo.','auth/invalid-email':'Correo inválido.'};showLoginError(msgs[e.code]||'Error: '+e.message);}
 }
 
 async function resetUserPassword(email){
-  if(!confirm('¿Enviar correo de restablecimiento de contraseña a "' + email + '"?')) return;
-  try {
-    await auth.sendPasswordResetEmail(email);
-    alert('✅ Correo de restablecimiento enviado a ' + email + '.\nEl usuario recibirá un link para crear su nueva contraseña.');
-  } catch(e){
-    alert('Error al enviar: ' + e.message);
-  }
+  if(!confirm('¿Enviar correo de restablecimiento de contraseña a "'+email+'"?'))return;
+  try{await auth.sendPasswordResetEmail(email);alert('✅ Correo de restablecimiento enviado a '+email+'.\nEl usuario recibirá un link para crear su nueva contraseña.');}
+  catch(e){alert('Error al enviar: '+e.message);}
 }
 
 async function createUser(){
-  const email = document.getElementById('new-user-email').value.trim();
-  const pass = document.getElementById('new-user-pass').value;
-  const name = document.getElementById('new-user-name').value.trim();
-  const role = document.getElementById('new-user-role').value;
-  const errEl = document.getElementById('add-user-error');
-  if(!email||!pass||pass.length<6){
-    errEl.textContent='Correo y contraseña (mín. 6 caracteres) son obligatorios.';
-    errEl.style.display='block'; return;
-  }
+  const email=document.getElementById('new-user-email').value.trim();const pass=document.getElementById('new-user-pass').value;const name=document.getElementById('new-user-name').value.trim();const role=document.getElementById('new-user-role').value;const errEl=document.getElementById('add-user-error');
+  if(!email||!pass||pass.length<6){errEl.textContent='Correo y contraseña (mín. 6 caracteres) son obligatorios.';errEl.style.display='block';return;}
   errEl.style.display='none';
-  try {
-    // Create secondary auth instance to avoid logging out current user
-    const secondApp = firebase.initializeApp(firebase.app().options, 'secondary_'+Date.now());
-    const secondAuth = secondApp.auth();
-    const cred = await secondAuth.createUserWithEmailAndPassword(email, pass);
-    const uid = cred.user.uid;
-    await secondApp.database().ref('users/'+uid).set({
-      email, name: name||email.split('@')[0], role, active: true,
-      createdAt: new Date().toISOString(), createdBy: currentUser.uid
-    });
-    await secondAuth.signOut();
-    await secondApp.delete();
-    document.getElementById('add-user-form').style.display = 'none';
-    loadUsersList();
-    addBotMsg('Usuario <strong>'+name+'</strong> creado con rol <strong>'+role+'</strong>.');
-  } catch(e){
-    const msgs = {
-      'auth/email-already-in-use':'Ese correo ya está registrado.',
-      'auth/invalid-email':'Correo inválido.',
-      'auth/weak-password':'Contraseña muy débil (mín. 6 caracteres).',
-    };
-    errEl.textContent = msgs[e.code]||'Error: '+e.message;
-    errEl.style.display='block';
-  }
+  try{
+    const secondApp=firebase.initializeApp(firebase.app().options,'secondary_'+Date.now());const secondAuth=secondApp.auth();const cred=await secondAuth.createUserWithEmailAndPassword(email,pass);const uid=cred.user.uid;
+    await secondApp.database().ref('users/'+uid).set({email,name:name||email.split('@')[0],role,active:true,createdAt:new Date().toISOString(),createdBy:currentUser.uid});
+    await secondAuth.signOut();await secondApp.delete();
+    document.getElementById('add-user-form').style.display='none';loadUsersList();
+  }catch(e){const msgs={'auth/email-already-in-use':'Ese correo ya está registrado.','auth/invalid-email':'Correo inválido.','auth/weak-password':'Contraseña muy débil (mín. 6 caracteres).'};errEl.textContent=msgs[e.code]||'Error: '+e.message;errEl.style.display='block';}
 }
+
 // ════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════
-function toggleDL(e){
-  if(e)e.stopPropagation();
-  const m=document.getElementById('dl-menu');
-  if(m)m.style.display=m.style.display==='none'?'block':'none';
-}
+function toggleDL(e){if(e)e.stopPropagation();const m=document.getElementById('dl-menu');if(m)m.style.display=m.style.display==='none'?'block':'none';}
 document.addEventListener('click',function(){const m=document.getElementById('dl-menu');if(m)m.style.display='none';});
 
 window.addEventListener('load',()=>{
-  // Initialize Firebase first (sets up auth and db), then start auth listener
-  initFB();
-  initAuth();
-  // Responsive resize
-  window.addEventListener('resize',()=>{renderList();handleOrientation();});
+  initFB();initAuth();
+  window.addEventListener('resize',()=>{renderList();handleOrientation();showDesktopBtns();});
   window.addEventListener('orientationchange',()=>{setTimeout(()=>{renderList();handleOrientation();},150);});
-  renderPayMethods();
-  handleOrientation();
+  renderPayMethods();handleOrientation();
 });
 </script>
+
 <!-- MODAL DETALLE MOVIMIENTO -->
 <div class="ov" id="ov-movdet" onclick="bgc(event,'movdet')">
 <div class="modal">
@@ -2924,6 +2473,7 @@ window.addEventListener('load',()=>{
     <button class="mb p" onclick="closeOv('movdet')">Cerrar</button>
   </div>
 </div></div>
+
 <!-- CLIENT MODAL -->
 <div class="ov" id="ov-client" onclick="bgc(event,'client')">
 <div class="modal">
@@ -2933,9 +2483,7 @@ window.addEventListener('load',()=>{
   <div class="fg">
     <div class="fr"><label>Tipo Documento</label>
       <select id="cl-doctype">
-        <option value="DNI">DNI</option>
-        <option value="RUC">RUC</option>
-        <option value="Pasaporte">Pasaporte</option>
+        <option value="DNI">DNI</option><option value="RUC">RUC</option><option value="Pasaporte">Pasaporte</option>
       </select>
     </div>
     <div class="fr"><label>N° Documento</label><input id="cl-doc" placeholder="12345678"></div>
@@ -2951,10 +2499,8 @@ window.addEventListener('load',()=>{
   <div class="fr"><label>Etiqueta</label>
     <select id="cl-tag">
       <option value="">Sin etiqueta</option>
-      <option value="nuevo">🆕 Nuevo</option>
-      <option value="frecuente">🔄 Frecuente</option>
-      <option value="vip">⭐ VIP</option>
-      <option value="inactivo">💤 Inactivo</option>
+      <option value="nuevo">🆕 Nuevo</option><option value="frecuente">🔄 Frecuente</option>
+      <option value="vip">⭐ VIP</option><option value="inactivo">💤 Inactivo</option>
     </select>
   </div>
   <div class="fr"><label>Notas</label><textarea id="cl-notes" placeholder="Preferencias, tallas, observaciones..."></textarea></div>
@@ -2974,8 +2520,7 @@ window.addEventListener('load',()=>{
   <div class="fg">
     <div class="fr"><label>Tipo de descuento</label>
       <select id="pr-type" onchange="updatePromoPreview()">
-        <option value="pct">Porcentaje (%)</option>
-        <option value="fijo">Monto fijo (S/)</option>
+        <option value="pct">Porcentaje (%)</option><option value="fijo">Monto fijo (S/)</option>
       </select>
     </div>
     <div class="fr"><label id="pr-val-lbl">Descuento (%)</label>
@@ -2987,9 +2532,8 @@ window.addEventListener('load',()=>{
     <div class="fr"><label>Válido hasta</label><input type="date" id="pr-to"></div>
   </div>
   <div class="fr"><label>Aplica a</label>
-    <select id="pr-scope">
-      <option value="all">Todos los productos</option>
-      <option value="cat">Una categoría</option>
+    <select id="pr-scope" onchange="updatePromoPreview()">
+      <option value="all">Todos los productos</option><option value="cat">Una categoría</option>
     </select>
   </div>
   <div class="fr" id="pr-cat-row" style="display:none"><label>Categoría</label>
@@ -3016,7 +2560,7 @@ window.addEventListener('load',()=>{
   <div class="det-body" id="client-det-body"></div>
 </div>
 
-<!-- USER MANAGEMENT MODAL (admin only) -->
+<!-- USER MANAGEMENT MODAL -->
 <div class="ov" id="ov-users" onclick="bgc(event,'users')">
 <div class="modal" style="max-width:560px">
   <span class="mh"></span>
@@ -3025,7 +2569,6 @@ window.addEventListener('load',()=>{
     <button class="bsm pri" onclick="openAddUser()">+ Agregar</button>
   </div>
   <div id="users-list" style="margin-bottom:16px"></div>
-  <!-- Add user form (hidden by default) -->
   <div id="add-user-form" style="display:none;background:var(--surf2);border-radius:var(--r);padding:16px;border:1px solid var(--bdr)">
     <div style="font-size:12px;font-weight:500;color:var(--tx2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em">Nuevo usuario</div>
     <div class="fg">
@@ -3035,10 +2578,7 @@ window.addEventListener('load',()=>{
     <div class="fg">
       <div class="fr"><label>Nombre</label><input type="text" id="new-user-name" placeholder="Nombre completo"></div>
       <div class="fr"><label>Rol</label>
-        <select id="new-user-role">
-          <option value="vendedor">Vendedor</option>
-          <option value="admin">Administrador</option>
-        </select>
+        <select id="new-user-role"><option value="vendedor">Vendedor</option><option value="admin">Administrador</option></select>
       </div>
     </div>
     <div id="add-user-error" style="font-size:12px;color:var(--red);margin-top:8px;display:none"></div>
@@ -3047,10 +2587,9 @@ window.addEventListener('load',()=>{
       <button class="mb p" onclick="createUser()">Crear usuario</button>
     </div>
   </div>
-  <div class="mf">
-    <button class="mb p" onclick="closeOv('users')">Cerrar</button>
-  </div>
+  <div class="mf"><button class="mb p" onclick="closeOv('users')">Cerrar</button></div>
 </div></div>
+
 </div><!-- /app-container -->
 </body>
 </html>
