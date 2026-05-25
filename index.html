@@ -2073,11 +2073,11 @@ function getAutoTag(movs){
 }
 
 function getClientMovs(cl){
-  // Primary key: document number. Fallback: phone or name
+  // Match by doc (primary) OR phone OR name — no exclusions
   return D.movements.filter(m => m.type==='salida' && (
-    (cl.doc && m.clientDoc === cl.doc) ||
-    (cl.phone && m.clientPhone === cl.phone && !m.clientDoc) ||
-    (cl.name && m.clientName && m.clientName.toLowerCase() === cl.name.toLowerCase() && !m.clientDoc && !m.clientPhone)
+    (cl.doc && m.clientDoc && m.clientDoc === cl.doc) ||
+    (cl.phone && m.clientPhone && m.clientPhone === cl.phone) ||
+    (cl.name && m.clientName && m.clientName.toLowerCase() === cl.name.toLowerCase())
   ));
 }
 
@@ -2086,17 +2086,23 @@ function buildClientsFromMovements(){
   const fromMovs = {};
   // Build from movements — key is doc > phone > name
   D.movements.filter(m => m.type==='salida' && m.clientName).forEach(m => {
+    // Use doc as key if available, otherwise phone, otherwise name
     const key = m.clientDoc || m.clientPhone || m.clientName;
     if(!fromMovs[key]){
       fromMovs[key] = {
-        id: m.clientDoc ? 'CLI-'+m.clientDoc : 'AUTO-'+(m.clientPhone||m.clientName).replace(/[^a-zA-Z0-9]/g,'').slice(0,12),
+        id: m.clientDoc ? 'CLI-'+m.clientDoc : 'AUTO-'+(m.clientPhone||m.clientName||'X').replace(/[^a-zA-Z0-9]/g,'').slice(0,12),
         doc: m.clientDoc||'',
         docType: m.clientDocType||'',
-        name: m.clientName,
+        name: m.clientName||'',
         phone: m.clientPhone||'',
         email: m.clientEmail||'',
         autoCreated: true
       };
+    } else {
+      // Update with more complete data if available
+      if(m.clientDoc && !fromMovs[key].doc) fromMovs[key].doc = m.clientDoc;
+      if(m.clientPhone && !fromMovs[key].phone) fromMovs[key].phone = m.clientPhone;
+      if(m.clientEmail && !fromMovs[key].email) fromMovs[key].email = m.clientEmail;
     }
   });
   // Existing DB records override auto-created
@@ -2112,6 +2118,8 @@ function renderCRM(){
   if(!db) return;
   db.ref('clients').once('value', snap => {
     window._clients = snap.val() || {};
+    // Also refresh promos cache
+    if(!window._promos) window._promos={};
     const allClients = buildClientsFromMovements();
 
     // Compute tags and stats for each client
@@ -2216,11 +2224,12 @@ function openClientDet(id, phone, encodedName){
     const tagHtml=cl.tag?`<span class="tag ${cl.tag}" style="margin-bottom:12px;display:inline-block">${cl.tag.toUpperCase()}</span>`:'';
     document.getElementById('client-det-body').innerHTML=`
       <div style="text-align:center;padding:20px 0 16px">
-        <div style="width:60px;height:60px;border-radius:50%;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:600;margin:0 auto 10px">${cl.name[0].toUpperCase()}</div>
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:600;margin:0 auto 10px">${(cl.name||'?')[0].toUpperCase()}</div>
         <div style="font-family:var(--fd);font-size:22px;font-weight:600">${cl.name}</div>
         ${tagHtml}
       </div>
       <div class="det-meta">
+        ${cl.doc?`<div class="det-mi"><div class="det-ml">${cl.docType||'Documento'}</div><div class="det-mv" style="font-weight:600;color:var(--P)">${cl.doc}</div></div>`:''}
         ${cl.phone?`<div class="det-mi"><div class="det-ml">Teléfono</div><div class="det-mv">${cl.phone}</div></div>`:''}
         ${cl.email?`<div class="det-mi"><div class="det-ml">Correo</div><div class="det-mv" style="font-size:11px">${cl.email}</div></div>`:''}
         ${cl.bday?`<div class="det-mi"><div class="det-ml">Cumpleaños</div><div class="det-mv">🎂 ${cl.bday}</div></div>`:''}
