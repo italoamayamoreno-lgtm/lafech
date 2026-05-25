@@ -1356,12 +1356,16 @@ function saveMov(){
   const p=gP(pid);
   if((tp==='salida'||tp==='ajuste-')&&stk(pid)<qty)if(!confirm(`Stock insuficiente (${stk(pid)} u.). ¿Registrar igual?`))return;
   const m={prodId:pid,type:tp,qty,price:prc,resp:document.getElementById('mv-rsp').value||'—',obs:document.getElementById('mv-obs').value||'',date:today()};
-  // Save discount info
-  if(tp==='salida'&&originalPrice>prc){
-    m.originalPrice=originalPrice;
-    m.discountAmt=originalPrice-prc;
-    m.discountType=discType!=='none'?discType:(window._lastPromoName?'promo':'');
-    if(window._lastPromoName){m.promoName=window._lastPromoName;window._lastPromoName=null;}
+  // Save price info for sales — always store originalPrice
+  if(tp==='salida'){
+    m.originalPrice=originalPrice; // always save original catalog price
+    if(originalPrice>prc){
+      m.discountAmt=originalPrice-prc;
+      m.discountType=discType!=='none'?discType:(window._lastPromoName?'promo':'');
+      if(window._lastPromoName){m.promoName=window._lastPromoName;window._lastPromoName=null;}
+    } else {
+      window._lastPromoName=null;
+    }
   }
   if(tp==='salida'){
     const doc=document.getElementById('mv-doc').value.trim();
@@ -1942,8 +1946,8 @@ function openMovDet(id){
   const rows=[
     ['Fecha',m.date],
     m.clientDoc?[`Documento (${m.clientDocType||'Doc'})`,m.clientDoc]:null,
-    ['Precio Regular', m.originalPrice ? fmtM(m.originalPrice) : fmtM(m.price)],
-    ['Precio con Descuento', m.originalPrice ? `${fmtM(m.price)}${m.promoName?' · Promo: '+m.promoName:m.discountAmt?' · Descuento manual':''}` : '—'],
+    m.type==='salida'?['Precio Regular', m.originalPrice ? fmtM(m.originalPrice) : fmtM(m.price)]:null,
+    m.type==='salida'?['Precio con Descuento', m.originalPrice ? `${fmtM(m.price)}${m.promoName?' · Promo: '+m.promoName:m.discountAmt?' · Desc. manual':''}` : '—']:null,
     ['Producto',p.name+' ('+m.prodId+')'],
     ['Categoría',p.cat||'—'],
     ['Tipo',lb[m.type]||m.type],
