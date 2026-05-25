@@ -72,7 +72,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 #offline-bar.show{height:28px}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
 .workspace{display:flex;flex:1;overflow:hidden;position:relative;max-width:100vw;min-height:0}
-.main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;min-height:0}
 @media(min-width:900px){.main{padding:24px 32px;gap:20px;overflow-y:auto}}
 
 /* ── KPIs ───────────────────────────────────────── */
@@ -273,8 +273,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 @media(min-width:900px){.fab{display:none}}
 
 /* ── PAGES ──────────────────────────────────────── */
-.page{display:none}
-.page.on{display:contents}
+.page{display:none;flex-direction:column;gap:14px;width:100%;min-height:0}
+.page.on{display:flex}
 .empty{text-align:center;padding:40px 20px;color:var(--tx3)}
 .empty-ic{font-size:32px;margin-bottom:8px}
 .empty-msg{font-size:13px;line-height:1.6}
@@ -588,49 +588,43 @@ body.role-admin .admin-only-block{display:flex !important}
 
   <!-- CRM CLIENTES -->
   <div class="page" id="page-crm">
-    <!-- Header -->
-    <div class="sh" style="margin-bottom:16px">
+    <div class="sh">
       <div>
         <div class="st">Clientes</div>
         <div style="font-size:12px;color:var(--tx3);margin-top:2px" id="crm-count">—</div>
       </div>
       <button class="bsm pri" onclick="openModal('client')">+ Cliente</button>
     </div>
-    <!-- KPIs row -->
-    <div class="kpi-grid" id="crm-kpis" style="margin-bottom:16px"></div>
-    <!-- Search -->
-    <div class="srch" style="margin-bottom:10px">
+    <div class="kpi-grid" id="crm-kpis"></div>
+    <div class="srch">
       <span style="color:var(--tx3);font-size:15px">🔍</span>
-      <input type="text" placeholder="Buscar por nombre, teléfono o correo..." oninput="searchClients(this.value)" id="crm-search">
+      <input type="text" placeholder="Buscar por nombre, documento o correo..." oninput="searchClients(this.value)" id="crm-search">
     </div>
-    <!-- Filter pills -->
-    <div class="pills" id="crm-tag-pills" style="margin-bottom:14px">
+    <div class="pills" id="crm-tag-pills">
       <button class="pill on" onclick="setCrmFilter('todos')">Todos</button>
       <button class="pill" onclick="setCrmFilter('vip')">⭐ VIP</button>
       <button class="pill" onclick="setCrmFilter('frecuente')">🔄 Frecuente</button>
       <button class="pill" onclick="setCrmFilter('nuevo')">🆕 Nuevo</button>
       <button class="pill" onclick="setCrmFilter('inactivo')">💤 Inactivo</button>
     </div>
-    <!-- Client list -->
     <div class="prod-list" id="crm-list"></div>
   </div>
 
   <!-- PROMOCIONES -->
   <div class="page" id="page-promos">
-    <div class="sh" style="margin-bottom:16px">
+    <div class="sh">
       <div>
         <div class="st">Promociones</div>
-        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Descuentos automáticos aplicados al registrar ventas</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Descuentos automáticos al registrar ventas</div>
       </div>
       <button class="bsm pri" onclick="openModal('promo')">+ Promoción</button>
     </div>
-    <!-- Tabs -->
-    <div style="display:flex;gap:2px;background:var(--surf2);padding:3px;border-radius:var(--r);margin-bottom:16px;width:fit-content">
+    <div style="display:flex;gap:2px;background:var(--surf2);padding:3px;border-radius:var(--r);width:fit-content">
       <button class="promo-tab on" id="ptab-active" onclick="setPromoTab('active')">Activas</button>
       <button class="promo-tab" id="ptab-upcoming" onclick="setPromoTab('upcoming')">Próximas</button>
       <button class="promo-tab" id="ptab-expired" onclick="setPromoTab('expired')">Vencidas</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;width:100%" id="promos-list"></div>
+    <div id="promos-list"></div>
   </div>
 
   <!-- MÉTODOS DE PAGO -->
