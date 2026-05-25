@@ -273,8 +273,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb)
 @media(min-width:900px){.fab{display:none}}
 
 /* ── PAGES ──────────────────────────────────────── */
-.page{display:none;flex-direction:column;gap:14px;width:100%;min-height:0}
-.page.on{display:flex}
+.page{display:none;flex-direction:column;gap:14px;width:100%}
+.page.on{display:flex;min-height:0}
 .empty{text-align:center;padding:40px 20px;color:var(--tx3)}
 .empty-ic{font-size:32px;margin-bottom:8px}
 .empty-msg{font-size:13px;line-height:1.6}
@@ -607,7 +607,7 @@ body.role-admin .admin-only-block{display:flex !important}
       <button class="pill" onclick="setCrmFilter('nuevo')">🆕 Nuevo</button>
       <button class="pill" onclick="setCrmFilter('inactivo')">💤 Inactivo</button>
     </div>
-    <div class="prod-list" id="crm-list"></div>
+    <div class="prod-list" id="crm-list" style="overflow:visible;flex:1"></div>
   </div>
 
   <!-- PROMOCIONES -->
@@ -627,7 +627,7 @@ body.role-admin .admin-only-block{display:flex !important}
       <button class="promo-tab pill" id="ptab-upcoming" onclick="setPromoTab('upcoming')">Próximas</button>
       <button class="promo-tab pill" id="ptab-expired" onclick="setPromoTab('expired')">Vencidas</button>
     </div>
-    <div class="prod-list" id="promos-list"></div>
+    <div class="prod-list" id="promos-list" style="overflow:visible;flex:1"></div>
   </div>
 
   <!-- MÉTODOS DE PAGO -->
@@ -2229,7 +2229,7 @@ function openClientDet(id, phone, encodedName){
         ${tagHtml}
       </div>
       <div class="det-meta">
-        ${cl.doc?`<div class="det-mi"><div class="det-ml">${cl.docType||'Documento'}</div><div class="det-mv" style="font-weight:600;color:var(--P)">${cl.doc}</div></div>`:''}
+        <div class="det-mi"><div class="det-ml">${cl.docType||'DNI'}</div><div class="det-mv" style="font-weight:600;color:var(--P)">${cl.doc||'—'}</div></div>
         ${cl.phone?`<div class="det-mi"><div class="det-ml">Teléfono</div><div class="det-mv">${cl.phone}</div></div>`:''}
         ${cl.email?`<div class="det-mi"><div class="det-ml">Correo</div><div class="det-mv" style="font-size:11px">${cl.email}</div></div>`:''}
         ${cl.bday?`<div class="det-mi"><div class="det-ml">Cumpleaños</div><div class="det-mv">🎂 ${cl.bday}</div></div>`:''}
