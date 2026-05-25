@@ -834,12 +834,39 @@ body.role-admin .admin-only-block{display:flex !important}
     <div class="fr"><label>Responsable</label><input id="mv-rsp"></div>
   </div>
   <div class="fr"><label>Referencia / Factura</label><input id="mv-obs" placeholder="N° Factura..."></div>
-  <div class="cli-sec" id="mv-cli">
-    <div class="cli-lbl">👤 Datos del Cliente (opcional)</div>
-    <div class="fr"><label>Nombre</label><input id="mv-cnm" placeholder="María García"></div>
-    <div class="fg">
-      <div class="fr"><label>Teléfono</label><input id="mv-cph" type="tel" placeholder="999888777"></div>
-      <div class="fr"><label>Correo</label><input id="mv-cem" type="email" placeholder="correo@email.com"></div>
+  <!-- Cliente siempre visible para ventas -->
+  <div id="mv-cli" style="display:none">
+    <div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rs);padding:12px;margin-bottom:8px">
+      <div class="cli-lbl" style="margin-bottom:10px">👤 Identificación del Cliente <span style="color:var(--red);font-size:10px">*obligatorio</span></div>
+      <div class="fg">
+        <div class="fr">
+          <label>Tipo de Documento</label>
+          <select id="mv-doctype">
+            <option value="DNI">DNI</option>
+            <option value="RUC">RUC</option>
+            <option value="Pasaporte">Pasaporte</option>
+          </select>
+        </div>
+        <div class="fr">
+          <label>Número de Documento</label>
+          <input id="mv-doc" placeholder="Ej: 12345678" oninput="lookupClient(this.value)">
+        </div>
+      </div>
+      <!-- Client found badge -->
+      <div id="mv-client-found" style="display:none;padding:8px 12px;background:var(--grn-bg);border-radius:var(--rs);border:1px solid #A8D4BC;font-size:12px;color:var(--grn);margin-top:6px">
+        ✅ Cliente encontrado: <strong id="mv-client-found-name"></strong> · <span id="mv-client-found-tag"></span>
+      </div>
+      <div id="mv-client-new" style="display:none;padding:6px 12px;background:var(--blu-bg);border-radius:var(--rs);border:1px solid #A8C4E0;font-size:12px;color:var(--blu);margin-top:6px">
+        🆕 Cliente nuevo — completa sus datos
+      </div>
+    </div>
+    <!-- Client data fields (always shown for sales) -->
+    <div id="mv-client-fields" style="display:none;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rs);padding:12px;margin-bottom:8px">
+      <div class="fr"><label>Nombre completo</label><input id="mv-cnm" placeholder="María García"></div>
+      <div class="fg">
+        <div class="fr"><label>Teléfono</label><input id="mv-cph" type="tel" placeholder="999888777"></div>
+        <div class="fr"><label>Correo</label><input id="mv-cem" type="email" placeholder="correo@email.com"></div>
+      </div>
     </div>
     <div class="fr"><label>Método de Pago</label>
       <select id="mv-pay">
@@ -1241,7 +1268,14 @@ function openMov(id,tp){
   if(id)for(let i=0;i<sel.options.length;i++)if(sel.options[i].value===id){sel.selectedIndex=i;break;}
   if(tp)document.getElementById('mv-tp').value=tp;
   ['mv-qty'].forEach(f=>document.getElementById(f).value=1);
-  ['mv-rsp','mv-obs','mv-cnm','mv-cph','mv-cem'].forEach(f=>document.getElementById(f).value='');document.getElementById('mv-pay').value='';
+  ['mv-rsp','mv-obs','mv-cnm','mv-cph','mv-cem'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('mv-pay').value='';
+  document.getElementById('mv-doc').value='';
+  document.getElementById('mv-doctype').value='DNI';
+  document.getElementById('mv-client-found').style.display='none';
+  document.getElementById('mv-client-new').style.display='none';
+  document.getElementById('mv-client-fields').style.display='none';
+  window._foundClient=null;
   onMvCh();
   document.getElementById('ov-mov').classList.add('open');
 }
@@ -1255,6 +1289,13 @@ function onMvCh(){
   document.getElementById('mv-prc').value=t==='salida'?p.price:p.cost;
   document.getElementById('mv-inf').textContent=`"${p.name}" — Stock: ${stk(p.id)} u. (mín. ${p.minStock})`;
   document.getElementById('mv-cli').style.display=t==='salida'?'block':'none';
+  if(t==='salida'){
+    // Reset doc lookup when product/type changes
+    if(!window._foundClient){
+      document.getElementById('mv-client-found').style.display='none';
+      document.getElementById('mv-client-new').style.display='none';
+    }
+  }
   // Show discount options only for sales
   const manualDisc=document.getElementById('mv-manual-disc');
   if(manualDisc) manualDisc.style.display=t==='salida'?'block':'none';
@@ -1325,7 +1366,30 @@ function saveMov(){
     m.discountType=discType!=='none'?discType:(window._lastPromoName?'promo':'');
     if(window._lastPromoName){m.promoName=window._lastPromoName;window._lastPromoName=null;}
   }
-  if(tp==='salida'){const cn=document.getElementById('mv-cnm').value.trim();if(cn)m.clientName=cn;const cp=document.getElementById('mv-cph').value.trim();if(cp)m.clientPhone=cp;const ce=document.getElementById('mv-cem').value.trim();if(ce)m.clientEmail=ce;const pay=document.getElementById('mv-pay').value;if(pay)m.payMethod=pay;}
+  if(tp==='salida'){
+    const doc=document.getElementById('mv-doc').value.trim();
+    const docType=document.getElementById('mv-doctype').value;
+    const cn=document.getElementById('mv-cnm').value.trim();
+    const cp=document.getElementById('mv-cph').value.trim();
+    const ce=document.getElementById('mv-cem').value.trim();
+    const pay=document.getElementById('mv-pay').value;
+    if(doc)m.clientDoc=doc;
+    if(docType)m.clientDocType=docType;
+    if(cn)m.clientName=cn;
+    if(cp)m.clientPhone=cp;
+    if(ce)m.clientEmail=ce;
+    if(pay)m.payMethod=pay;
+    // Save or update client record
+    if(doc&&cn&&db){
+      const clientData={id:'CLI-'+doc,doc,docType,name:cn,phone:cp||'',email:ce||'',updatedAt:today()};
+      if(!window._foundClient){
+        // New client
+        clientData.createdAt=today();
+        clientData.tag=''; // auto-segmented
+      }
+      db.ref('clients/CLI-'+doc).set(clientData);
+    }
+  }
   addM(m);closeOv('mov');
 }
 function confirmDel(id){
@@ -1880,6 +1944,7 @@ function openMovDet(id){
   document.getElementById('movdet-title').textContent=ic+' '+( lb[m.type]||m.type);
   const rows=[
     ['Fecha',m.date],
+    m.clientDoc?[`Documento (${m.clientDocType||'Doc'})`,m.clientDoc]:null,
     m.originalPrice?['Precio Original','S/ '+fmt(m.originalPrice)]:null,
     m.discountAmt?['Descuento Aplicado','− S/ '+fmt(m.discountAmt)+(m.promoName?' ('+m.promoName+')':(m.discountType==='pct'||m.discountType==='fijo'?' (manual)':''))]:null,
     ['Producto',p.name+' ('+m.prodId+')'],
@@ -1955,8 +2020,14 @@ function saveClient(){
   const name=document.getElementById('cl-name').value.trim();
   if(!name){alert('El nombre es obligatorio.');return;}
   const id=document.getElementById('cl-id').value||'CLI-'+Date.now();
+  const docVal=document.getElementById('cl-doc')?document.getElementById('cl-doc').value.trim():'';
+  const docType=document.getElementById('cl-doctype')?document.getElementById('cl-doctype').value:'DNI';
+  const finalId = docVal ? 'CLI-'+docVal : id;
   const client={
-    id,name,
+    id:finalId,
+    doc:docVal,
+    docType,
+    name,
     phone:document.getElementById('cl-phone').value.trim(),
     email:document.getElementById('cl-email').value.trim(),
     bday:document.getElementById('cl-bday').value,
@@ -1964,7 +2035,7 @@ function saveClient(){
     notes:document.getElementById('cl-notes').value.trim(),
     createdAt:today()
   };
-  if(db) db.ref('clients/'+id).set(client);
+  if(db) db.ref('clients/'+client.id).set(client);
   closeOv('client');
   renderCRM();
 }
@@ -2001,22 +2072,25 @@ function getAutoTag(movs){
 }
 
 function getClientMovs(cl){
-  // Match by phone OR name (for movements without phone)
+  // Primary key: document number. Fallback: phone or name
   return D.movements.filter(m => m.type==='salida' && (
-    (cl.phone && m.clientPhone === cl.phone) ||
-    (cl.name && m.clientName && m.clientName.toLowerCase() === cl.name.toLowerCase())
+    (cl.doc && m.clientDoc === cl.doc) ||
+    (cl.phone && m.clientPhone === cl.phone && !m.clientDoc) ||
+    (cl.name && m.clientName && m.clientName.toLowerCase() === cl.name.toLowerCase() && !m.clientDoc && !m.clientPhone)
   ));
 }
 
 function buildClientsFromMovements(){
-  // Auto-create client records from movements that have client data
   const existing = window._clients || {};
   const fromMovs = {};
+  // Build from movements — key is doc > phone > name
   D.movements.filter(m => m.type==='salida' && m.clientName).forEach(m => {
-    const key = m.clientPhone || m.clientName;
+    const key = m.clientDoc || m.clientPhone || m.clientName;
     if(!fromMovs[key]){
       fromMovs[key] = {
-        id: 'AUTO-'+key.replace(/\s+/g,'').slice(0,10)+'-'+Date.now(),
+        id: m.clientDoc ? 'CLI-'+m.clientDoc : 'AUTO-'+(m.clientPhone||m.clientName).replace(/[^a-zA-Z0-9]/g,'').slice(0,12),
+        doc: m.clientDoc||'',
+        docType: m.clientDocType||'',
         name: m.clientName,
         phone: m.clientPhone||'',
         email: m.clientEmail||'',
@@ -2024,11 +2098,11 @@ function buildClientsFromMovements(){
       };
     }
   });
-  // Merge: existing clients override auto-created ones with same phone
+  // Existing DB records override auto-created
   const merged = {...fromMovs};
   Object.values(existing).forEach(cl => {
-    const key = cl.phone || cl.name;
-    merged[key] = cl; // existing overrides
+    const key = cl.doc || cl.phone || cl.name;
+    merged[key] = {...(fromMovs[key]||{}), ...cl};
   });
   return Object.values(merged);
 }
@@ -2054,11 +2128,14 @@ function renderCRM(){
     const totalSpent = enriched.reduce((a,c)=>a+c.total,0);
     const avgTicket = enriched.length ? Math.round(totalSpent/enriched.length) : 0;
     const kpiEl = document.getElementById('crm-kpis');
+    const newCount = enriched.filter(c=>c.tag==='nuevo').length;
+    const freqCount = enriched.filter(c=>c.tag==='frecuente').length;
+    const inactCount = enriched.filter(c=>c.tag==='inactivo').length;
     if(kpiEl) kpiEl.innerHTML = `
-      <div class="kpi p"><div class="kpi-lbl">Total Clientes</div><div class="kpi-val">${enriched.length}</div></div>
-      <div class="kpi g"><div class="kpi-lbl">VIP ⭐</div><div class="kpi-val">${vipCount}</div></div>
-      <div class="kpi gr"><div class="kpi-lbl">Venta Total</div><div class="kpi-val gr" style="font-size:18px">${fmtM(totalSpent)}</div></div>
-      <div class="kpi"><div class="kpi-lbl">Ticket Promedio</div><div class="kpi-val" style="font-size:18px">${fmtM(avgTicket)}</div></div>`;
+      <div class="kpi p"><div class="kpi-lbl">Total</div><div class="kpi-val">${enriched.length}</div><div class="kpi-sub">clientes</div></div>
+      <div class="kpi g"><div class="kpi-lbl">VIP ⭐</div><div class="kpi-val">${vipCount}</div><div class="kpi-sub">+10 compras</div></div>
+      <div class="kpi gr"><div class="kpi-lbl">Frecuentes 🔄</div><div class="kpi-val gr">${freqCount}</div><div class="kpi-sub">5-9 compras</div></div>
+      <div class="kpi re"><div class="kpi-lbl">Inactivos 💤</div><div class="kpi-val ${inactCount>0?'re':''}">${inactCount}</div><div class="kpi-sub">sin compras 30d</div></div>`;
 
     // Filter
     let filtered = [...enriched];
@@ -2098,19 +2175,20 @@ function renderCRM(){
     const tagLabels = {vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
 
     el.innerHTML = filtered.sort((a,b)=>b.total-a.total).map(cl => {
-      const [tagBg, tagFg] = tagColors[cl.tag] || ['var(--PL)','var(--P)'];
-      const tagBadge = cl.tag ? `<span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${tagBg};color:${tagFg}">${tagLabels[cl.tag]||cl.tag}</span>` : '';
-      const autoNote = cl.autoTag !== cl.tag ? '<span style="font-size:9px;color:var(--tx3);margin-left:4px">(manual)</span>' : '';
-      return `<div class="prod-row" style="cursor:pointer;padding:12px 16px" onclick="openClientDet('${cl.id}','${cl.phone||''}','${encodeURIComponent(cl.name)}')">
-        <div class="prod-thumb" style="background:${tagBg};color:${tagFg};font-weight:600;font-size:16px">${cl.name[0].toUpperCase()}</div>
+      const [tagBg, tagFg] = tagColors[cl.tag] || ['var(--surf3)','var(--tx3)'];
+      const tagLabel = tagLabels[cl.tag] || 'Sin segmento';
+      const docStr = cl.doc ? `${cl.docType||'Doc'}: ${cl.doc}` : (cl.phone||'Sin documento');
+      const isManual = cl.tag && cl.autoTag && cl.tag !== cl.autoTag;
+      return `<div class="prod-row" style="cursor:pointer" onclick="openClientDet('${cl.id}','${cl.doc||cl.phone||''}','${encodeURIComponent(cl.name)}')">
+        <div class="prod-thumb" style="background:${tagBg};color:${tagFg};font-weight:700;font-size:16px;border:none">${cl.name[0].toUpperCase()}</div>
         <div class="prod-info">
-          <div class="prod-name">${cl.name} ${tagBadge}${autoNote}</div>
-          <div class="prod-meta">${cl.phone||'Sin teléfono'}${cl.email?' · '+cl.email:''}</div>
+          <div class="prod-name">${cl.name}${cl.tag?` <span style="padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;background:${tagBg};color:${tagFg};vertical-align:middle">${tagLabel}${isManual?' ✏️':''}</span>`:''}</div>
+          <div class="prod-meta">${docStr}${cl.email?' · '+cl.email:''}</div>
         </div>
-        <div class="prod-right">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
           <div style="font-family:var(--fd);font-size:15px;font-weight:600;color:var(--P)">${fmtM(cl.total)}</div>
-          <span style="font-size:10px;color:var(--tx3)">${cl.movs.length} compra${cl.movs.length!==1?'s':''}</span>
-          ${cl.lastBuy?`<span style="font-size:10px;color:var(--tx3)">${cl.lastBuy}</span>`:''}
+          <div style="font-size:11px;color:var(--tx3)">${cl.movs.length} compra${cl.movs.length!==1?'s':''}</div>
+          ${cl.lastBuy?`<div style="font-size:10px;color:var(--tx3)">${cl.lastBuy}</div>`:''}
         </div>
       </div>`;
     }).join('');
@@ -2370,6 +2448,49 @@ function applyPromoToSale(){
     discEl.innerHTML=`🏷️ Promo "<strong>${best.name}</strong>" — <span style="text-decoration:line-through;opacity:.6">${fmtM(basePrice)}</span> → <strong>${fmtM(finalPrice)}</strong> (-${fmtM(discAmt)})`;
     discEl.style.display='block';
   }
+}
+// ── CLIENT LOOKUP BY DOCUMENT ─────────────────────────────────────
+let _lookupTimer = null;
+window._foundClient = null;
+
+function lookupClient(docNum){
+  clearTimeout(_lookupTimer);
+  window._foundClient = null;
+  document.getElementById('mv-client-found').style.display='none';
+  document.getElementById('mv-client-new').style.display='none';
+  document.getElementById('mv-client-fields').style.display='none';
+  if(!docNum || docNum.length < 3) return;
+  
+  _lookupTimer = setTimeout(()=>{
+    if(!db) return;
+    db.ref('clients').orderByChild('doc').equalTo(docNum).once('value', snap=>{
+      const data = snap.val();
+      if(data){
+        // Client found
+        const cl = Object.values(data)[0];
+        window._foundClient = cl;
+        document.getElementById('mv-cnm').value = cl.name||'';
+        document.getElementById('mv-cph').value = cl.phone||'';
+        document.getElementById('mv-cem').value = cl.email||'';
+        // Show found badge
+        document.getElementById('mv-client-found-name').textContent = cl.name;
+        const tagLabels={vip:'⭐ VIP',frecuente:'🔄 Frecuente',nuevo:'🆕 Nuevo',inactivo:'💤 Inactivo'};
+        const movs = D.movements.filter(m=>m.type==='salida'&&m.clientDoc===docNum);
+        const autoT = getAutoTag(movs);
+        document.getElementById('mv-client-found-tag').textContent = tagLabels[cl.tag||autoT]||'Nuevo cliente';
+        document.getElementById('mv-client-found').style.display='block';
+        document.getElementById('mv-client-fields').style.display='block';
+      } else {
+        // Client not found — new client
+        window._foundClient = null;
+        document.getElementById('mv-cnm').value='';
+        document.getElementById('mv-cph').value='';
+        document.getElementById('mv-cem').value='';
+        document.getElementById('mv-client-new').style.display='block';
+        document.getElementById('mv-client-fields').style.display='block';
+      }
+    });
+  }, 500);
 }
 // ════════════════════════════════════════════════
 // AUTHENTICATION SYSTEM
@@ -2729,6 +2850,16 @@ window.addEventListener('load',()=>{
   <span class="mh"></span>
   <div class="mt" id="client-modal-title">Nuevo Cliente</div>
   <input type="hidden" id="cl-id">
+  <div class="fg">
+    <div class="fr"><label>Tipo Documento</label>
+      <select id="cl-doctype">
+        <option value="DNI">DNI</option>
+        <option value="RUC">RUC</option>
+        <option value="Pasaporte">Pasaporte</option>
+      </select>
+    </div>
+    <div class="fr"><label>N° Documento</label><input id="cl-doc" placeholder="12345678"></div>
+  </div>
   <div class="fg">
     <div class="fr"><label>Nombre completo</label><input id="cl-name" placeholder="María García"></div>
     <div class="fr"><label>Teléfono</label><input id="cl-phone" type="tel" placeholder="999 888 777"></div>
