@@ -399,6 +399,22 @@ body.role-admin .admin-only-block{display:flex !important}
 .pay-bank-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}
 .pay-bank-icon{width:32px;height:32px;border-radius:8px;background:var(--PL);color:var(--P);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700}
 .pay-bank-name{font-family:var(--fd);font-size:18px;font-weight:600;color:var(--tx)}
+.foto-slots{display:flex;gap:8px;margin-top:6px}
+.foto-slot{flex:1;display:flex;flex-direction:column;gap:4px}
+.foto-slot-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);font-weight:500}
+.foto-slot-btn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px;border:1.5px dashed var(--bdr2);border-radius:var(--rs);color:var(--tx3);font-size:11px;cursor:pointer;background:transparent;font-family:var(--fb);transition:all .12s;width:100%}
+.foto-slot-btn:hover{border-color:var(--PM);color:var(--P)}
+.foto-slot-btn.has-img{border-color:var(--grn);border-style:solid;color:var(--grn)}
+.foto-slot-pv{width:100%;height:60px;object-fit:cover;border-radius:var(--rs);display:none;border:1px solid var(--bdr)}
+.carousel-wrap{width:100%;aspect-ratio:1;max-height:260px;border-radius:var(--rl);overflow:hidden;background:var(--PL);position:relative;border:1px solid var(--bdr);margin-bottom:18px}
+.carousel-wrap img{width:100%;height:100%;object-fit:cover;display:none;position:absolute;top:0;left:0;transition:opacity .2s}
+.carousel-wrap img.active{display:block}
+.carousel-dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:5px;z-index:2}
+.carousel-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5);cursor:pointer;transition:all .15s;border:none}
+.carousel-dot.on{background:#fff;transform:scale(1.2)}
+.carousel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.75);border:none;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;z-index:2;color:var(--P)}
+.carousel-btn.prev{left:6px}
+.carousel-btn.next{right:6px}
 </style>
 </head>
 <body>
@@ -693,15 +709,32 @@ body.role-admin .admin-only-block{display:flex !important}
   </div>
   <div class="fr"><label>Nombre del producto</label><input id="np-nm" placeholder="Ej: Anillo Solitario Brillante"></div>
   <div class="fr"><label>Descripción detallada</label><textarea id="np-desc" placeholder="Materiales, detalles, ocasión de uso..."></textarea></div>
-  <div class="fr">
-    <label>Foto</label>
-    <button type="button" class="img-up" onclick="document.getElementById('np-img-f').click()">📷 Seleccionar foto</button>
-    <input type="file" id="np-img-f" accept="image/*" style="display:none" onchange="prevImg(this,'np-img-pv')">
-    <img id="np-img-pv" class="img-pv">
-    <div style="font-size:11px;color:var(--tx3);margin-top:6px;padding:8px 10px;background:var(--surf2);border-radius:var(--rs);border-left:2px solid var(--PM)">
-      💡 <strong>Tamaño ideal:</strong> 800×800 px mínimo · 1200×1200 px óptimo · Formato cuadrado 1:1 · JPG o PNG · ~10×10 cm a 300 dpi
+<div class="fr">
+  <label>Fotos del producto (hasta 3)</label>
+  <div class="foto-slots">
+    <div class="foto-slot">
+      <div class="foto-slot-lbl">Foto 1</div>
+      <button type="button" class="foto-slot-btn" id="np-foto1-btn" onclick="document.getElementById('np-img-f').click()">📷 Principal</button>
+      <input type="file" id="np-img-f" accept="image/*" style="display:none" onchange="prevFoto(this,'np-img-pv','np-foto1-btn')">
+      <img id="np-img-pv" class="foto-slot-pv">
+    </div>
+    <div class="foto-slot">
+      <div class="foto-slot-lbl">Foto 2</div>
+      <button type="button" class="foto-slot-btn" id="np-foto2-btn" onclick="document.getElementById('np-img2-f').click()">📷 Adicional</button>
+      <input type="file" id="np-img2-f" accept="image/*" style="display:none" onchange="prevFoto(this,'np-img2-pv','np-foto2-btn')">
+      <img id="np-img2-pv" class="foto-slot-pv">
+    </div>
+    <div class="foto-slot">
+      <div class="foto-slot-lbl">Foto 3</div>
+      <button type="button" class="foto-slot-btn" id="np-foto3-btn" onclick="document.getElementById('np-img3-f').click()">📷 Adicional</button>
+      <input type="file" id="np-img3-f" accept="image/*" style="display:none" onchange="prevFoto(this,'np-img3-pv','np-foto3-btn')">
+      <img id="np-img3-pv" class="foto-slot-pv">
     </div>
   </div>
+  <div style="font-size:11px;color:var(--tx3);margin-top:6px;padding:8px 10px;background:var(--surf2);border-radius:var(--rs);border-left:2px solid var(--PM)">
+    💡 <strong>Tamaño ideal:</strong> 1200×1200 px · Cuadrada 1:1 · JPG o PNG
+  </div>
+</div>
   <div class="fg">
     <div class="fr"><label>Material</label>
       <select id="np-mat" onchange="updQlt('np')">
@@ -746,15 +779,32 @@ body.role-admin .admin-only-block{display:flex !important}
   </div>
   <div class="fr"><label>Nombre</label><input id="ep-nm"></div>
   <div class="fr"><label>Descripción</label><textarea id="ep-desc"></textarea></div>
-  <div class="fr">
-    <label>Foto</label>
-    <button type="button" class="img-up" onclick="document.getElementById('ep-img-f').click()">📷 Cambiar foto</button>
-    <input type="file" id="ep-img-f" accept="image/*" style="display:none" onchange="prevImg(this,'ep-img-pv')">
-    <img id="ep-img-pv" class="img-pv">
-    <div style="font-size:11px;color:var(--tx3);margin-top:6px;padding:8px 10px;background:var(--surf2);border-radius:var(--rs);border-left:2px solid var(--PM)">
-      💡 <strong>Tamaño ideal:</strong> 800×800 px mínimo · 1200×1200 px óptimo · Formato cuadrado 1:1 · JPG o PNG · ~10×10 cm a 300 dpi
+<div class="fr">
+  <label>Fotos del producto (hasta 3)</label>
+  <div class="foto-slots">
+    <div class="foto-slot">
+      <div class="foto-slot-lbl">Foto 1</div>
+      <button type="button" class="foto-slot-btn" id="ep-foto1-btn" onclick="document.getElementById('ep-img-f').click()">📷 Principal</button>
+      <input type="file" id="ep-img-f" accept="image/*" style="display:none" onchange="prevFoto(this,'ep-img-pv','ep-foto1-btn')">
+      <img id="ep-img-pv" class="foto-slot-pv">
+    </div>
+    <div class="foto-slot">
+      <div class="foto-slot-lbl">Foto 2</div>
+      <button type="button" class="foto-slot-btn" id="ep-foto2-btn" onclick="document.getElementById('ep-img2-f').click()">📷 Adicional</button>
+      <input type="file" id="ep-img2-f" accept="image/*" style="display:none" onchange="prevFoto(this,'ep-img2-pv','ep-foto2-btn')">
+      <img id="ep-img2-pv" class="foto-slot-pv">
+    </div>
+    <div class="foto-slot">
+      <div class="foto-slot-lbl">Foto 3</div>
+      <button type="button" class="foto-slot-btn" id="ep-foto3-btn" onclick="document.getElementById('ep-img3-f').click()">📷 Adicional</button>
+      <input type="file" id="ep-img3-f" accept="image/*" style="display:none" onchange="prevFoto(this,'ep-img3-pv','ep-foto3-btn')">
+      <img id="ep-img3-pv" class="foto-slot-pv">
     </div>
   </div>
+  <div style="font-size:11px;color:var(--tx3);margin-top:6px;padding:8px 10px;background:var(--surf2);border-radius:var(--rs);border-left:2px solid var(--PM)">
+    💡 <strong>Tamaño ideal:</strong> 1200×1200 px · Cuadrada 1:1 · JPG o PNG
+  </div>
+</div>
   <div class="fg">
     <div class="fr"><label>Material</label>
       <select id="ep-mat" onchange="updQlt('ep')">
@@ -909,6 +959,40 @@ function nowT(){return new Date().toLocaleTimeString('es-PE',{hour:'2-digit',min
 function stkCls(p){const s=stk(p.id);return s<=0?'ot':s<p.minStock?'wn':'ok';}
 function margin(p){return p.price>0?Math.round((p.price-p.cost)/p.price*100):0;}
 function prevImg(inp,pid){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const im=document.getElementById(pid);im.src=e.target.result;im.style.display='block';};r.readAsDataURL(f);}
+
+function prevFoto(inp,pvId,btnId){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const pv=document.getElementById(pvId);
+    pv.src=e.target.result;pv.style.display='block';
+    const btn=document.getElementById(btnId);
+    if(btn){btn.textContent='✓ Cargada';btn.classList.add('has-img');}
+  };
+  r.readAsDataURL(f);
+}
+function buildCarousel(imgs,containerId){
+  const wrap=document.getElementById(containerId);
+  if(!imgs.length){wrap.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px;color:var(--tx3)">💎</div>';return;}
+  const imgTags=imgs.map((src,i)=>`<img src="${src}" alt="" class="${i===0?'active':''}">`).join('');
+  const dots=imgs.length>1?`<div class="carousel-dots">${imgs.map((_,i)=>`<button class="carousel-dot${i===0?' on':''}" onclick="carouselGo('${containerId}',${i})"></button>`).join('')}</div>`:'';
+  const btns=imgs.length>1?`<button class="carousel-btn prev" onclick="carouselStep('${containerId}',-1)">‹</button><button class="carousel-btn next" onclick="carouselStep('${containerId}',1)">›</button>`:'';
+  wrap.innerHTML=imgTags+dots+btns;
+  wrap._cur=0;
+}
+function carouselGo(containerId,idx){
+  const wrap=document.getElementById(containerId);
+  const imgs=wrap.querySelectorAll('img');const dots=wrap.querySelectorAll('.carousel-dot');
+  imgs.forEach((img,i)=>img.classList.toggle('active',i===idx));
+  dots.forEach((d,i)=>d.classList.toggle('on',i===idx));
+  wrap._cur=idx;
+}
+function carouselStep(containerId,dir){
+  const wrap=document.getElementById(containerId);
+  const imgs=wrap.querySelectorAll('img');
+  const cur=wrap._cur||0;
+  carouselGo(containerId,(cur+dir+imgs.length)%imgs.length);
+}
 function getImg(pid){const im=document.getElementById(pid);return im&&im.style.display!=='none'&&im.src?im.src:null;}
 function updQlt(pfx){
   const mat=document.getElementById(pfx+'-mat').value;
@@ -1134,18 +1218,8 @@ function openDet(id){
   const s=stk(id);const cls=stkCls(p);const mg=margin(p);
   document.getElementById('det-top-nm').textContent=p.name;
   document.getElementById('det-body').innerHTML=`
-    <div class="det-img">
-      ${p.img?`<img src="${p.img}" alt="${p.name}">`:'<div class="no-img" style="font-size:56px;color:var(--tx3)">💎</div>'}
-      <div class="img-ov" onclick="trigImgUp()">📷<span style="font-size:11px">Cambiar foto</span></div>
-    </div>
-    <input type="file" id="det-img-f" accept="image/*" style="display:none" onchange="updDetImg('${id}',this)">
-    <div class="det-nm">${p.name}</div>
-    <div class="det-id">${p.id} · ${p.cat}${p.material?' · '+p.material+' '+p.quilates:''}</div>
-    <div class="det-prices">
-      <div class="det-pbox"><div class="det-plbl">Precio Venta</div><div class="det-pval p">${fmtM(p.price)}</div></div>
-      <div class="det-pbox"><div class="det-plbl">Costo</div><div class="det-pval">${fmtM(p.cost)}</div></div>
-      <div class="det-pbox"><div class="det-plbl">Margen</div><div class="det-pval g">${mg}%</div></div>
-    </div>
+<div class="carousel-wrap" id="det-carousel"></div>
+<input type="file" id="det-img-f" accept="image/*" style="display:none" onchange="updDetImg('${id}',this)">
     <div class="det-meta">
       <div class="det-mi"><div class="det-ml">Stock Actual</div><div class="det-mv" style="color:var(--${cls==='ok'?'grn':cls==='wn'?'amb':'red'})">${s} u.</div></div>
       <div class="det-mi"><div class="det-ml">Stock Mínimo</div><div class="det-mv">${p.minStock} u.</div></div>
@@ -1157,6 +1231,12 @@ function openDet(id){
       <button class="det-btn g" onclick="qMov('${id}','entrada');closeDet()">📦 Entrada</button>
       <button class="det-btn p" onclick="qMov('${id}','salida');closeDet()">🛍️ Venta</button>
     </div>`;
+const detImgs=[];
+const dp=gP(id);
+if(dp&&dp.img)detImgs.push(dp.img);
+if(dp&&dp.img2)detImgs.push(dp.img2);
+if(dp&&dp.img3)detImgs.push(dp.img3);
+buildCarousel(detImgs,'det-carousel');
   document.getElementById('det-panel').classList.add('open');
 }
 function closeDet(){document.getElementById('det-panel').classList.remove('open');curDetId=null;}
@@ -1195,7 +1275,13 @@ function openProd(){
   document.getElementById('np-stk').value=0;document.getElementById('np-min').value=2;
   document.getElementById('np-cat').value='';document.getElementById('np-mat').value='';
   document.getElementById('np-qlt').innerHTML='<option value="">— Primero elige material —</option>';
-  document.getElementById('np-img-pv').style.display='none';document.getElementById('np-img-f').value='';
+  [['np-img-pv','np-foto1-btn','📷 Principal'],
+ ['np-img2-pv','np-foto2-btn','📷 Adicional'],
+ ['np-img3-pv','np-foto3-btn','📷 Adicional']].forEach(([pvId,btnId,lbl])=>{
+  const pv=document.getElementById(pvId);if(pv)pv.style.display='none';
+  const btn=document.getElementById(btnId);if(btn){btn.textContent=lbl;btn.classList.remove('has-img');}
+});
+['np-img-f','np-img2-f','np-img3-f'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('ov-prod').classList.add('open');
 }
 function openEdit(id){
@@ -1209,9 +1295,20 @@ function openEdit(id){
   document.getElementById('ep-min').value=p.minStock||2;
   const ec=document.getElementById('ep-cat');for(let i=0;i<ec.options.length;i++)if(ec.options[i].value===p.cat){ec.selectedIndex=i;break;}
   setMatQlt('ep',p.material||'',p.quilates||'');
-  const pv=document.getElementById('ep-img-pv');
-  if(p.img){pv.src=p.img;pv.style.display='block';}else{pv.style.display='none';}
-  document.getElementById('ep-img-f').value='';
+[['ep-img-pv','ep-foto1-btn','img'],
+ ['ep-img2-pv','ep-foto2-btn','img2'],
+ ['ep-img3-pv','ep-foto3-btn','img3']].forEach(([pvId,btnId,field])=>{
+  const pv=document.getElementById(pvId);
+  const btn=document.getElementById(btnId);
+  if(p[field]){
+    pv.src=p[field];pv.style.display='block';
+    if(btn){btn.textContent='✓ Cargada';btn.classList.add('has-img');}
+  }else{
+    pv.style.display='none';
+    if(btn){btn.textContent=field==='img'?'📷 Principal':'📷 Adicional';btn.classList.remove('has-img');}
+  }
+});
+['ep-img-f','ep-img2-f','ep-img3-f'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('ov-edit').classList.add('open');
 }
 function openMov(id,tp){
@@ -1306,7 +1403,9 @@ function saveProd(){
     quilates:document.getElementById('np-qlt').value||'—',
     cost:c,price:parseFloat(document.getElementById('np-prc').value)||0,
     minStock:parseInt(document.getElementById('np-min').value)||2,
-    img:getImg('np-img-pv')};
+    img:getImg('np-img-pv'),
+img2:getImg('np-img2-pv')||null,
+img3:getImg('np-img3-pv')||null};
   addP(p);
   if(s>0)addM({prodId:id,type:'entrada',qty:s,price:c,resp:'Sistema',obs:'Stock inicial',date:today()});
   closeOv('prod');
@@ -1323,6 +1422,8 @@ function saveEdit(){
   p.price=parseFloat(document.getElementById('ep-prc').value)||0;
   p.minStock=parseInt(document.getElementById('ep-min').value)||2;
   const ni=getImg('ep-img-pv');if(ni)p.img=ni;
+const ni2=getImg('ep-img2-pv');if(ni2)p.img2=ni2;
+const ni3=getImg('ep-img3-pv');if(ni3)p.img3=ni3;
   updP(oid,p);closeOv('edit');
 }
 
