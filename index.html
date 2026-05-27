@@ -1471,153 +1471,397 @@ async function urlToBase64(url){
 }
 
 async function exportPDF(){
-  if(!D.products.length){alert('No hay productos en el catalogo.');return;}
+  if(!D.products.length){alert('No hay productos en el catálogo.');return;}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const W=210,H=297;
-  const GR=[139,26,58],RO=[196,80,110],BG=[252,248,250],TX=[30,10,18],TX2=[100,60,75],LN=[220,190,205],WH=[255,255,255];
-
-  // ── COVER ──────────────────────────────────────────
-  doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
-  doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
-  doc.setFillColor(...GR);doc.rect(0,0,W,52,'F');
-  doc.setFillColor(...RO);doc.rect(0,H-16,W,16,'F');
-  doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(38);
-  doc.text('LAFECH',18,34);
-  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setCharSpace(3);
-  doc.text('JOYERIA',19,44);doc.setCharSpace(0);
-  doc.setFontSize(11);doc.setTextColor(...TX2);
-  doc.text('Catalogo de Productos',18,72);
-  doc.setDrawColor(...LN);doc.setLineWidth(0.3);doc.line(18,78,W-18,78);
-  doc.setFontSize(9);
-  doc.text(new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'}),18,86);
+ 
+  // ── PALETA LaFech ──────────────────────────────
+  const ROSE     = [253,218,221];  // #FADADD — rosa palo protagonista
+  const ROSE_MED = [244,188,196];  // #F4BCC4 — rosa medio
+  const ROSE_DRK = [232,160,172];  // #E8A0AC — rosa oscuro
+  const WINE     = [139,26,58];    // #8B1A3A — guinda acento
+  const WINE_DRK = [92,15,38];     // #5C0F26 — guinda oscuro
+  const GOLD     = [201,168,76];   // #C9A84C — dorado
+  const GOLD_LT  = [232,208,128];  // #E8D080 — dorado claro
+  const WHITE    = [255,255,255];
+  const DARK     = [26,10,15];     // #1A0A0F
+  const GRAY     = [196,160,168];  // #C4A0A8
+  const GRAY_LT  = [234,221,226];  // #EADDE2
+ 
+  // ── HELPER: línea dorada degradada ─────────────
+  function goldLine(x1,y1,x2,y2,lw=0.5){
+    doc.setDrawColor(...GOLD);doc.setLineWidth(lw);
+    doc.line(x1,y1,x2,y2);
+  }
+ 
+  // ── HELPER: convertir imagen a base64 ──────────
+  async function toB64(url){
+    return new Promise(res=>{
+      if(!url)return res(null);
+      if(url.startsWith('data:'))return res(url);
+      const img=new Image();img.crossOrigin='Anonymous';
+      img.onload=function(){
+        const c=document.createElement('canvas');
+        c.width=this.naturalWidth;c.height=this.naturalHeight;
+        c.getContext('2d').drawImage(this,0,0);
+        try{res(c.toDataURL('image/jpeg',0.85));}catch(e){res(null);}
+      };
+      img.onerror=()=>res(null);
+      img.src=url;
+    });
+  }
+ 
+  // ══════════════════════════════════════════════
+  // PORTADA
+  // ══════════════════════════════════════════════
+  // Fondo rosa palo completo
+  doc.setFillColor(...ROSE);
+  doc.rect(0,0,W,H,'F');
+ 
+  // Spine lateral dorado izquierdo
+  doc.setFillColor(...GOLD);
+  doc.rect(0,0,4,H,'F');
+ 
+  // Círculo decorativo fondo — sutil
+  doc.setDrawColor(...ROSE_DRK);
+  doc.setLineWidth(0.3);
+  doc.circle(W+30,40,120,'S');
+  doc.circle(-20,H-20,90,'S');
+ 
+  // Franja guinda en la parte inferior
+  doc.setFillColor(...WINE);
+  doc.rect(0,H-44,W,44,'F');
+ 
+  // Línea dorada superior de la franja guinda
+  goldLine(0,H-44,W,H-44,0.8);
+ 
+  // ── Contenido portada ──
+  // Tag superior
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);doc.setCharSpace(3);
+  doc.setTextColor(...GRAY);
+  doc.text('COLECCIÓN JOYERÍA',14,32);
+  doc.setCharSpace(0);
+ 
+  // Línea dorada tras el tag
+  goldLine(14,35,80,35,0.4);
+ 
+  // Nombre La Fech — "La" liviano itálico
+  doc.setFont('helvetica','bolditalic');
+  doc.setFontSize(54);
+  doc.setTextColor(...WINE);
+  doc.text('La',14,72);
+ 
+  // "Fech" bold
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(54);
+  doc.setTextColor(...WINE_DRK);
+  doc.text('Fech',52,72);
+ 
+  // Subtítulo marca
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);doc.setCharSpace(4);
+  doc.setTextColor(...GRAY);
+  doc.text('JOYERÍA · PERÚ',14,82);
+  doc.setCharSpace(0);
+ 
+  // Línea dorada separadora
+  goldLine(14,90,W-14,90,0.7);
+ 
+  // Título catálogo
+  doc.setFont('helvetica','bolditalic');
+  doc.setFontSize(22);
+  doc.setTextColor(...WINE);
+  doc.text('Catálogo de Productos',14,108);
+ 
+  // Fecha
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);doc.setCharSpace(1.5);
+  doc.setTextColor(...GRAY);
+  doc.text(new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long'}),14,118);
+  doc.setCharSpace(0);
+ 
+  // Stats en franja guinda
   const cats=Object.keys(D.products.reduce((a,p)=>{a[p.cat]=1;return a;},{}));
-  doc.text(D.products.length+' productos en '+cats.length+' categorias',18,94);
-  doc.setTextColor(...WH);doc.setFont('helvetica','normal');doc.setFontSize(8);
-  doc.text('Documento confidencial - uso exclusivo del cliente',18,H-5);
-  doc.text(today(),W-14,H-5,{align:'right'});
-
-  // ── PRODUCTS: 2 per page ──────────────────────────
+  doc.setTextColor(...ROSE);
+  doc.setFont('helvetica','bold');doc.setFontSize(26);
+  doc.text(String(D.products.length),14,H-22);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setCharSpace(2);
+  doc.setTextColor(253,200,210);
+  doc.text('PRODUCTOS',14,H-14);doc.setCharSpace(0);
+ 
+  doc.setFont('helvetica','bold');doc.setFontSize(26);
+  doc.setTextColor(...ROSE);
+  doc.text(String(cats.length),60,H-22);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setCharSpace(2);
+  doc.setTextColor(253,200,210);
+  doc.text('CATEGORÍAS',60,H-14);doc.setCharSpace(0);
+ 
+  // Confidencial derecha
+  doc.setFont('helvetica','normal');doc.setFontSize(7);
+  doc.setTextColor(253,200,210);
+  doc.text('Documento confidencial',W-14,H-20,{align:'right'});
+  doc.text('Uso exclusivo del cliente',W-14,H-13,{align:'right'});
+ 
+  // ══════════════════════════════════════════════
+  // PÁGINAS DE PRODUCTO
+  // ══════════════════════════════════════════════
   const catMap={};
   D.products.forEach(p=>{if(!catMap[p.cat])catMap[p.cat]=[];catMap[p.cat].push(p);});
-
+ 
   for(const[cat,prods] of Object.entries(catMap)){
-    doc.addPage();
-    doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
-    doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
-    doc.setFillColor(...GR);doc.rect(0,0,W,26,'F');
-    doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setCharSpace(2);
-    doc.text(cat.toUpperCase(),14,17);doc.setCharSpace(0);
-    doc.setFont('helvetica','normal');doc.setFontSize(8);
-    doc.text(prods.length+' producto'+(prods.length!==1?'s':''),W-14,17,{align:'right'});
-    doc.setDrawColor(...RO);doc.setLineWidth(0.4);doc.line(14,28,W-14,28);
-
-    const availH=249;
-    const cardH=Math.floor(availH/2)-4;
-    const cardW=W-28;
-
-    for(let i=0;i<prods.length;i++){
-      const p=prods[i];
-      const pagePos=i%2;
-      if(i>0&&pagePos===0){
-        doc.addPage();
-        doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');
-        doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
-      }
-      const cX=14;
-      const cY=32+(pagePos*(cardH+4));
-
-      doc.setFillColor(235,218,226);doc.roundedRect(cX+0.6,cY+0.6,cardW,cardH,2,2,'F');
-      doc.setFillColor(...WH);doc.roundedRect(cX,cY,cardW,cardH,2,2,'F');
-      doc.setFillColor(...GR);doc.rect(cX,cY,2.5,cardH,'F');
-
-      const imgW=78;const imgH=78;
-      const imgX=cX+8;const imgY=cY+8;
-
-      // FIX 2: Convert image to base64 before adding to PDF
+ 
+    // ── FUNCIÓN: dibujar página (header + footer) ──
+    function drawPageShell(catName,prodCount){
+      // Fondo blanco limpio
+      doc.setFillColor(...WHITE);doc.rect(0,0,W,H,'F');
+ 
+      // Spine guinda izquierdo
+      doc.setFillColor(...WINE);doc.rect(0,0,3,H,'F');
+ 
+      // ── HEADER rosa palo ──
+      doc.setFillColor(...ROSE);doc.rect(3,0,W-3,32,'F');
+ 
+      // Borde inferior header — guinda
+      doc.setDrawColor(...WINE);doc.setLineWidth(1.2);
+      doc.line(3,32,W,32);
+ 
+      // Monograma LF
+      doc.setDrawColor(...WINE);doc.setLineWidth(0.6);
+      doc.circle(18,16,7,'S');
+      doc.setFont('helvetica','bold');doc.setFontSize(8);
+      doc.setTextColor(...WINE);
+      doc.text('LF',18,19,{align:'center'});
+ 
+      // Nombre marca en header
+      doc.setFont('helvetica','bold');doc.setFontSize(14);
+      doc.setTextColor(...WINE);doc.text('LaFech',29,14);
+      doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setCharSpace(2);
+      doc.setTextColor(...GRAY);doc.text('JOYERÍA · PERÚ',29,20);
+      doc.setCharSpace(0);
+ 
+      // Categoría — derecha del header
+      doc.setFont('helvetica','bolditalic');doc.setFontSize(13);
+      doc.setTextColor(...WINE_DRK);
+      doc.text(catName,W-12,14,{align:'right'});
+      doc.setFont('helvetica','normal');doc.setFontSize(7);
+      doc.setTextColor(...GRAY);
+      doc.text(prodCount+' producto'+(prodCount!==1?'s':''),W-12,21,{align:'right'});
+ 
+      // Línea dorada bajo header
+      goldLine(3,33,W,33,0.6);
+ 
+      // ── FOOTER ──
+      doc.setFillColor(254,247,248);doc.rect(3,H-14,W-3,14,'F');
+      doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.4);
+      doc.line(3,H-14,W,H-14);
+      doc.setFont('helvetica','normal');doc.setFontSize(7);
+      doc.setTextColor(...GRAY);
+      doc.text('LaFech Joyería · Documento confidencial',10,H-6);
+    }
+ 
+    // ── FUNCIÓN: dibujar card de producto ──────────
+    async function drawProductCard(p, cardY, cardH){
+      const cX=8;const cW=W-16;
+ 
+      // Sombra sutil (rectángulo desplazado)
+      doc.setFillColor(235,215,220);
+      doc.roundedRect(cX+0.8,cardY+0.8,cW,cardH,2,2,'F');
+ 
+      // Card blanca
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(cX,cardY,cW,cardH,2,2,'F');
+ 
+      // Borde card
+      doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.3);
+      doc.roundedRect(cX,cardY,cW,cardH,2,2,'S');
+ 
+      // Accent bar guinda izquierdo
+      doc.setFillColor(...WINE);
+      doc.roundedRect(cX,cardY,2.5,cardH,1,1,'F');
+ 
+      // ── ZONA FOTO — fondo rosa suave ──
+      const photoX=cX+2.5;const photoW=62;
+      doc.setFillColor(254,244,246);
+      doc.rect(photoX,cardY,photoW,cardH,'F');
+ 
+      // Marco foto centrado con esquinas doradas
+      const frmX=photoX+6;const frmY=cardY+8;
+      const frmW=50;const frmH=cardH-22;
+      doc.setFillColor(...WHITE);
+      doc.rect(frmX,frmY,frmW,frmH,'F');
+      doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.3);
+      doc.rect(frmX,frmY,frmW,frmH,'S');
+ 
+      // Esquinas doradas del marco
+      const cSz=4;
+      doc.setDrawColor(...GOLD);doc.setLineWidth(0.8);
+      // TL
+      doc.line(frmX,frmY,frmX+cSz,frmY);
+      doc.line(frmX,frmY,frmX,frmY+cSz);
+      // TR
+      doc.line(frmX+frmW,frmY,frmX+frmW-cSz,frmY);
+      doc.line(frmX+frmW,frmY,frmX+frmW,frmY+cSz);
+      // BL
+      doc.line(frmX,frmY+frmH,frmX+cSz,frmY+frmH);
+      doc.line(frmX,frmY+frmH,frmX,frmY+frmH-cSz);
+      // BR
+      doc.line(frmX+frmW,frmY+frmH,frmX+frmW-cSz,frmY+frmH);
+      doc.line(frmX+frmW,frmY+frmH,frmX+frmW,frmY+frmH-cSz);
+ 
+      // Foto del producto
       if(p.img){
-        const imgData=await urlToBase64(p.img);
-        if(imgData){
+        const b64=await toB64(p.img);
+        if(b64){
           try{
-            const fm=imgData.includes('data:image/png')?'PNG':'JPEG';
-            doc.addImage(imgData,fm,imgX,imgY,imgW,imgH);
-            doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
-          }catch(e2){
-            doc.setFillColor(248,242,245);doc.rect(imgX,imgY,imgW,imgH,'F');
-            doc.setFontSize(9);doc.setTextColor(...LN);
-            doc.setFont('helvetica','normal');
-            doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+2,{align:'center'});
+            const fmt=b64.includes('data:image/png')?'PNG':'JPEG';
+            doc.addImage(b64,fmt,frmX+1,frmY+1,frmW-2,frmH-2);
+          }catch(e){
+            // placeholder si falla
+            doc.setFont('helvetica','normal');doc.setFontSize(7);
+            doc.setTextColor(...GRAY);
+            doc.text('Sin foto',frmX+frmW/2,frmY+frmH/2,{align:'center'});
           }
-        } else {
-          doc.setFillColor(248,242,245);doc.rect(imgX,imgY,imgW,imgH,'F');
-          doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
-          doc.setFontSize(9);doc.setTextColor(...LN);doc.setFont('helvetica','normal');
-          doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+2,{align:'center'});
         }
       } else {
-        doc.setFillColor(248,242,245);doc.rect(imgX,imgY,imgW,imgH,'F');
-        doc.setDrawColor(...LN);doc.setLineWidth(0.15);doc.rect(imgX,imgY,imgW,imgH,'S');
-        doc.setFontSize(9);doc.setTextColor(...LN);doc.setFont('helvetica','normal');
-        doc.text('Sin foto',imgX+imgW/2,imgY+imgH/2+2,{align:'center'});
+        doc.setFont('helvetica','normal');doc.setFontSize(7);
+        doc.setTextColor(...GRAY_LT);
+        doc.text('Sin foto',frmX+frmW/2,frmY+frmH/2,{align:'center'});
       }
-
-      const txX=imgX+imgW+8;
-      const txW=cardW-imgW-20;
-      let txY=cY+10;
-
-      doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...TX);
-      const nLines=doc.splitTextToSize(p.name,txW);
-      doc.text(nLines.slice(0,2),txX,txY);
-      txY+=nLines.slice(0,2).length*7+4;
-
-      doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(txX,txY,txX+txW,txY);txY+=4;
-
-      const fields=[
-        ['CODIGO',p.id],
-        ['CATEGORIA',p.cat],
-        ['MATERIAL',p.material&&p.material!=='—'?p.material:'—'],
-        [p.material==='Oro'?'QUILATES':'PUREZA',p.quilates&&p.quilates!=='—'?p.quilates:'—'],
+ 
+      // Badge material — pastilla guinda
+      if(p.material&&p.material!=='—'){
+        const badge=p.material+(p.quilates&&p.quilates!=='—'?' '+p.quilates:'');
+        doc.setFillColor(...WINE);
+        doc.roundedRect(photoX+4,cardY+cardH-11,photoW-8,8,2,2,'F');
+        doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setCharSpace(0.5);
+        doc.setTextColor(...ROSE);
+        doc.text(badge.toUpperCase(),photoX+photoW/2-2,cardY+cardH-5.5,{align:'center'});
+        doc.setCharSpace(0);
+      }
+ 
+      // ── ZONA CONTENIDO ──
+      const txtX=photoX+photoW+8;
+      const txtW=cW-photoW-16;
+      let ty=cardY+10;
+ 
+      // ID producto
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setCharSpace(2);
+      doc.setTextColor(...GRAY);
+      doc.text(p.id,txtX,ty);doc.setCharSpace(0);
+      ty+=7;
+ 
+      // Nombre producto
+      doc.setFont('helvetica','bold');doc.setFontSize(13);
+      doc.setTextColor(...DARK);
+      const nameLines=doc.splitTextToSize(p.name,txtW);
+      doc.text(nameLines.slice(0,2),txtX,ty);
+      ty+=nameLines.slice(0,2).length*6+2;
+ 
+      // Categoría
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setCharSpace(1);
+      doc.setTextColor(...GRAY);
+      doc.text((p.cat||'').toUpperCase(),txtX,ty);
+      doc.setCharSpace(0);ty+=7;
+ 
+      // Línea separadora rosa
+      doc.setDrawColor(...ROSE_MED);doc.setLineWidth(0.4);
+      doc.line(txtX,ty,txtX+txtW,ty);ty+=6;
+ 
+      // Specs 2x2
+      const specs=[
+        ['MATERIAL',p.material||'—'],
+        [p.material==='Oro'?'QUILATES':'PUREZA',p.quilates||'—'],
+        ['CATEGORÍA',p.cat||'—'],
+        ['STOCK',stk(p.id)+' u.'],
       ];
-      fields.forEach(([lbl,val])=>{
-        if(txY>cY+cardH-20)return;
-        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TX2);
-        doc.text(lbl,txX,txY);
-        doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...TX);
-        doc.text(val||'—',txX,txY+5.5);
-        txY+=13;
+      const specColW=txtW/2;
+      specs.forEach(([lbl,val],i)=>{
+        const sx=txtX+(i%2)*specColW;
+        const sy=ty+Math.floor(i/2)*14;
+        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setCharSpace(1.5);
+        doc.setTextColor(...GRAY);doc.text(lbl,sx,sy);doc.setCharSpace(0);
+        doc.setFont('helvetica','bold');doc.setFontSize(10);
+        doc.setTextColor(...DARK);doc.text(val,sx,sy+5.5);
       });
-
-      if(p.desc&&txY<cY+cardH-16){
-        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TX2);
-        doc.text('DESCRIPCIÓN',txX,txY);txY+=5.5;
-        doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...TX);
-        const dL=doc.splitTextToSize(p.desc,txW);
-        const maxDL=Math.min(dL.length,Math.floor((cY+cardH-txY-14)/3.5));
-        if(maxDL>0)doc.text(dL.slice(0,maxDL),txX,txY);
+      ty+=32;
+ 
+      // Descripción
+      if(p.desc&&ty<cardY+cardH-24){
+        doc.setFont('helvetica','italic');doc.setFontSize(8);
+        doc.setTextColor(168,128,144);
+        const dLines=doc.splitTextToSize('"'+p.desc+'"',txtW);
+        const maxL=Math.min(dLines.length,Math.floor((cardY+cardH-ty-22)/4));
+        if(maxL>0){doc.text(dLines.slice(0,maxL),txtX,ty);ty+=maxL*4+2;}
       }
-
-      const priceBoxY=cY+cardH-13;
-      const priceBoxX=txX;
-      const priceBoxW=txW;
-      doc.setFillColor(...GR);doc.roundedRect(priceBoxX,priceBoxY-1,priceBoxW,11,1.5,1.5,'F');
-      doc.setTextColor(210,170,190);doc.setFont('helvetica','normal');doc.setFontSize(6);
-      doc.text('PRECIO DE VENTA',priceBoxX+priceBoxW/2,priceBoxY+2.5,{align:'center'});
-      doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(11);
-      doc.text(fmtM(p.price),priceBoxX+priceBoxW/2,priceBoxY+8.5,{align:'center'});
+ 
+      // ── BLOQUE DE PRECIO — rosa palo elegante ──
+      const priceY=cardY+cardH-16;
+      const priceW=txtW;
+ 
+      // Fondo rosa palo
+      doc.setFillColor(...ROSE);
+      doc.roundedRect(txtX,priceY-1,priceW,13,2,2,'F');
+ 
+      // Borde guinda
+      doc.setDrawColor(...WINE);doc.setLineWidth(0.5);
+      doc.roundedRect(txtX,priceY-1,priceW,13,2,2,'S');
+ 
+      // Línea dorada superior del bloque
+      goldLine(txtX+4,priceY-0.5,txtX+priceW-4,priceY-0.5,0.6);
+ 
+      // Label precio
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setCharSpace(1.5);
+      doc.setTextColor(...WINE);
+      doc.text('PRECIO DE VENTA',txtX+priceW/2,priceY+3.5,{align:'center'});
+      doc.setCharSpace(0);
+ 
+      // Valor precio
+      doc.setFont('helvetica','bold');doc.setFontSize(16);
+      doc.setTextColor(...WINE_DRK);
+      doc.text('S/ '+fmt(p.price),txtX+priceW/2,priceY+10,{align:'center'});
+ 
+      // Stock indicator
+      const stkVal=stk(p.id);
+      const stkColor=stkVal<=0?[176,48,48]:stkVal<(p.minStock||2)?[138,96,16]:[42,96,73];
+      doc.setFillColor(...stkColor);
+      doc.circle(cX+cW-8,cardY+cardH-8,2,'F');
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);
+      doc.setTextColor(...stkColor);
+      const stkTxt=stkVal<=0?'Agotado':stkVal<(p.minStock||2)?'Stock bajo':'En stock';
+      doc.text(stkTxt,cX+cW-5,cardY+cardH-6,{align:'right'});
+    }
+ 
+    // ── PAGINAR productos de esta categoría ────────
+    for(let i=0;i<prods.length;i++){
+      const pagePos=i%2;
+      if(pagePos===0){
+        doc.addPage();
+        drawPageShell(cat,prods.length);
+      }
+ 
+      // 2 cards por página — altura disponible: 297 - 47 (header+footer) = 250 / 2 = 118 c/u
+      const cardH=116;
+      const cardY=36+(pagePos*(cardH+6));
+      await drawProductCard(prods[i],cardY,cardH);
     }
   }
-
+ 
+  // ── NÚMEROS DE PÁGINA ──────────────────────────
   const total=doc.getNumberOfPages();
-  for(let pg=1;pg<=total;pg++){
-    doc.setPage(pg);if(pg===1)continue;
-    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(14,H-10,W-14,H-10);
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);
-    doc.text('LaFech Joyeria',14,H-5);
-    doc.text((pg-1)+' / '+(total-1),W-14,H-5,{align:'right'});
+  for(let pg=2;pg<=total;pg++){
+    doc.setPage(pg);
+    // Punto dorado + número
+    doc.setFillColor(...GOLD);
+    doc.circle(W-14,H-8,1.5,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    doc.setTextColor(...WINE);
+    doc.text((pg-1)+' / '+(total-1),W-10,H-5.5);
   }
+ 
   doc.save('LaFech_Catalogo_'+today()+'.pdf');
 }
-
 // ════════════════════════════════════════════════
 // MÉTODOS DE PAGO
 // ════════════════════════════════════════════════
