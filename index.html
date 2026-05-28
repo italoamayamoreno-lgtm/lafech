@@ -2038,7 +2038,7 @@ function renderPayMethods(){
   if(sel){const cur=sel.value;const methods=['Efectivo','Tarjeta de crédito','Tarjeta de débito','Transferencia bancaria','Yape','Plin'];sel.innerHTML='<option value="">— Seleccionar —</option>'+methods.map(m=>`<option${cur===m?' selected':''}>${m}</option>`).join('');}
 }
 
-async function exportPayPDF(){
+async async function exportPayPDF(){
   const localSaved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
   Object.assign(payData,localSaved);
   if(db){
@@ -2051,58 +2051,197 @@ async function exportPayPDF(){
   const d=payData;
   const hasAny=d.bcp_cta||d.bcp_cci||d.ibk_cta||d.ibk_cci||d.yape_num||d.plin_num;
   if(!hasAny){alert('Completa al menos un metodo de pago antes de generar el PDF.');return;}
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,H=297;
-  const GR=[139,26,58],RO=[196,80,110],BG=[252,248,250],TX=[30,10,18],TX2=[100,60,75],LN=[220,190,205],WH=[255,255,255];
-  function safeAddImg(imgData,x,y,w,h){
-    if(!imgData)return false;
-    try{let fmt='JPEG';if(imgData.includes('data:image/png'))fmt='PNG';doc.addImage(imgData,fmt,x,y,w,h);return true;}
-    catch(e1){try{doc.addImage(imgData,'PNG',x,y,w,h);return true;}catch(e2){try{doc.addImage(imgData,'JPEG',x,y,w,h);return true;}catch(e3){return false;}}}
+
+  // Construir secciones de métodos de pago
+  function seccionBanco(nombre,logo,cta,cci){
+    if(!cta&&!cci)return '';
+    return `
+      <div class="pay-card">
+        <div class="pay-card-header">
+          <div class="pay-bank-name">${nombre}</div>
+          <div class="pay-bank-type">Transferencia bancaria</div>
+        </div>
+        <div class="pay-card-body">
+          ${cta?`<div class="pay-row"><span class="pay-lbl">Cuenta</span><span class="pay-val">${cta}</span></div>`:''}
+          ${cci?`<div class="pay-row"><span class="pay-lbl">CCI</span><span class="pay-val">${cci}</span></div>`:''}
+        </div>
+      </div>`;
   }
-  doc.setFillColor(...BG);doc.rect(0,0,W,H,'F');doc.setFillColor(...GR);doc.rect(0,0,2,H,'F');
-  doc.setFillColor(...GR);doc.rect(0,0,W,44,'F');
-  doc.setTextColor(...WH);doc.setFont('helvetica','bold');doc.setFontSize(28);doc.text('LAFECH',14,26);
-  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setCharSpace(3);doc.text('JOYERIA',15,36);doc.setCharSpace(0);
-  doc.setFontSize(8);doc.setTextColor(210,170,190);doc.text('Informacion de Pago',W-14,24,{align:'right'});
-  doc.setFontSize(7);doc.text(new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'}),W-14,32,{align:'right'});
-  doc.setFont('helvetica','normal');doc.setFontSize(12);doc.setTextColor(...TX2);doc.text('Medios de pago disponibles',14,58);
-  doc.setDrawColor(...LN);doc.setLineWidth(0.3);doc.line(14,63,W-14,63);
-  let y=72;const colL=14,colR=W/2+5,halfW=(W/2)-19;
-  function bankCard(title,colorArr,rows,x0,y0,cardW){
-    const validRows=rows.filter(r=>r[1]);const cH=validRows.length*11+22;
-    doc.setFillColor(240,225,232);doc.roundedRect(x0+0.5,y0+0.5,cardW,cH,2,2,'F');
-    doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);doc.text(title,x0+7,y0+12);
-    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(x0+7,y0+15,x0+cardW-4,y0+15);
-    let ry=y0+23;
-    validRows.forEach(([lbl,val])=>{doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text(lbl,x0+7,ry);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);doc.text(doc.splitTextToSize(String(val),cardW-46)[0],x0+44,ry);ry+=11;});
-    return y0+cH;
+
+  function seccionDigital(nombre,numero,titular,qr){
+    if(!numero&&!qr)return '';
+    return `
+      <div class="pay-card digital">
+        <div class="pay-card-header">
+          <div class="pay-bank-name">${nombre}</div>
+          <div class="pay-bank-type">Pago digital</div>
+        </div>
+        <div class="pay-card-body digital-body">
+          <div class="pay-digital-info">
+            ${numero?`<div class="pay-row"><span class="pay-lbl">Número</span><span class="pay-val">${numero}</span></div>`:''}
+            ${titular?`<div class="pay-row"><span class="pay-lbl">A nombre de</span><span class="pay-val">${titular}</span></div>`:''}
+          </div>
+          ${qr?`<div class="pay-qr-wrap"><img src="${qr}" class="pay-qr"><div class="pay-qr-lbl">Escanea para pagar</div></div>`:''}
+        </div>
+      </div>`;
   }
-  function digitalCard(title,colorArr,nameVal,numVal,qrData,x0,y0,cardW){
-    const qrSize=cardW-14,qrH=qrSize,hasQR=!!qrData;
-    const textH=(nameVal?11:0)+(numVal?11:0)+22,cH=textH+(hasQR?qrH+10:0);
-    doc.setFillColor(240,225,232);doc.roundedRect(x0+0.5,y0+0.5,cardW,cH,2,2,'F');
-    doc.setFillColor(...WH);doc.roundedRect(x0,y0,cardW,cH,2,2,'F');doc.setFillColor(...colorArr);doc.rect(x0,y0,2.5,cH,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);doc.text(title,x0+7,y0+12);
-    doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.line(x0+7,y0+15,x0+cardW-4,y0+15);
-    let ry=y0+23;
-    if(nameVal){doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Nombre',x0+7,ry);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TX);doc.text(String(nameVal),x0+7,ry+5);ry+=13;}
-    if(numVal){doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TX2);doc.text('Numero',x0+7,ry);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...colorArr);doc.text(String(numVal),x0+7,ry+5);ry+=13;}
-    if(hasQR){const qrX=x0+7,qrY=ry+2;const added=safeAddImg(qrData,qrX,qrY,qrSize,qrH);if(added){doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(qrX,qrY,qrSize,qrH,'S');doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TX2);doc.text('Escanear para pagar',x0+cardW/2,qrY+qrH+5,{align:'center'});}else{doc.setFillColor(245,240,245);doc.rect(x0+7,ry+2,qrSize,qrH,'F');doc.setDrawColor(...LN);doc.setLineWidth(0.2);doc.rect(x0+7,ry+2,qrSize,qrH,'S');doc.setFontSize(8);doc.setTextColor(...TX2);doc.text('QR no disponible',x0+cardW/2,ry+2+qrH/2,{align:'center'});}}
-    return y0+cH;
+
+  const bcpHTML=seccionBanco('BCP — Banco de Crédito del Perú','',d.bcp_cta,d.bcp_cci);
+  const ibkHTML=seccionBanco('Interbank','',d.ibk_cta,d.ibk_cci);
+  const yapeHTML=seccionDigital('Yape',d.yape_num,d.yape_nm,d.yape_qr);
+  const plinHTML=seccionDigital('Plin',d.plin_num,d.plin_nm,d.plin_qr);
+
+  const fecha=new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'});
+
+  const css=`
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --wine:#8B1A3A;--wine-dk:#5C0F26;--rose:#FADADD;--rose-md:#F4BCC4;
+      --gold:#C9A84C;--gray:#C4A0A8;--gray-lt:#EADDE2;--dark:#1A0A0F;
+      --cream:#FAF8F5;--surf:#FEF4F6;
+    }
+    body{background:#E8E0DC;font-family:'DM Sans',sans-serif}
+    .page{
+      width:210mm;min-height:297mm;background:var(--cream);
+      margin:0 auto;position:relative;overflow:hidden;
+      box-shadow:0 4px 24px rgba(0,0,0,.15);
+      display:flex;flex-direction:column;
+    }
+    /* Spine */
+    .spine{position:absolute;left:0;top:0;bottom:0;width:3mm;background:var(--wine);z-index:2}
+    /* Header */
+    .hdr{
+      background:var(--wine);padding:8mm 8mm 7mm 10mm;
+      display:flex;justify-content:space-between;align-items:flex-end;
+    }
+    .brand{
+      font-family:'Cormorant Garamond',serif;font-size:28pt;font-style:italic;
+      font-weight:600;color:var(--rose);letter-spacing:.06em;line-height:1;
+    }
+    .tagline{font-size:6pt;letter-spacing:2.5px;color:rgba(253,218,221,.5);margin-top:2mm;text-transform:uppercase}
+    .hdr-right{text-align:right}
+    .doc-title{
+      font-family:'Cormorant Garamond',serif;font-size:16pt;font-style:italic;
+      color:rgba(253,218,221,.85);letter-spacing:.04em;
+    }
+    .doc-fecha{font-size:7pt;color:rgba(253,218,221,.45);margin-top:1.5mm;letter-spacing:1px}
+    /* Línea dorada */
+    .gold-rule{height:1pt;background:linear-gradient(90deg,transparent,var(--gold) 30%,var(--gold) 70%,transparent);opacity:.5}
+    /* Subtítulo */
+    .subtitle-wrap{padding:5mm 8mm 4mm 10mm;border-bottom:.5pt solid var(--gray-lt)}
+    .subtitle{
+      font-family:'Cormorant Garamond',serif;font-size:13pt;font-style:italic;
+      color:var(--wine);letter-spacing:.04em;
+    }
+    .subtitle-note{font-size:7pt;color:var(--gray);margin-top:1.5mm;letter-spacing:.5px}
+    /* Grilla de métodos */
+    .pay-grid{padding:4mm 8mm 4mm 10mm;display:grid;grid-template-columns:1fr 1fr;gap:4mm;flex:1}
+    /* Card de pago */
+    .pay-card{
+      background:#fff;border:.5pt solid var(--gray-lt);border-radius:4pt;
+      overflow:hidden;display:flex;flex-direction:column;
+      box-shadow:0 1pt 6pt rgba(139,26,58,.07);
+    }
+    .pay-card::before{
+      content:'';display:block;height:2.5pt;background:var(--wine);
+    }
+    .pay-card-header{
+      padding:3mm 4mm 2.5mm;border-bottom:.5pt solid var(--gray-lt);
+      background:var(--surf);
+    }
+    .pay-bank-name{
+      font-family:'Cormorant Garamond',serif;font-size:12pt;font-weight:600;
+      color:var(--wine-dk);letter-spacing:.02em;
+    }
+    .pay-bank-type{font-size:6.5pt;color:var(--gray);letter-spacing:.5px;margin-top:.5mm}
+    .pay-card-body{padding:3mm 4mm}
+    .pay-row{
+      display:flex;justify-content:space-between;align-items:baseline;
+      padding:1.5mm 0;border-bottom:.5pt solid var(--gray-lt);
+    }
+    .pay-row:last-child{border-bottom:none}
+    .pay-lbl{font-size:6.5pt;letter-spacing:1px;color:var(--gray);text-transform:uppercase}
+    .pay-val{font-size:10pt;font-weight:500;color:var(--dark);letter-spacing:.5px}
+    /* Digital con QR */
+    .pay-card.digital .pay-card-body{display:flex;align-items:flex-start;gap:3mm}
+    .pay-digital-info{flex:1}
+    .pay-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:1.5mm}
+    .pay-qr{width:22mm;height:22mm;object-fit:contain;border:.5pt solid var(--gray-lt);border-radius:2pt}
+    .pay-qr-lbl{font-size:5.5pt;color:var(--gray);letter-spacing:.5px;text-align:center}
+    /* Nota al pie */
+    .pay-note{
+      margin:0 8mm 4mm 10mm;padding:3mm 4mm;
+      background:var(--surf);border:.5pt solid var(--gray-lt);border-radius:4pt;
+      border-left:2.5pt solid var(--gold);
+    }
+    .pay-note-txt{font-size:7pt;font-style:italic;color:var(--gray);line-height:1.6}
+    /* Footer */
+    .ftr{
+      padding:2.5mm 8mm 2.5mm 10mm;border-top:.5pt solid var(--gray-lt);
+      background:#FEF7F8;font-size:6pt;letter-spacing:1.5px;
+      color:var(--gray);text-transform:uppercase;
+      display:flex;justify-content:space-between;align-items:center;
+      flex-shrink:0;margin-top:auto;
+    }
+    @media print{
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+      body{background:none}
+      .page{margin:0;box-shadow:none;width:100%;min-height:100vh}
+    }
+    @page{size:A4 portrait;margin:0}
+  `;
+
+  const html=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LaFech · Medios de Pago</title>
+<style>${css}</style>
+</head>
+<body>
+<div class="page">
+  <div class="spine"></div>
+  <div class="hdr">
+    <div>
+      <div class="brand">LaFech</div>
+      <div class="tagline">Belleza que conecta · Perú 2026</div>
+    </div>
+    <div class="hdr-right">
+      <div class="doc-title">Medios de Pago</div>
+      <div class="doc-fecha">${fecha}</div>
+    </div>
+  </div>
+  <div class="gold-rule"></div>
+  <div class="subtitle-wrap">
+    <div class="subtitle">Información para transferencias y pagos digitales</div>
+    <div class="subtitle-note">Utiliza cualquiera de los siguientes medios para realizar tu pago</div>
+  </div>
+  <div class="pay-grid">
+    ${bcpHTML}${ibkHTML}${yapeHTML}${plinHTML}
+  </div>
+  <div class="pay-note">
+    <div class="pay-note-txt">Una vez realizado el pago, envía el comprobante por WhatsApp para confirmar tu pedido. Tu pedido se procesará una vez verificado el depósito.</div>
+  </div>
+  <div class="ftr">
+    <span>LaFech · Documento de pago</span>
+    <span>${fecha}</span>
+  </div>
+</div>
+<script>
+  if(!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+    window.onload=()=>setTimeout(()=>window.print(),800);
   }
-  let leftH=y,rightH=y;
-  if(d.bcp_cta||d.bcp_cci||d.bcp_nm){const rows=[['Titular',d.bcp_nm],['N. Cuenta',d.bcp_cta],['CCI',d.bcp_cci]];leftH=bankCard('BCP — Banco de Credito del Peru',GR,rows,colL,y,halfW)+6;}
-  if(d.ibk_cta||d.ibk_cci||d.ibk_nm){const rows=[['Titular',d.ibk_nm],['N. Cuenta',d.ibk_cta],['CCI',d.ibk_cci]];rightH=bankCard('Interbank',RO,rows,colR,y,halfW)+6;}
-  y=Math.max(leftH,rightH)+6;
-  let yL=y,yR=y;
-  if(d.yape_num||d.yape_nm){yL=digitalCard('Yape',[108,45,155],d.yape_nm,d.yape_num,d.yape_qr,colL,y,halfW)+6;}
-  if(d.plin_num||d.plin_nm){yR=digitalCard('Plin',[0,169,224],d.plin_nm,d.plin_num,d.plin_qr,colR,y,halfW)+6;}
-  y=Math.max(yL,yR)+4;
-  if(y<H-30){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...TX2);doc.text('Envia tu comprobante al WhatsApp o correo de contacto para confirmar tu pedido.',14,y+8);}
-  doc.setFillColor(...GR);doc.rect(0,H-14,W,14,'F');doc.setTextColor(...WH);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text('LaFech Joyeria',14,H-6);doc.text(today(),W-14,H-6,{align:'right'});
-  doc.save('LaFech_Informacion_Pago.pdf');
+<\/script>
+</body>
+</html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank');
+  if(!win){alert('Por favor permite ventanas emergentes para este sitio y vuelve a intentar.');URL.revokeObjectURL(url);}
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 
 // ════════════════════════════════════════════════
