@@ -1257,7 +1257,23 @@ function editFromDet(){
 }
 function delFromDet(){if(curDetId){confirmDel(curDetId);closeDet();}}
 function trigImgUp(){document.getElementById('det-img-f').click();}
-function updDetImg(id,inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const p=gP(id);if(!p)return;p.img=e.target.result;updP(id,p);openDet(id);};r.readAsDataURL(f);}
+function updDetImg(id,inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=new Image();
+    img.onload=function(){
+      const MAX=800;let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      const compressed=cv.toDataURL('image/jpeg',0.72);
+      const p=gP(id);if(!p)return;p.img=compressed;updP(id,p);openDet(id);
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+}
 
 // ════════════════════════════════════════════════
 // NAVIGATION
@@ -1853,7 +1869,7 @@ async function exportPDF(){
 
     .mat-badge{
       background:var(--wine);color:var(--rose);
-      font-size:6.5pt;font-weight:500;letter-spacing:.8px;
+      font-size:8pt;font-weight:500;letter-spacing:.8px;
       border-radius:8pt;padding:2pt 8pt;white-space:nowrap;text-transform:uppercase;
       width:calc(100% - 6mm);text-align:center;
     }
@@ -1866,7 +1882,7 @@ async function exportPDF(){
     .info-top{display:flex;flex-direction:column;gap:1.5mm}
     .info-bottom{display:flex;flex-direction:column;gap:2mm;margin-top:2mm}
 
-    .pid{font-size:6.5pt;letter-spacing:2.5px;color:var(--gray);text-transform:uppercase}
+    .pid{font-size:8pt;letter-spacing:2px;color:var(--gray);text-transform:uppercase}
     .pname{
       font-family:'Cormorant Garamond',serif;font-size:14pt;font-style:italic;
       font-weight:600;color:var(--dark);line-height:1.25;
@@ -1874,8 +1890,8 @@ async function exportPDF(){
     .sep-line{height:.5pt;background:linear-gradient(90deg,var(--rose-md),var(--gray-lt),transparent)}
     .specs{display:grid;grid-template-columns:1fr 1fr;gap:1.5mm 3mm}
     .spec.full{grid-column:1/-1}
-    .slbl{font-size:6pt;letter-spacing:1.8px;color:var(--gray);text-transform:uppercase;margin-bottom:.5mm}
-    .sval{font-size:10pt;font-weight:500;color:var(--dark)}
+    .slbl{font-size:12pt;letter-spacing:1px;color:var(--gray);text-transform:uppercase;margin-bottom:.5mm;font-style:normal;font-weight:400}
+    .sval{font-size:10pt;font-weight:500;font-style:italic;color:var(--dark)}
     .desc{font-family:'Cormorant Garamond',serif;font-size:8.5pt;font-style:italic;color:#A89090;line-height:1.5}
 
     /* FRASE DE MARCA */
