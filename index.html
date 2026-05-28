@@ -2038,7 +2038,7 @@ function renderPayMethods(){
   if(sel){const cur=sel.value;const methods=['Efectivo','Tarjeta de crédito','Tarjeta de débito','Transferencia bancaria','Yape','Plin'];sel.innerHTML='<option value="">— Seleccionar —</option>'+methods.map(m=>`<option${cur===m?' selected':''}>${m}</option>`).join('');}
 }
 
-async async function exportPayPDF(){
+async function exportPayPDF(){
   const localSaved=JSON.parse(localStorage.getItem(PAY_KEY)||'{}');
   Object.assign(payData,localSaved);
   if(db){
