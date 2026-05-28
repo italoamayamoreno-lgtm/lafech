@@ -1599,48 +1599,50 @@ async function exportPDF(){
     doc.setDrawColor(...GOLD);doc.setLineWidth(lw);doc.line(x1,y1,x2,y2);
   }
 
+  // FIX FOTOS NEGRAS: usar Image() con onload garantizado antes de canvas
   async function toB64(url){
     return new Promise(res=>{
       if(!url)return res(null);
-      if(url.startsWith('data:'))return res(url);
-      const img=new Image();img.crossOrigin='Anonymous';
-      img.onload=function(){
-        const c=document.createElement('canvas');
-        c.width=this.naturalWidth;c.height=this.naturalHeight;
-        c.getContext('2d').drawImage(this,0,0);
-        try{res(c.toDataURL('image/jpeg',0.85));}catch(e){res(null);}
-      };
-      img.onerror=()=>res(null);img.src=url;
+      if(!url.startsWith('data:'))return res(null); // solo base64 local
+      // Ya es base64 — retornar directamente sin pasar por canvas
+      res(url);
     });
   }
 
-  // Añadir imagen cuadrada (crop centrado)
+  // Añadir imagen cuadrada con crop centrado — versión robusta
   function addSquareImg(b64,x,y,size){
     if(!b64)return false;
     try{
+      // Intentar directo primero (más rápido, evita el bug del canvas negro)
       const fmt=b64.includes('data:image/png')?'PNG':'JPEG';
-      const tmp=new Image();tmp.src=b64;
-      const nw=tmp.naturalWidth||600;const nh=tmp.naturalHeight||600;
-      const cs=Math.min(nw,nh);
-      const canvas=document.createElement('canvas');
-      canvas.width=cs;canvas.height=cs;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(tmp,(nw-cs)/2,(nh-cs)/2,cs,cs,0,0,cs,cs);
-      doc.addImage(canvas.toDataURL('image/jpeg',0.85),fmt,x,y,size,size);
+      doc.addImage(b64,fmt,x,y,size,size);
       return true;
     }catch(e){
-      try{doc.addImage(b64,'JPEG',x,y,size,size);return true;}
-      catch(e2){return false;}
+      try{
+        // Fallback: forzar JPEG
+        doc.addImage(b64,'JPEG',x,y,size,size);
+        return true;
+      }catch(e2){
+        console.warn('No se pudo añadir imagen:',e2.message);
+        return false;
+      }
     }
   }
 
-  // Esquinas doradas en un rectángulo
-  function goldCorners(x,y,w,h,sz=3.5){
+  // Esquinas doradas
+  function goldCorners(x,y,w,h,sz=3){
     doc.setDrawColor(...GOLD);doc.setLineWidth(0.7);
     doc.line(x,y,x+sz,y);doc.line(x,y,x,y+sz);
     doc.line(x+w,y,x+w-sz,y);doc.line(x+w,y,x+w,y+sz);
     doc.line(x,y+h,x+sz,y+h);doc.line(x,y+h,x,y+h-sz);
     doc.line(x+w,y+h,x+w-sz,y+h);doc.line(x+w,y+h,x+w,y+h-sz);
+  }
+
+  // Dibujar marco de foto con esquinas doradas
+  function drawPhotoFrame(fx,fy,fw,fh){
+    doc.setFillColor(...WHITE);doc.rect(fx,fy,fw,fh,'F');
+    doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.3);doc.rect(fx,fy,fw,fh,'S');
+    goldCorners(fx,fy,fw,fh,3);
   }
 
   // ══════════════════════════════════════
@@ -1687,7 +1689,7 @@ async function exportPDF(){
   doc.text('Uso exclusivo del cliente',W-14,H-13,{align:'right'});
 
   // ══════════════════════════════════════
-  // HEADER + FOOTER de página
+  // HEADER + FOOTER DE PÁGINA
   // ══════════════════════════════════════
   function drawPageShell(catName,prodCount){
     doc.setFillColor(...WHITE);doc.rect(0,0,W,H,'F');
@@ -1705,7 +1707,8 @@ async function exportPDF(){
     doc.setFont('helvetica','bolditalic');doc.setFontSize(13);
     doc.setTextColor(...WINE_DRK);doc.text(catName,W-12,14,{align:'right'});
     doc.setFont('helvetica','normal');doc.setFontSize(7);
-    doc.setTextColor(...GRAY);doc.text(prodCount+' producto'+(prodCount!==1?'s':''),W-12,21,{align:'right'});
+    doc.setTextColor(...GRAY);
+    doc.text(prodCount+' producto'+(prodCount!==1?'s':''),W-12,21,{align:'right'});
     doc.setFillColor(254,247,248);doc.rect(3,H-14,W-3,14,'F');
     doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.4);doc.line(3,H-14,W,H-14);
     doc.setFont('helvetica','normal');doc.setFontSize(7);
@@ -1713,11 +1716,11 @@ async function exportPDF(){
   }
 
   // ══════════════════════════════════════
-  // CARD DE PRODUCTO — layout adaptativo
+  // CARD DE PRODUCTO — Layout galería
   // ══════════════════════════════════════
-  async function drawProductCard(p, cardY, cardH){
-    const cX=8; const cW=W-16;
-    const margin=4; // margen interior de la card
+  async function drawProductCard(p,cardY,cardH){
+    const cX=8;const cW=W-16;
+    const pad=4;
 
     // Fotos disponibles
     const fotos=[];
@@ -1726,161 +1729,138 @@ async function exportPDF(){
     if(p.img3)fotos.push(p.img3);
     const nFotos=fotos.length;
 
-    // Sombra y card blanca
+    // Sombra y card
     doc.setFillColor(235,215,220);
     doc.roundedRect(cX+0.8,cardY+0.8,cW,cardH,2,2,'F');
     doc.setFillColor(...WHITE);
     doc.roundedRect(cX,cardY,cW,cardH,2,2,'F');
     doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.3);
     doc.roundedRect(cX,cardY,cW,cardH,2,2,'S');
-
-    // Accent bar guinda izquierdo
     doc.setFillColor(...WINE);
     doc.roundedRect(cX,cardY,2.5,cardH,1,1,'F');
 
-    // ── INDICADOR DE STOCK — esquina superior derecha (BUG 3) ──
+    // ── INDICADOR STOCK — esquina superior derecha ──
     const stkVal=stk(p.id);
     if(stkVal>0){
       const isLow=stkVal===1;
-      const stkBg=isLow?[253,246,227]:[237,245,240];
-      const stkBd=isLow?[138,96,16]:[42,96,73];
-      const stkTxt=isLow?'Últimas unidades':'En stock';
-      const badgeW=32;const badgeH=6;
-      const bx=cX+cW-badgeW-margin;const by=cardY+margin;
-      doc.setFillColor(...stkBg);
-      doc.roundedRect(bx,by,badgeW,badgeH,1.5,1.5,'F');
-      doc.setDrawColor(...stkBd);doc.setLineWidth(0.25);
-      doc.roundedRect(bx,by,badgeW,badgeH,1.5,1.5,'S');
-      doc.setFillColor(...stkBd);doc.circle(bx+4,by+3,1.2,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setCharSpace(0.3);
-      doc.setTextColor(...stkBd);
-      doc.text(stkTxt,bx+badgeW/2+2,by+4,{align:'center'});
+      const sBg=isLow?[253,246,227]:[237,245,240];
+      const sBd=isLow?[138,96,16]:[42,96,73];
+      const sTxt=isLow?'Últimas unidades':'En stock';
+      const bW=isLow?34:24;const bH=6;
+      const bx=cX+cW-bW-pad;const by=cardY+pad;
+      doc.setFillColor(...sBg);
+      doc.roundedRect(bx,by,bW,bH,1.5,1.5,'F');
+      doc.setDrawColor(...sBd);doc.setLineWidth(0.25);
+      doc.roundedRect(bx,by,bW,bH,1.5,1.5,'S');
+      doc.setFillColor(...sBd);doc.circle(bx+4,by+3,1.2,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setCharSpace(0.2);
+      doc.setTextColor(...sBd);
+      doc.text(sTxt,bx+bW/2+2,by+4,{align:'center'});
       doc.setCharSpace(0);
     }
 
-    // ══════════════════════════════════════
-    // LAYOUT SEGÚN NÚMERO DE FOTOS
-    // ══════════════════════════════════════
+    // ── ZONA FOTOS ──
+    // Ancho zona fotos: fijo independiente del número de fotos
+    const photoZoneW=70;
+    const photoX=cX+2.5;
 
-    if(nFotos<=1){
-      // ── LAYOUT 1 FOTO: foto izq | texto der ──────
-      const photoZoneW=64;
-      const photoX=cX+2.5;
-      const imgSize=52;
-      const imgX=photoX+6;
-      const imgY=cardY+(cardH-imgSize)/2;
+    // Fondo zona foto
+    doc.setFillColor(254,244,246);
+    doc.rect(photoX,cardY,photoZoneW,cardH,'F');
 
-      // Fondo zona foto
-      doc.setFillColor(254,244,246);
-      doc.rect(photoX,cardY,photoZoneW,cardH,'F');
+    // Altura interior disponible para fotos
+    const innerY=cardY+pad;
+    const innerH=cardH-pad*2-12; // 12 para badge material abajo
 
-      // Marco + esquinas doradas
-      doc.setFillColor(...WHITE);doc.rect(imgX,imgY,imgSize,imgSize,'F');
-      doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.3);doc.rect(imgX,imgY,imgSize,imgSize,'S');
-      goldCorners(imgX,imgY,imgSize,imgSize);
+    if(nFotos===0){
+      // Sin foto
+      doc.setFont('helvetica','normal');doc.setFontSize(7);
+      doc.setTextColor(...GRAY_LT);
+      doc.text('Sin foto',photoX+photoZoneW/2,cardY+cardH/2,{align:'center'});
+    } else if(nFotos===1){
+      // ── 1 FOTO: cuadrada grande, ocupa todo el alto disponible ──
+      const sz=Math.min(photoZoneW-12,innerH);
+      const fx=photoX+(photoZoneW-sz)/2;
+      const fy=innerY+(innerH-sz)/2;
+      drawPhotoFrame(fx,fy,sz,sz);
+      const b64=await toB64(fotos[0]);
+      if(b64)addSquareImg(b64,fx+0.5,fy+0.5,sz-1);
+    } else if(nFotos===2){
+      // ── 2 FOTOS: foto principal grande + 1 thumbnail apilado ──
+      const mainW=photoZoneW-18; // foto principal
+      const mainH=Math.min(mainW,innerH);
+      const thumbW=photoZoneW-mainW-14;
+      const thumbH=mainH;
+      const mainX=photoX+4;const mainFY=innerY+(innerH-mainH)/2;
+      const thumbX=mainX+mainW+4;const thumbFY=mainFY;
 
-      if(nFotos===1){
-        const b64=await toB64(fotos[0]);
-        if(b64)addSquareImg(b64,imgX+0.5,imgY+0.5,imgSize-1);
-      } else {
-        doc.setFont('helvetica','normal');doc.setFontSize(7);
-        doc.setTextColor(...GRAY_LT);
-        doc.text('Sin foto',imgX+imgSize/2,imgY+imgSize/2,{align:'center'});
-      }
+      // Foto principal
+      drawPhotoFrame(mainX,mainFY,mainW,mainH);
+      const b64m=await toB64(fotos[0]);
+      if(b64m)addSquareImg(b64m,mainX+0.5,mainFY+0.5,mainW-1);
 
-      // Badge material — centrado en zona foto, pegado al fondo
-      if(p.material&&p.material!=='—'){
-        const badge=(p.material+(p.quilates&&p.quilates!=='—'?' '+p.quilates:'')).toUpperCase();
-        const bW=photoZoneW-8;
-        doc.setFillColor(...WINE);
-        doc.roundedRect(photoX+4,cardY+cardH-11,bW,8,2,2,'F');
-        doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setCharSpace(0.5);
-        doc.setTextColor(...ROSE);
-        doc.text(badge,photoX+photoZoneW/2-2,cardY+cardH-5.5,{align:'center'});
-        doc.setCharSpace(0);
-      }
-
-      // ── Texto derecho ──
-      const txtX=photoX+photoZoneW+8;
-      const txtW=cW-photoZoneW-16;
-      drawTextContent(p,txtX,txtW,cardY,cardH,true);
-
+      // Thumbnail
+      drawPhotoFrame(thumbX,thumbFY,thumbW,thumbH);
+      const b64t=await toB64(fotos[1]);
+      if(b64t)addSquareImg(b64t,thumbX+0.5,thumbFY+0.5,thumbW-1);
     } else {
-      // ── LAYOUT 2-3 FOTOS: fotos arriba | texto abajo ──
-      const innerX=cX+2.5+margin;
-      const innerW=cW-2.5-margin*2;
+      // ── 3 FOTOS: foto principal grande + 2 thumbnails apilados ──
+      const mainW=photoZoneW-18;
+      const mainH=Math.min(mainW,innerH);
+      const thumbW=photoZoneW-mainW-14;
+      const thumbH=(mainH-4)/2; // 2 thumbs con 4mm gap entre ellos
+      const mainX=photoX+4;const mainFY=innerY+(innerH-mainH)/2;
+      const thumbX=mainX+mainW+4;
 
-      // Zona fotos — ocupa 55% de la altura de la card
-      const photoZoneH=Math.round(cardH*0.54);
-      const imgSize=photoZoneH-10; // cuadrado, con margen
+      // Foto principal
+      drawPhotoFrame(mainX,mainFY,mainW,mainH);
+      const b64m=await toB64(fotos[0]);
+      if(b64m)addSquareImg(b64m,mainX+0.5,mainFY+0.5,mainW-1);
 
-      // Fondo zona fotos
-      doc.setFillColor(254,244,246);
-      doc.rect(cX+2.5,cardY,cW-2.5,photoZoneH,'F');
+      // Thumbnail 1
+      drawPhotoFrame(thumbX,mainFY,thumbW,thumbH);
+      const b64t1=await toB64(fotos[1]);
+      if(b64t1)addSquareImg(b64t1,thumbX+0.5,mainFY+0.5,thumbW-1);
 
-      // Calcular posición de cada foto centrada horizontalmente
-      const gap=4;
-      const totalFotosW=nFotos*imgSize+(nFotos-1)*gap;
-      let fotoStartX=innerX+(innerW-totalFotosW)/2;
-
-      for(let fi=0;fi<fotos.length;fi++){
-        const fx=fotoStartX+fi*(imgSize+gap);
-        const fy=cardY+(photoZoneH-imgSize)/2;
-
-        doc.setFillColor(...WHITE);doc.rect(fx,fy,imgSize,imgSize,'F');
-        doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.3);doc.rect(fx,fy,imgSize,imgSize,'S');
-        goldCorners(fx,fy,imgSize,imgSize,3);
-
-        const b64=await toB64(fotos[fi]);
-        if(b64)addSquareImg(b64,fx+0.5,fy+0.5,imgSize-1);
-      }
-
-      // Separador entre zona fotos y texto
-      doc.setDrawColor(...GRAY_LT);doc.setLineWidth(0.3);
-      doc.line(cX+2.5,cardY+photoZoneH,cX+cW,cardY+photoZoneH);
-
-      // Badge material — dentro de zona fotos, esquina inferior izquierda
-      if(p.material&&p.material!=='—'){
-        const badge=(p.material+(p.quilates&&p.quilates!=='—'?' '+p.quilates:'')).toUpperCase();
-        doc.setFillColor(...WINE);
-        doc.roundedRect(innerX,cardY+photoZoneH-10,38,8,2,2,'F');
-        doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setCharSpace(0.5);
-        doc.setTextColor(...ROSE);
-        doc.text(badge,innerX+19,cardY+photoZoneH-4,{align:'center'});
-        doc.setCharSpace(0);
-      }
-
-      // ── Texto abajo ──
-      const txtY=cardY+photoZoneH;
-      const txtH=cardH-photoZoneH;
-      drawTextContentHoriz(p,innerX,innerW,txtY,txtH);
+      // Thumbnail 2
+      const thumb2Y=mainFY+thumbH+4;
+      drawPhotoFrame(thumbX,thumb2Y,thumbW,thumbH);
+      const b64t2=await toB64(fotos[2]);
+      if(b64t2)addSquareImg(b64t2,thumbX+0.5,thumb2Y+0.5,thumbW-1);
     }
-  }
 
-  // ── Texto para layout 1 foto (vertical) ─────────────────────
-  function drawTextContent(p,txtX,txtW,cardY,cardH,showPrice){
-    let ty=cardY+10;
+    // Badge material — pegado al fondo de la zona de fotos
+    if(p.material&&p.material!=='—'){
+      const badge=(p.material+(p.quilates&&p.quilates!=='—'?' '+p.quilates:'')).toUpperCase();
+      const bW=photoZoneW-8;
+      doc.setFillColor(...WINE);
+      doc.roundedRect(photoX+4,cardY+cardH-11,bW,8,2,2,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setCharSpace(0.5);
+      doc.setTextColor(...ROSE);
+      doc.text(badge,photoX+photoZoneW/2-2,cardY+cardH-5.5,{align:'center'});
+      doc.setCharSpace(0);
+    }
+
+    // ── ZONA CONTENIDO ──
+    const txtX=photoX+photoZoneW+7;
+    const txtW=cW-photoZoneW-14;
+    let ty=cardY+9;
 
     // ID
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setCharSpace(2);
-    doc.setTextColor(...GRAY);doc.text(p.id,txtX,ty);doc.setCharSpace(0);ty+=7;
+    doc.setTextColor(...GRAY);doc.text(p.id,txtX,ty);doc.setCharSpace(0);ty+=6;
 
     // Nombre
-    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...DARK);
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...DARK);
     const nameLines=doc.splitTextToSize(p.name,txtW);
     doc.text(nameLines.slice(0,2),txtX,ty);
-    ty+=nameLines.slice(0,2).length*6+2;
-
-    // Categoría
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setCharSpace(1);
-    doc.setTextColor(...GRAY);doc.text((p.cat||'').toUpperCase(),txtX,ty);
-    doc.setCharSpace(0);ty+=7;
+    ty+=nameLines.slice(0,2).length*5.5+3;
 
     // Separador
     doc.setDrawColor(...ROSE_MED);doc.setLineWidth(0.4);
-    doc.line(txtX,ty,txtX+txtW,ty);ty+=6;
+    doc.line(txtX,ty,txtX+txtW,ty);ty+=5;
 
-    // Specs — solo material y pureza/quilates (sin stock)
+    // Specs: Material, Pureza, Categoría — SIN stock, SIN categoría debajo del nombre
     const specs=[
       ['MATERIAL',p.material||'—'],
       [p.material==='Oro'?'QUILATES':'PUREZA',p.quilates||'—'],
@@ -1892,90 +1872,37 @@ async function exportPDF(){
       const sy=ty+Math.floor(i/2)*13;
       doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setCharSpace(1.5);
       doc.setTextColor(...GRAY);doc.text(lbl,sx,sy);doc.setCharSpace(0);
-      doc.setFont('helvetica','bold');doc.setFontSize(10);
-      doc.setTextColor(...DARK);doc.text(val,sx,sy+5);
+      doc.setFont('helvetica','bold');doc.setFontSize(9.5);
+      doc.setTextColor(...DARK);doc.text(String(val),sx,sy+5);
     });
-    ty+=specs.length<=2?13:26;
+    const specRows=Math.ceil(specs.length/2);
+    ty+=specRows*13+2;
 
-    // Descripción
-    if(p.desc&&ty<cardY+cardH-28){
-      doc.setFont('helvetica','italic');doc.setFontSize(8);
-      doc.setTextColor(168,128,144);
-      const dLines=doc.splitTextToSize('"'+p.desc+'"',txtW);
-      const maxL=Math.min(dLines.length,Math.floor((cardY+cardH-ty-26)/4));
-      if(maxL>0){doc.text(dLines.slice(0,maxL),txtX,ty);}
+    // Descripción — en cursiva, siempre que quepa
+    if(p.desc){
+      const maxDescH=cardH-(ty-cardY)-20; // espacio que queda antes del precio
+      if(maxDescH>8){
+        doc.setFont('helvetica','italic');doc.setFontSize(8);
+        doc.setTextColor(168,128,144);
+        const dLines=doc.splitTextToSize('"'+p.desc+'"',txtW);
+        const maxL=Math.min(dLines.length,Math.floor(maxDescH/4));
+        if(maxL>0){doc.text(dLines.slice(0,maxL),txtX,ty);}
+      }
     }
 
-    // Bloque precio — centrado, con margen del borde (BUG 4)
-    // Alineado verticalmente con el badge de material de la izquierda
+    // ── BLOQUE PRECIO — centrado, sin línea dorada ──
     const priceH=14;
-    // Centrado respecto a la zona de texto
     const priceY=cardY+cardH-priceH-3;
-    const priceX=txtX;
-    const priceW=txtW;
-
-    doc.setFillColor(...ROSE);
-    doc.roundedRect(priceX,priceY,priceW,priceH,2,2,'F');
-    doc.setDrawColor(...WINE);doc.setLineWidth(0.5);
-    doc.roundedRect(priceX,priceY,priceW,priceH,2,2,'S');
-
-    // Label centrado (BUG 2)
-    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setCharSpace(1.5);
-    doc.setTextColor(...WINE);
-    doc.text('PRECIO DE VENTA',priceX+priceW/2,priceY+4.5,{align:'center'});
-    doc.setCharSpace(0);
-
-    // Precio centrado (BUG 2)
-    doc.setFont('helvetica','bold');doc.setFontSize(16);
-    doc.setTextColor(...WINE_DRK);
-    doc.text('S/ '+fmt(p.price),priceX+priceW/2,priceY+11.5,{align:'center'});
-  }
-
-  // ── Texto para layout 2-3 fotos (horizontal abajo) ──────────
-  function drawTextContentHoriz(p,txtX,txtW,txtY,txtH){
-    const pad=4;
-    let tx=txtX; let ty=txtY+pad+4;
-    const halfW=txtW/2;
-
-    // ID + nombre izquierda
-    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setCharSpace(1.5);
-    doc.setTextColor(...GRAY);doc.text(p.id,tx,ty);doc.setCharSpace(0);ty+=5;
-    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...DARK);
-    const nameLines=doc.splitTextToSize(p.name,halfW-4);
-    doc.text(nameLines.slice(0,2),tx,ty);ty+=nameLines.slice(0,2).length*5+2;
-    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setCharSpace(1);
-    doc.setTextColor(...GRAY);doc.text((p.cat||'').toUpperCase(),tx,ty);
-    doc.setCharSpace(0);
-
-    // Specs lado derecho (material + pureza)
-    let rx=txtX+halfW;let ry=txtY+pad+4;
-    [['MATERIAL',p.material||'—'],[p.material==='Oro'?'QUILATES':'PUREZA',p.quilates||'—']].forEach(([lbl,val])=>{
-      doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setCharSpace(1.2);
-      doc.setTextColor(...GRAY);doc.text(lbl,rx,ry);doc.setCharSpace(0);
-      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...DARK);
-      doc.text(val,rx,ry+4.5);ry+=11;
-    });
-
-    // Separador horizontal
-    const sepY=txtY+txtH-20;
-    doc.setDrawColor(...ROSE_MED);doc.setLineWidth(0.3);
-    doc.line(txtX,sepY,txtX+txtW,sepY);
-
-    // Bloque precio — ancho completo, centrado, con margen (BUGS 2,4)
-    const priceH=14;
-    const priceY=txtY+txtH-priceH-2;
     doc.setFillColor(...ROSE);
     doc.roundedRect(txtX,priceY,txtW,priceH,2,2,'F');
     doc.setDrawColor(...WINE);doc.setLineWidth(0.5);
     doc.roundedRect(txtX,priceY,txtW,priceH,2,2,'S');
-
-    // Label centrado (BUG 2)
+    // Label centrado
     doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setCharSpace(1.5);
     doc.setTextColor(...WINE);
     doc.text('PRECIO DE VENTA',txtX+txtW/2,priceY+4.5,{align:'center'});
     doc.setCharSpace(0);
-
-    // Precio centrado (BUG 2)
+    // Valor centrado
     doc.setFont('helvetica','bold');doc.setFontSize(16);
     doc.setTextColor(...WINE_DRK);
     doc.text('S/ '+fmt(p.price),txtX+txtW/2,priceY+11.5,{align:'center'});
