@@ -1854,11 +1854,11 @@ async function exportPDF(){
     // Precio — centrado en bloque rosa palo
     doc.setFillColor(...ROSE);doc.roundedRect(iX,priceY,iW,priceH,2,2,'F');
     doc.setDrawColor(...WINE);doc.setLineWidth(0.4);doc.roundedRect(iX,priceY,iW,priceH,2,2,'S');
-    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setCharSpace(1.2);
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setCharSpace(1.2);
     doc.setTextColor(...WINE);
-    doc.text('PRECIO DE VENTA',iX+iW/2,priceY+4,{align:'center'});doc.setCharSpace(0);
+    doc.text('PRECIO DE VENTA',iX+4,priceY+7.5);doc.setCharSpace(0);
     doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...WINE_DK);
-    doc.text('S/ '+fmt(p.price),iX+iW/2,priceY+10.5,{align:'center'});
+    doc.text('S/ '+fmt(p.price),iX+iW-3,priceY+8.5,{align:'right'});
 
     // Frase de marca + ornamento dorado
     doc.setDrawColor(232,210,215);doc.setLineWidth(0.25);
@@ -1914,15 +1914,17 @@ async function exportPDF(){
     doc.setTextColor(...DARK);doc.text(p.cat||'—',iX,ty+5.5);ty+=14;
 
     // Descripción — ocupa TODO el espacio disponible entre specs y frase
-    if(p.desc){
-      const descMaxH=fraseY-ty-3;
-      if(descMaxH>4){
-        doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(168,128,144);
-        const dLines=doc.splitTextToSize('"'+p.desc+'"',iW);
-        const lineH=4.0;
-        const maxL=Math.min(dLines.length,Math.floor(descMaxH/lineH));
-        if(maxL>0)doc.text(dLines.slice(0,maxL),iX,ty);
-      }
+    // Si la descripción es corta, se centra verticalmente en el espacio disponible
+    const descMaxH=fraseY-ty-3;
+    if(p.desc&&descMaxH>4){
+      doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(168,128,144);
+      const dLines=doc.splitTextToSize('"'+p.desc+'"',iW);
+      const lineH=4.0;
+      const maxL=Math.min(dLines.length,Math.floor(descMaxH/lineH));
+      // Centrar verticalmente si hay espacio sobrante
+      const totalDescH=maxL*lineH;
+      const descStartY=ty+Math.max(0,(descMaxH-totalDescH)/2);
+      if(maxL>0)doc.text(dLines.slice(0,maxL),iX,descStartY);
     }
   }
 
