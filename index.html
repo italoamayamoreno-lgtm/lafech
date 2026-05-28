@@ -1843,7 +1843,39 @@ async function exportPDF(){
     // ── ZONA INFO — derecha ──
     const iX=photoX+photoZoneW+6;
     const iW=cW-(photoZoneW+2.5)-12;
-    let ty=cY+10;
+
+    // Bloque fijo fondo: precio + frase + ornamento
+    // Se dibuja desde el fondo hacia arriba — así nunca queda espacio vacío
+    const priceH=12;
+    const priceY=cY+cH-priceH-2;
+    const fraseBlockH=15;
+    const fraseY=priceY-fraseBlockH;
+
+    // Precio — centrado en bloque rosa palo
+    doc.setFillColor(...ROSE);doc.roundedRect(iX,priceY,iW,priceH,2,2,'F');
+    doc.setDrawColor(...WINE);doc.setLineWidth(0.4);doc.roundedRect(iX,priceY,iW,priceH,2,2,'S');
+    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setCharSpace(1.2);
+    doc.setTextColor(...WINE);
+    doc.text('PRECIO DE VENTA',iX+iW/2,priceY+4,{align:'center'});doc.setCharSpace(0);
+    doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...WINE_DK);
+    doc.text('S/ '+fmt(p.price),iX+iW/2,priceY+10.5,{align:'center'});
+
+    // Frase de marca + ornamento dorado
+    doc.setDrawColor(232,210,215);doc.setLineWidth(0.25);
+    doc.line(iX,fraseY,iX+iW,fraseY);
+    doc.setFont('helvetica','italic');doc.setFontSize(6.5);doc.setTextColor(200,170,178);
+    const frase=getFrase(p.cat);
+    const fLines=doc.splitTextToSize('"'+frase+'"',iW);
+    doc.text(fLines.slice(0,2),iX,fraseY+4);
+    const ornY=fraseY+11;
+    doc.setFillColor(...GOLD);doc.circle(iX+iW/2,ornY,0.7,'F');
+    doc.setDrawColor(...GOLD);doc.setLineWidth(0.25);
+    doc.line(iX+iW/2-7,ornY,iX+iW/2-1.5,ornY);
+    doc.line(iX+iW/2+1.5,ornY,iX+iW/2+7,ornY);
+
+    // Contenido superior: ID, nombre, sep, specs, desc
+    // Ocupan el espacio desde arriba hasta la frase
+    let ty=cY+9;
 
     // ID
     doc.setFont('helvetica','normal');doc.setFontSize(6.5);
@@ -1851,9 +1883,8 @@ async function exportPDF(){
     doc.text(p.id,iX,ty);doc.setCharSpace(0);ty+=5.5;
 
     // Nombre en itálica
-    doc.setFont('helvetica','bolditalic');doc.setFontSize(11.5);
-    doc.setTextColor(...DARK);
-    const nameLines=doc.splitTextToSize(p.name,iW-18);
+    doc.setFont('helvetica','bolditalic');doc.setFontSize(11.5);doc.setTextColor(...DARK);
+    const nameLines=doc.splitTextToSize(p.name,iW-22);
     doc.text(nameLines.slice(0,2),iX,ty);
     ty+=nameLines.slice(0,2).length*5.2+3;
 
@@ -1866,69 +1897,33 @@ async function exportPDF(){
     const mat=p.material||'—';
     const pur=p.quilates||'—';
     const matLbl=p.material==='Oro'?'QUILATES':'PUREZA';
-    // Col 1: Material
-    doc.setFont('helvetica','normal');doc.setFontSize(6);
-    doc.setCharSpace(1.2);doc.setTextColor(...GRAY);
-    doc.text('MATERIAL',iX,ty);doc.setCharSpace(0);
+    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setCharSpace(1.2);
+    doc.setTextColor(...GRAY);doc.text('MATERIAL',iX,ty);doc.setCharSpace(0);
     doc.setFont('helvetica','bold');doc.setFontSize(9.5);
     doc.setTextColor(...DARK);doc.text(mat,iX,ty+5.5);
-    // Col 2: Pureza
-    doc.setFont('helvetica','normal');doc.setFontSize(6);
-    doc.setCharSpace(1.2);doc.setTextColor(...GRAY);
-    doc.text(matLbl,iX+sW,ty);doc.setCharSpace(0);
+    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setCharSpace(1.2);
+    doc.setTextColor(...GRAY);doc.text(matLbl,iX+sW,ty);doc.setCharSpace(0);
     doc.setFont('helvetica','bold');doc.setFontSize(9.5);
     doc.setTextColor(...DARK);doc.text(pur,iX+sW,ty+5.5);
     ty+=14;
 
     // Categoría
-    doc.setFont('helvetica','normal');doc.setFontSize(6);
-    doc.setCharSpace(1.2);doc.setTextColor(...GRAY);
-    doc.text('CATEGORIA',iX,ty);doc.setCharSpace(0);
+    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setCharSpace(1.2);
+    doc.setTextColor(...GRAY);doc.text('CATEGORIA',iX,ty);doc.setCharSpace(0);
     doc.setFont('helvetica','bold');doc.setFontSize(9.5);
     doc.setTextColor(...DARK);doc.text(p.cat||'—',iX,ty+5.5);ty+=14;
 
-    // Descripción en cursiva
+    // Descripción — ocupa TODO el espacio disponible entre specs y frase
     if(p.desc){
-      const priceAreaH=22;const fraseAreaH=14;
-      const remH=(cY+cH-ty)-priceAreaH-fraseAreaH;
-      if(remH>5){
-        doc.setFont('helvetica','italic');doc.setFontSize(7.5);
-        doc.setTextColor(168,128,144);
+      const descMaxH=fraseY-ty-3;
+      if(descMaxH>4){
+        doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(168,128,144);
         const dLines=doc.splitTextToSize('"'+p.desc+'"',iW);
-        const maxL=Math.min(dLines.length,Math.floor(remH/3.8));
+        const lineH=4.0;
+        const maxL=Math.min(dLines.length,Math.floor(descMaxH/lineH));
         if(maxL>0)doc.text(dLines.slice(0,maxL),iX,ty);
       }
     }
-
-    // Frase de marca — sobre el precio
-    const priceY=cY+cH-12;
-    const fraseY=priceY-14;
-    // Separador fino
-    doc.setDrawColor(232,210,215);doc.setLineWidth(0.25);
-    doc.line(iX,fraseY,iX+iW,fraseY);
-    // Frase en cursiva tenue
-    doc.setFont('helvetica','italic');doc.setFontSize(6.5);
-    doc.setTextColor(200,170,178);
-    const frase=getFrase(p.cat);
-    const fLines=doc.splitTextToSize('"'+frase+'"',iW);
-    doc.text(fLines.slice(0,2),iX,fraseY+4);
-    // Ornamento dorado (línea · punto · línea)
-    const ornY=fraseY+11;
-    doc.setFillColor(...GOLD);doc.circle(iX+iW/2,ornY,0.7,'F');
-    doc.setDrawColor(...GOLD);doc.setLineWidth(0.25);
-    doc.line(iX+iW/2-7,ornY,iX+iW/2-1.5,ornY);
-    doc.line(iX+iW/2+1.5,ornY,iX+iW/2+7,ornY);
-
-    // Precio — bloque rosa palo, label izq, valor der, ambos CENTRADOS verticalmente
-    doc.setFillColor(...ROSE);doc.roundedRect(iX,priceY,iW,11,2,2,'F');
-    doc.setDrawColor(...WINE);doc.setLineWidth(0.4);doc.roundedRect(iX,priceY,iW,11,2,2,'S');
-    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setCharSpace(1.2);
-    doc.setTextColor(...WINE);
-    doc.text('PRECIO DE VENTA',iX+iW/2,priceY+3.5,{align:'center'});
-    doc.setCharSpace(0);
-    doc.setFont('helvetica','bold');doc.setFontSize(13);
-    doc.setTextColor(...WINE_DK);
-    doc.text('S/ '+fmt(p.price),iX+iW/2,priceY+9.5,{align:'center'});
   }
 
   // ══════════════════════
