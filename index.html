@@ -799,6 +799,7 @@ window.navigate = function(view, el) {
 window.goToApp = function(appPath) {
   const activa = CONFIG.apps[appPath];
   if (!activa) { showToast('Esta app no está contratada.', 'error'); return; }
+  sessionStorage.setItem('lafech_desde_portal', '1');
   window.location.href = `/${appPath}/`;
 };
 
