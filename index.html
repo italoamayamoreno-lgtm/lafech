@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LaFech Joyería · Suite Etraziapp</title>
+<title>LaFech Joyería · EtraziApp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══ TOKENS ══════════════════════════════════════════════════════════ */
 :root {
-  --bg0: #07080c;
-  --bg1: #0e1016;
-  --bg2: #161820;
-  --bg3: #1d2029;
-  --border: rgba(255,255,255,0.06);
-  --border-strong: rgba(255,255,255,0.12);
-  --accent: #e8892a;
-  --accent-dim: rgba(232,137,42,0.12);
-  --accent-glow: rgba(232,137,42,0.05);
+  --bg0: #0B1120;
+  --bg1: #111827;
+  --bg2: #1A2235;
+  --bg3: #1F2D45;
+  --border: rgba(184,115,51,0.08);
+  --border-strong: rgba(184,115,51,0.15);
+  --accent: #B87333;
+  --accent-dim: rgba(184,115,51,0.12);
+  --accent-glow: rgba(184,115,51,0.05);
   --text0: #ede9e0;
   --text1: #8a8780;
   --text2: #3d3c38;
@@ -29,8 +29,8 @@
   --purple-bg: rgba(167,139,250,0.08);
   --red: #f0594a;
   --red-bg: rgba(240,89,74,0.08);
-  --font-head: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-head: 'Montserrat', sans-serif;
+  --font-body: 'Inter', sans-serif;
   --font-mono: 'DM Mono', monospace;
   --radius: 12px;
   --radius-sm: 8px;
@@ -73,7 +73,7 @@ input { font-family: var(--font-body); font-size: 14px; }
 .login-client-logo {
   width: 64px; height: 64px;
   background: var(--accent-dim);
-  border: 1px solid rgba(232,137,42,0.2);
+  border: 1px solid rgba(184,115,51,0.2);
   border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-head);
@@ -139,7 +139,7 @@ input { font-family: var(--font-body); font-size: 14px; }
   width: 100%;
   padding: 11px;
   background: var(--accent);
-  color: #07080c;
+  color: #0B1120;
   font-family: var(--font-head);
   font-weight: 700;
   font-size: 13px;
@@ -152,7 +152,7 @@ input { font-family: var(--font-body); font-size: 14px; }
 .login-err { font-size: 12px; color: var(--red); margin-top: 10px; min-height: 16px; text-align: center; }
 .login-spinner {
   display: none; width: 16px; height: 16px;
-  border: 2px solid rgba(7,8,12,0.2); border-top-color: #07080c;
+  border: 2px solid rgba(7,8,12,0.2); border-top-color: #0B1120;
   border-radius: 50%; animation: spin 0.6s linear infinite; margin: 8px auto 0;
 }
 .login-spinner.active { display: block; }
@@ -188,7 +188,7 @@ input { font-family: var(--font-body); font-size: 14px; }
 .brand-mark {
   width: 32px; height: 32px; flex-shrink: 0;
   background: var(--accent-dim);
-  border: 1px solid rgba(232,137,42,0.2);
+  border: 1px solid rgba(184,115,51,0.2);
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-head);
@@ -257,7 +257,7 @@ input { font-family: var(--font-body); font-size: 14px; }
 .nav-label { font-size: 13px; }
 .nav-badge {
   margin-left: auto; flex-shrink: 0;
-  background: var(--accent); color: #07080c;
+  background: var(--accent); color: #0B1120;
   font-size: 9px; font-weight: 700;
   padding: 2px 6px; border-radius: 99px;
   font-family: var(--font-mono);
@@ -486,7 +486,19 @@ input { font-family: var(--font-body); font-size: 14px; }
       <div class="login-client-logo" id="login-initials">LC</div>
       <div class="login-client-name" id="login-nombre">LaFech Joyería</div>
       <div class="login-client-ruc" id="login-ruc">RUC 10485721836</div>
-      <div class="login-powered">powered by <span>e·trazia</span>app</div>
+      <div class="login-powered">
+        <span style="display:inline-flex;align-items:center;gap:5px;vertical-align:middle">
+          <svg width="16" height="16" viewBox="0 0 44 44" fill="none">
+            <path d="M16 22C16 15.37 21.37 10 28 10C34.63 10 40 15.37 40 22C40 28.63 34.63 34 28 34" stroke="#1B2B4B" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path d="M28 22C28 28.63 22.63 34 16 34C9.37 34 4 28.63 4 22C4 15.37 9.37 10 16 10" stroke="url(#lg1)" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <rect x="17.5" y="17.5" width="9" height="9" rx="1.5" fill="#D97706" transform="rotate(45 22 22)"/>
+            <defs><linearGradient id="lg1" x1="28" y1="10" x2="4" y2="34" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#B87333"/><stop offset="100%" stop-color="#D97706"/>
+            </linearGradient></defs>
+          </svg>
+          <span style="font-size:10px;color:#94A3B8;font-family:'Inter',sans-serif;letter-spacing:0.05em">powered by </span><span style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:11px;letter-spacing:0.08em;color:#F8FAFC">ETRAZIA</span>
+        </span>
+      </div>
     </div>
     <div class="login-card">
       <div class="login-field">
@@ -515,7 +527,19 @@ input { font-family: var(--font-body); font-size: 14px; }
         <div class="brand-name" id="sb-nombre">LaFech Joyería</div>
       </div>
       <div class="brand-ruc" id="sb-ruc">RUC 10485721836</div>
-      <div class="brand-powered">powered by <span>e·trazia</span>app</div>
+      <div class="brand-powered">
+        <span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle">
+          <svg width="12" height="12" viewBox="0 0 44 44" fill="none">
+            <path d="M16 22C16 15.37 21.37 10 28 10C34.63 10 40 15.37 40 22C40 28.63 34.63 34 28 34" stroke="#1B2B4B" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path d="M28 22C28 28.63 22.63 34 16 34C9.37 34 4 28.63 4 22C4 15.37 9.37 10 16 10" stroke="url(#lg2)" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <rect x="17.5" y="17.5" width="9" height="9" rx="1.5" fill="#D97706" transform="rotate(45 22 22)"/>
+            <defs><linearGradient id="lg2" x1="28" y1="10" x2="4" y2="34" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#B87333"/><stop offset="100%" stop-color="#D97706"/>
+            </linearGradient></defs>
+          </svg>
+          <span style="font-size:9px;color:#94A3B8;font-family:'Inter',sans-serif">powered by </span><span style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:10px;letter-spacing:0.08em;color:rgba(248,250,252,0.7)">ETRAZIA</span>
+        </span>
+      </div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">Principal</div>
@@ -616,7 +640,7 @@ input { font-family: var(--font-body); font-size: 14px; }
         </div>
         <div class="info-card" style="margin-top:16px">
           <div style="font-size:13px;color:var(--text1);margin-bottom:12px">¿Encontraste un problema? Escríbenos y te respondemos en menos de 24 horas.</div>
-          <a href="mailto:soporte@etrazia.com" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#07080c;font-family:var(--font-head);font-weight:700;font-size:12px;padding:8px 16px;border-radius:var(--radius-sm);text-decoration:none">✉ Enviar mensaje</a>
+          <a href="mailto:soporte@etrazia.com" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#0B1120;font-family:var(--font-head);font-weight:700;font-size:12px;padding:8px 16px;border-radius:var(--radius-sm);text-decoration:none">✉ Enviar mensaje</a>
         </div>
       </div>
 
