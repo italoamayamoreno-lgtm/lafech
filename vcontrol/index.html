@@ -419,7 +419,7 @@ body.role-admin .admin-only-block{display:flex !important}
 </head>
 <body>
 <!-- LOGIN SCREEN -->
-<div id="login-screen">
+<div id="login-screen" class="hidden">
   <div class="login-card">
     <div class="login-logo">
       <div class="login-logo-gem">💎</div>
@@ -441,6 +441,13 @@ body.role-admin .admin-only-block{display:flex !important}
     </div>
     <div class="login-footer">LaFech © 2026 — Acceso restringido</div>
   </div>
+</div>
+
+<!-- LOADING SCREEN — visible mientras Firebase verifica sesión -->
+<div id="loading-screen" style="position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;font-weight:600;color:var(--P);letter-spacing:.04em">💎 LaFech</div>
+  <div style="width:32px;height:32px;border:3px solid var(--PL);border-top-color:var(--P);border-radius:50%;animation:spin .8s linear infinite"></div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </div>
 
 <div class="app" style="display:none" id="app-container">
@@ -2825,6 +2832,7 @@ async function loadUserRole(uid){
 }
 
 function showApp(){
+  document.getElementById('loading-screen').style.display='none';
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-container').style.display='flex';
   document.body.classList.remove('role-admin','role-vendedor');document.body.classList.add('role-'+currentRole);
@@ -2867,6 +2875,7 @@ function applyVendedorRestrictions(){
 }
 
 function showLogin(){
+  document.getElementById('loading-screen').style.display='none';
   document.getElementById('login-screen').classList.remove('hidden');document.getElementById('app-container').style.display='none';document.getElementById('user-badge').style.display='none';
   const btn=document.getElementById('login-btn');if(btn){btn.disabled=false;btn.textContent='Ingresar';}
   const err=document.getElementById('login-error');if(err)err.classList.remove('show');
