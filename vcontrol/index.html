@@ -2810,6 +2810,10 @@ function lookupClient(docNum){
 let currentUser=null;let currentRole=null;let auth=null;
 
 function initAuth(){
+  if(!sessionStorage.getItem('lafech_desde_portal')){
+    window.location.replace('https://lafech.etraziapp.com');
+    return;
+  }
   if(!auth)auth=firebase.auth();
   auth.onAuthStateChanged(async user=>{
     if(user){currentUser=user;await loadUserRole(user.uid);showApp();}
