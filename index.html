@@ -823,8 +823,14 @@ window.navigate = function(view, el) {
 window.goToApp = function(appPath) {
   const activa = CONFIG.apps[appPath];
   if (!activa) { showToast('Esta app no está contratada.', 'error'); return; }
+  const user = auth.currentUser;
+  if (user) {
+    sessionStorage.setItem('lafech_session', JSON.stringify({
+      email: user.email, uid: user.uid, role: 'admin'
+    }));
+  }
   sessionStorage.setItem('lafech_desde_portal', '1');
-  window.location.href = `/${appPath}/`;
+  window.location.href = `${appPath}/index.html`;
 };
 
 window.toggleSidebar = function() {
