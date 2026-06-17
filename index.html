@@ -740,11 +740,10 @@ function showApp(user) {
   document.getElementById('dash-greeting-text').textContent = `${greet} 👋`;
   document.getElementById('dash-greeting-sub').textContent = `Bienvenido a tu panel de ${nombre}. Selecciona una app para comenzar.`;
 
-  // Mostrar/ocultar nav items según apps contratadas
+  // Mostrar/ocultar nav items según apps contratadas — ocultar las no contratadas
   Object.entries(apps).forEach(([appId, activa]) => {
     const navEl = document.getElementById(`nav-${appId}`);
-    if (navEl) navEl.style.opacity = activa ? '1' : '0.3';
-    if (navEl) navEl.style.pointerEvents = activa ? 'auto' : 'none';
+    if (navEl) navEl.style.display = activa ? '' : 'none';
   });
 
   // Render apps grid
@@ -757,11 +756,10 @@ function showApp(user) {
 
 function renderAppsGrid(apps) {
   const grid = document.getElementById('apps-grid');
-  grid.innerHTML = Object.entries(APPS_META).map(([id, meta]) => {
-    const activa = apps[id];
-    return `
-      <div class="app-card ${meta.color} ${activa ? '' : 'locked'}"
-           onclick="${activa ? `goToApp('${meta.path}')` : ''}">
+  grid.innerHTML = Object.entries(APPS_META)
+    .filter(([id]) => apps[id])
+    .map(([id, meta]) => `
+      <div class="app-card ${meta.color}" onclick="goToApp('${meta.path}')">
         <div style="display:flex;align-items:center;gap:12px">
           <div class="app-icon">${meta.icon}</div>
           <div class="app-info">
@@ -770,11 +768,10 @@ function renderAppsGrid(apps) {
           </div>
         </div>
         <div class="app-status">
-          <span class="app-badge ${activa ? 'activo' : 'inactivo'}">${activa ? 'Activo' : 'No contratado'}</span>
-          ${activa ? '<span class="app-arrow">→</span>' : ''}
+          <span class="app-badge activo">Activo</span>
+          <span class="app-arrow">→</span>
         </div>
-      </div>`;
-  }).join('');
+      </div>`).join('');
 }
 
 // ── LOGIN ─────────────────────────────────────────────────────────────
